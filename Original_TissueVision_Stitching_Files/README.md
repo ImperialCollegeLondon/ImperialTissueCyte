@@ -28,4 +28,4 @@ Next, copy the `.ijm` files inside "ImageJ-Plugins" and paste them into a suitab
 
 # Running Stitching Protocol
 
-The original protocol for running the stitching pipeline using MATLAB and Fiji can be seen [here](ImperialTissueCyte/Original_TissueVision_Stitching_Files/Stitching_Protocol_Original.pdf).
+The original protocol for running the stitching pipeline using MATLAB and Fiji can be seen [here](https://github.com/gm515/ImperialTissueCyte/blob/master/Original_TissueVision_Stitching_Files/Stitching_Protocol_Original.pdf).
