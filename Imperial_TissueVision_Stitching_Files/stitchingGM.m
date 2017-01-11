@@ -3,7 +3,7 @@
 % Stitching is performed with the Grid/Collection plugin in ImageJ/Fiji.
 % Whilst the plugin is much faster than the depracted versions, it uses 
 % Bioformats to import data which has a bug which causes it to import
-% images from a NAS drive at very slow speed. TO circumvent this, the
+% images from a NAS drive at very slow speed. To circumvent this, the
 % script copies the files needed to stitch a slice into a local temporary
 % folder allowing Bioformats to import the images at normal speed.
 
