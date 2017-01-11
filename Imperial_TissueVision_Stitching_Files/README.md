@@ -1,4 +1,4 @@
-# Imperial TissueVision Stithing Files
+# Imperial TissueVision Stitching Files
 
 This directory contains scripts written to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/gm515/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)). As it stands, the MATLAB portion of the original stitching pipeline is still required to process the raw image tile data. The scripts here instead replace the Fiji portion of the pipeline using MATLAB, but also integrating the default Fiji plugin "Grid/Collection stitching".
 
