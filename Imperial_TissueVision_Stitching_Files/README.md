@@ -1,7 +1,7 @@
 # Stitching Protocol
 
 ## About Imperial TissueVision Stitching Files
-This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files]).
+This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
 The scripts are written in MATLAB and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. 
 
@@ -10,7 +10,7 @@ As a side note, there exists a bug in ImageJ/Fiji Bioformats import plugin which
 Image stitching is a computationally intensive task, made more so due to the size of the image tiles acquired with TissueCyte. It is recommended to have a workstation with at least 16 GB of RAM. Currently, the scripts have been confirmed to run on *macOS*, but many of the instructions below should have corresponding instructions in a *Windows* operating system environment. 
 
 ## Installation
-Download MATLAB and ImageJ/Fiji if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files])  and place the scripts in a folder which is discoverable with MATLAB.
+Download MATLAB and ImageJ/Fiji if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is discoverable with MATLAB.
 
 ### Fiji set-up
 The first step is to get ImageJ/Fiji correctly set-up to allow MATLAB communication. 
