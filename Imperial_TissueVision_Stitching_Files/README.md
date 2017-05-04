@@ -1,67 +1,52 @@
-# Imperial TissueVision Stitching Files
+# Stitching Protocol
 
-This directory contains scripts written to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/gm515/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)). As it stands, the MATLAB portion of the original stitching pipeline is still required to process the raw image tile data. The scripts here instead replace the Fiji portion of the pipeline using MATLAB, but also integrating the default Fiji plugin "Grid/Collection stitching".
+## About Imperial TissueVision Stitching Files
+This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files]).
 
-Currently, there exists a bug in the Fiji plugin which makes importing files stored on a NAS drive a tediously slow and an essentially broken process. A workaround for this has been implemented into the scripts, but despite this, execution time for the stitching is less than a third of the time taken in the original process. Once parallelisation has been added in the future, this will massively reduce execution time.
+The scripts are written in MATLAB and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. 
 
-Fiji is called internally with MATLAB using the Java package [MIJ](http://bigwww.epfl.ch/sage/soft/mij/). To run without any errors, this can require a few additional installation steps and also requires MATLAB to be running with a Java version 8 environment. To get everything set up for executing these scripts, follow the steps bellow. 
+As a side note, there exists a bug in ImageJ/Fiji Bioformats import plugin which struggles to import images which reside on a NAS drive. The code therefore has a loophole written in to bypass this issue, but consequently requires at least 1 GB of available space on your local hard drive.
 
-As stitching is a computing intensive process, it is recommended to use a computer with at least 16GB of RAM. This code has also been tested on a **macOS** system only, but there is nothing to prohibit the scrips being run on a **Windows** system. Some of the steps for making MATLAB compatible with MIJ will of course be operating system dependant but corresponding steps should exist online for **Windows**. 
+Image stitching is a computationally intensive task, made more so due to the size of the image tiles acquired with TissueCyte. It is recommended to have a workstation with at least 16 GB of RAM. Currently, the scripts have been confirmed to run on *macOS*, but many of the instructions below should have corresponding instructions in a *Windows* operating system environment. 
 
-**UPDATE** Asynchronous stitching (stitching as TissueCyte generates files) has now been created in a separate stitching script with MATLAB. The script to download for this is called _asyncstitchic.m_. The script works by determining which file is expected to be created by TissueCyte at the end of each imaged layer. When the final tile file is created, the script loads up all the tiles for a single layer then calculates the average image. Each individual tile is then loaded, cropped and rotated as necessary, then divided through by the average tile to correct for intensity differences across a single tile. Each of these processed tiles is saved into a Mosaic folder. Once the tiles for a single layer are processed, Fiji is called to start the stitching process. The script will do this for all the expected sections and layers in the scan (user fed when running the script). In such a way, the asynchronous stitching algorithm is capable of massively reducing the time it takes to image _and_ stitch data as the process is carried out in parallel. See the updated protocol below to see how to run this process.
+## Installation
+Download MATLAB and ImageJ/Fiji if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files])  and place the scripts in a folder which is discoverable with MATLAB.
 
-# Installation
+### Fiji set-up
+The first step is to get ImageJ/Fiji correctly set-up to allow MATLAB communication. 
+1. In Fiji, check the “Grid/Collection stitching” plugin is installed under `Plugins > Grid/Collection stitching`.
+2. Next, to install the MIJ plugin, go to `Help > Update Fiji` and click on “Manage update sites” on the bottom left of the window.
+3. On the package list which appears, scroll down to "ImageJ-MATLAB" and check the checkbox which is to the left of the package name. Click on “Close” to close the window.
+4. In the package window, there should now be a list of packages required to install MIJ. Click on “Apply changes” to install the plugin. Restart Fiji when finished. 
+5. Next, the available RAM for Fiji needs to be increased to avoid memory shortage errors during the stitching. Go to `Edit > Options > Memory & Threads…`. The window which opens should contain a “Maximum Memory” field which can edited to a specific value. Change this to no more than three-quarters of your available system RAM. For example, a 32 GB workstation can be set to have 24000 MB of memory available for Fiji. Avoid exceeding the three-quarter rule as this can make your workstation unstable due to other background processes.
+6. Fiji should now be restarted then subsequently closed down. 
 
-Download MATLAB and ImageJ/Fiji if you don't already have it, then download the two scripts in this code directory and place them into folder added to the MATLAB path.
+### MATLAB set-up
+Fiji is now set-up to receive MATLAB communication, but we now need to tell MATLAB how to start communicating.
+1. The “Grid/Collection stitching” plugin requires Java version 8. Start by installing this for your workstation using the following [link].
+2. MATLAB now needs to be configured to run in a Java version 8 environment. Go to the following [link] and download the `createMATLABShortcut.m` file. You will find there also exists links/files for *Windows* and *Linux* so download accordingly. 
+3. In MATLAB, execute the `createMATLABShortcut.m` script which will generate a desktop shortcut called "MATLAB\_JVM”. 
+4. Double-click on "MATLAB\_JVM” which will open up MATLAB then confirm that the environment is Java version 8 by typing into the console `version –java` which will return a couple of lines stating the version is 1.8.
+5. To allow MATLAB to communicate with Fiji, add the path of the Fiji plugins to MATLAB by typing in `addpath('/Applications/Fiji.app/scripts');` followed by `savepath;`. This is assuming the Fiji application resides in the Applications folder. Change this path accordingly. For *Windows* the script path will likely be different to check beforehand.
+6. Confirm MATLAB is able to communicate with Fiji by opening MATLAB via the desktop shortcut and typing in `Miji;` which will return several lines informing that ImageJ/Fiji has been correctly opened within MATLAB.
+7. Close down the Fiji communication with `MIJ.exit();`.
+8. As Fiji is now being run within MATLAB, memory allocations are restricted by the memory available to MATLAB. Change this by going to `MATLAB > Preferences` then selecting "General" and "Java Heap Memory”. Move the memory slider three-quarters of the way across and apply the change. Close MATLAB.
 
-## Fiji
+### Final set-up steps
+ImageJ/Fiji and MATLAB are now correctly set-up to communicate with one another. However an issue with *macOS*, which may not be problematic with *Windows* or *Linux* operating systems, is that there exists a limit to the number of open files. Solve this by doing the following. 
+1. Launch "Terminal" and type `sudo launchctl limit maxfiles unlimited unlimited`. 
+2. Confirm the change by typing `launchctl limit maxfiles` which will return information where the max file limits are set to a maximum value.
+Note that this max file change is only confirmed for the duration the workstation remains turned on. If there is a restart or the system is turned off at any point, the above steps will need to be repeated.
 
-In Fiji, check the "Grid/Collection stitching" exists under `Plugins > Grid/Collection stitching`. It should already be installed as default. To install the MIJ package, go to `Help > Update Fiji` which will open the "ImageJ Updater" window. Click on "Manage update sites" on the bottom left, find the package "ImageJ-MATLAB" and check the checkbox on the left of the name. Close "Manage update sites" window and you'll see the necessary packages to install are listed in the updater window. Go ahead and click "Apply changes" to install the package. Restart Fiji if required.
+## Executing Stitching
+Before starting, make sure the NAS drive or data storage drives are connected to the workstation which will be performing the stitching. This stitching process can be executed immediately following the execution of the TissueCyte scanning procedure.
+1. Open MATLAB using the shortcut generated during the installation process to load using the Java version 8 environment.
+2. Navigate to the `asyncstitchic.m` file downloaded from the directory and run it.
+3. The first file browser window which appears requests the path of the root folder where the image data from TissueCyte is being stored. This will be the folder manually created during the set-up for a TissueCyte scan and will contain the sections folders which subsequently contain the raw tile images.
+4. The second file browser window which appears requests the path for a temporary folder on the local workstation which can be used to bypass the Bioformats plugin bug associated with NAS drives. If you don’t have an empty folder created yet, use the new folder button to do so. This folder is routinely emptied over the course of the stitching so make sure this folder does not contain any other files.
+5. The third and final window which appears requests the parameters for the scan. These parameters can be found in the Mosaic text file which resides in the root folder of the scan. Fill these details in. The overlap percentage can be left at 6% but can be changed if desired. lastly choose the channel you intend to stitch.
+The script will now execute by collecting the tile images per physical section and transferring them over to the temporary folder. Here the tiles are averaged together and each individual tile is illumination corrected before being fed into the stitching plugin using ImageJ/Fiji. Each stitched image is then moved back to the data storage drive under a newly generated Mosaic folder in the root directory of the scan. Following this, the temporary folder is emptied and the process repeated. For scans not involving optical sectioning, the stitching for a section completes before imaging so the script will appropriately wait until the corresponding tile images are generated by TissueCyte. 
 
-Next you want increase the RAM memory available to Fiji to avoid errors with memory shortage. More RAM also allows the stiching plugin to execute faster whilst being slightly memory inefficient. Go to `Edit > Options > Memory & Threads...`. In the window that opens, you will see a Maximum Memory value which will be set to MB value. Change this value to no more than three-quarters of your total system memory. For example, a system with 32GB of RAM, change the maximum memory value to 24000MB. Do not exceed the three-quarters rule as this can make your system unstable. Remember, that the more RAM allocated to Fiji, the less there is available for other system processes!
-
-Fiji should now be correctly configured, so close it down. When executing stitching scripts, you won't actually need to open Fiji yourself.
-
-## Setting up MATLAB to run Fiji
-
-The Grid/Collection stitching plugin requires Java version 8, but by default MATLAB only uses Java version 7. First install [Java version 8](https://java.com/en/download/) if not already installed on your system. 
-
-Next go to the following [link](http://uk.mathworks.com/matlabcentral/answers/103056-how-do-i-change-the-java-virtual-machine-jvm-that-matlab-is-using-for-mac-os) and download the file `createMATLABShortcut.m`. If you are on **Windows** you can also find the relevent solution for creating a Java version 8 MATLAB environment with one of the links on the page. Open MATLAB and run the `createMATLABShortcut.m` script which will generate a "MATLAB_JVM" shortcut on your desktop. Double-click the shortcut and MATLAB using Java 8 should open. Confirm this by typing in `version –java` into the command terminal, which should return the version as 1.8.
-
-To allow MATLAB to access the MIJ plugin you downloaded in Fiji earlier, in the command terminal, type in
-```matlab
-addpath('/Applications/Fiji.app/scripts');
-savepath;
-```
-where `'/Applications/Fiji.app/scripts'` is the path to the installed scripts within Fiji. The path will be correct if Fiji is installed in the default "Applications" directory. If not, change the path accordingly. Confirm MIJ is set up by typing
-```matlab
-Miji;
-```
-which should return dialogue confirming an ImageJ/Fiji instance has been successfully loaded. Close the instance down with
-```matlab
-MIJ.exit();
-```
-
-As Fiji is now being run inside MATLAB, memory allocation is dependant on the memory of MATLAB itself. Maximise the MATLAB memory through `MATLAB > Preferences` then selecting "General" and "Java Heap Memory". Move the memory slider all the way to the right, apply the change then close down MATLAB. The MATLAB environment is now correctly configured for the scripts, however one more change is required, as below.
-
-To finish the MATLAB configuration, you need to increase the system memory allocated for the number of open files you can have open. Open "Terminal" and type
-```unix
-launchctl limit maxfiles
-```
-to check how much memory is allocated for open files. Change this by typing the following
-```unix
-sudo launchctl limit maxfiles unlimited unlimited
-```
-to set the number of allowed open files to their maximum. You can check the change is confirmed by typing in
-```unix
-launchctl limit maxfiles 
-```
-again and comparing the new values to the old. This open files limit change is only temporary for the time the computer system is on. If the system is turned off or restarted, then you will need to redo this process.
-
-# Running Stitching Protocol
-
-Open up MATLAB and type in `asyncstitchicGM` into the command terminal. The script should be located in a folder linked to the MATLAB path so it should immediately start without errors. Three dialogue windows should open asking for a particular directory. The first window asks for the folder of tiled images generate through MATLAB using the original stitching pipeline. This will be one of the channel folders with the name containing "Ch#\_Tiled_Sections_" where # indicates the channel number. The second window asks for the output folder where the stiched files will be saved. You can use the stitched folders generated by the original MATLAB step, in which case the output folder will contain the name "Ch#\_Stitched_Sections_". Finally, the third window asks for a temporary folder where the tiles per layer can copied. This temporary folder is neccessary to bypass the bug in the Grid/Collection stitching plugin. The temporary folder should be located on your local drive. All files copied to the folder are automatically deleted when used so you don't need to worry about having a lot of space available. However, there should atleast be enough space to hold all the tiles for a single layer only, roughly 100 files.
-
-Once the folders have been chosen, the following dialogue window asks for parameters about the scan itself. Fill in the relevant parameter values start the stitching process. MATLAB should start copying the files for a single section to the temporary folder, loading Fiji and running the stitching plugin. After a single layer is stitched, the stitched image is copied to the output directory and the files in the temporary folder are deleted. The process is then repeated for the remaining sections. 
-
-Once all the layers are stitched, the script should end and print out information about the execution time. The output folder chosen earlier will contain all the stitched files in raw dimensions. Of course this means each image can be of the order of several hundred MB. The "tiff2jpegGM" script can be used to downsize the images and save them as JPEGs to make them more manageable to handle. Simply type in `tiff2jpegGM` into the MATLAB command terminal. In the following window that opens select the files you want to convert. Hold shift on the keyboard to select a range of files. MATLAB will then use Fiji to lead each image, downsize, enhance contrast and save as a JPEG into the same folder as the stitched output files.
+Further steps can be performed to downsize the images by 50% and convert to JPEGs using the script `tiff2jpegfastGM.m`. To save time, the script runs the conversion process in parallel using the available cores on the workstation.
+1. Run the script and navigate to the directory containing the stitched images. Highlight the number of images you want to convert by clicking on the first image, holding `shift-key` then clicking on the last image.
+2. Next choose the directory you want to output the converted images then let the script execute. 
