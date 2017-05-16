@@ -11,12 +11,9 @@
 % Currently only stitches single channel alongside TissueCyte aquisition.
 % Script can still be used post imaging for the other channels.
 
-% Clear workspace blah
-% clear all
-% close all
-% clc
-
 % Load up Fiji in MATLAB (without GUI)
+javaaddpath('/Applications/MATLAB_R2017a.app/java/mij.jar');
+javaaddpath('/Applications/MATLAB_R2017a.app/java/ij-1.51n.jar');
 Miji(false);
 
 % Collect TC path where raw data is outputted
@@ -39,9 +36,17 @@ zlayers = vars{6};
 overlap = vars{7};
 channel = vars{8};
 
+% Check conversion to JPEG condition
+convert = questdlg('Convert channel to JPEGs?');
+
 % Create stitch output folders
-mkdir([tcpath '/',id,'-Mosaic/Ch',channel,'_Tile_Sections']);
 mkdir([tcpath '/',id,'-Mosaic/Ch',channel,'_Stitched_Sections']);
+
+switch convert
+    case 'Yes'
+        mkdir([tcpath,'/',id,'-Mosaic/Ch',channel,'_Stitched_Sections_JPEG']);
+        savepath = strcat(tcpath,'/',id,'-Mosaic/Ch',channel,'_Stitched_Sections_JPEG');
+end
 
 % Variable declare
 crop = 0;
@@ -75,17 +80,22 @@ for section = (str2double(startsec):1:str2double(endsec))
     for layer = (1:1:str2double(zlayers))
         % Check all tiles per layer exist
         completelayer = false;
-        %lasttile = (str2double(xtiles)*str2double(ytiles)*layer*section) + (str2double(xtiles)*str2double(ytiles)) - 1;
-        %lasttile = lasttile + str2double(xtiles)*str2double(ytiles);
         firsttile = str2double(xtiles)*str2double(ytiles)*(((section-1)*str2double(zlayers))+layer-1);
         lasttile = str2double(xtiles)*str2double(ytiles)*(((section-1)*str2double(zlayers))+layer)-1;
         
         % If last tile doesn't exist yet, wait
-        while isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_0',channel,'.tif')))
-            fprintf('Last tile for layer has yet to be generated. Waiting...\n');
-            pause(3);
+        if isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_0',channel,'.tif')))
+            fprintf('Last tile for layer not generated yet. Waiting.');
         end
-                
+        while isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_0',channel,'.tif')))
+            pause(1);
+            fprintf('.');
+            pause(1);
+            fprintf('.\n');
+            pause(1);
+            fprintf('\b\b\b');
+        end
+                        
         % When all layer files exist, load each tile for averaging
         for tile = (firsttile:1:lasttile)
             % Get filename string if not already stored
@@ -124,7 +134,7 @@ for section = (str2double(startsec):1:str2double(endsec))
         
         % Compute average image for layer
         avgimage = sumimage/str2double(xtiles)*str2double(ytiles);
-        fprintf('Computed average for current layer\n');
+        fprintf('\nComputed average for current layer\n');
         %imwrite(avgimage, strcat('/Users/gm515/Desktop/Average',num2str(layer),'.tif'));
         
         % Stitch the images per layer together
@@ -218,7 +228,15 @@ for section = (str2double(startsec):1:str2double(endsec))
                 file2rename = java.io.File(strcat(stitchpath,'/img_t1_z1_c1'));
                 file2rename.renameTo(java.io.File(strcat(stitchpath,'/Stitched_Z',ztoken,'.tif')));
                 delete(strcat(temppath,'/*'));
-                fprintf('Finished stitching file Stitched_Z%s\n',ztoken);                
+                fprintf('Finished stitching file Stitched_Z%s\n',ztoken);
+                
+                switch convert
+                    case 'Yes'
+                        I = imread(strcat(stitchpath,'/Stitched_Z',ztoken,'.tif'));
+                        I = imresize(I, 0.5);
+                        imwrite(im2uint8(I),strcat(savepath,'/Stitched_Z',ztoken,'.jpg'));
+                        fprintf('Converted slice %s to JPEG\n',ztoken);
+                end
                 
                 zcount = zcount+1;
                 y = str2double(ytiles);
@@ -232,7 +250,8 @@ end
 
 % Exit ImageJ instance
 MIJ.exit();
+
 fprintf('\n-------------------------------------\n');
-fprintf('               -fin-                 \n');
 telapsed = datestr(toc(tstart)/(24*60*60), 'DD:HH:MM:SS.FFF');
 fprintf('Stitching completed in %s\n',telapsed);
+fprintf('               -fin-                 \n');
