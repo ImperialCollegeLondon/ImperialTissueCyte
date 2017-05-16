@@ -1,4 +1,7 @@
 # About Imperial TissueVision Stitching Files
+
+(Update 16/05/17) `asyncstitchic.m` now incorporates conversion to JPEG in the script. A dialogue box asks the user whether they want to perform the conversion.
+
 This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
 The scripts are written in MATLAB and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. 
