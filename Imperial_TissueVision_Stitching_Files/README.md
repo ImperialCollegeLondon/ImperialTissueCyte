@@ -1,6 +1,6 @@
 # About Imperial TissueVision Stitching Files
 
-*(Update 16/05/17)* `asyncstitchic.m` now incorporates conversion to JPEG in the script. A dialogue box asks the user whether they want to perform the conversion.
+**(Update 16/05/17)** `asyncstitchic.m` now incorporates conversion to JPEG in the script. A dialogue box asks the user whether they want to perform the conversion.
 
 This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
