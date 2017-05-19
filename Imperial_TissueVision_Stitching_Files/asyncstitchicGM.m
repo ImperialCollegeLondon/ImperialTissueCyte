@@ -56,6 +56,7 @@ zcount = 1;
 filenumber = 0;
 tilenumber = 0;
 lasttile = -1;
+tileimage=0;
 
 fprintf('        Asynchronous Stitching       \n');
 fprintf('-------------------------------------\n\n');
@@ -131,7 +132,7 @@ for section = (str2double(startsec):1:str2double(endsec))
             
             filenumber = filenumber+1;
         end
-        
+                
         % Compute average image for layer
         avgimage = sumimage/str2double(xtiles)*str2double(ytiles);
         fprintf('\nComputed average for current layer\n');
@@ -154,7 +155,7 @@ for section = (str2double(startsec):1:str2double(endsec))
             xcrop = (xsize/2) - (croplength/2);
             tileimage2 = rot90(imcrop(tileimage, [ycrop xcrop croplength croplength]));
             tileimage2 = tileimage2./avgimage;
-            
+                        
             % TC images in snake pattern starting from bottom left
             % tile. However stitching is done sequentially by row
             % starting from top left position so tiles need to be named
@@ -235,7 +236,8 @@ for section = (str2double(startsec):1:str2double(endsec))
                         I = imread(strcat(stitchpath,'/Stitched_Z',ztoken,'.tif'));
                         I = imresize(I, 0.5);
                         imwrite(im2uint8(I),strcat(savepath,'/Stitched_Z',ztoken,'.jpg'));
-                        fprintf('Converted slice %s to JPEG\n',ztoken);
+                        fprintf('Converted Stitched_Z%s to JPEG\n',ztoken);
+                        clear I;
                 end
                 
                 zcount = zcount+1;
@@ -248,6 +250,7 @@ for section = (str2double(startsec):1:str2double(endsec))
     end
 end
 
+fprintf('\n');
 % Exit ImageJ instance
 MIJ.exit();
 
