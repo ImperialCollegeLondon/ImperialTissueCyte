@@ -1,6 +1,8 @@
 # Importing Keras libraries
 
 import os
+import random
+import shutil
 
 os.environ['MKL_NUM_THREADS'] = '4'
 os.environ['GOTO_NUM_THREADS'] = '4'
@@ -11,6 +13,7 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.callbacks import ModelCheckpoint
+from keras.optimizers import RMSprop
 
 #=============================================================================================
 # Construction of Convolution Neural Network
@@ -39,6 +42,9 @@ classifier.add(MaxPooling2D(pool_size = (2, 2)))
 classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
+classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(MaxPooling2D(pool_size = (2, 2)))
+
 # Flattening operation
 # Convert pooled images into vectors
 classifier.add(Flatten())
@@ -57,7 +63,8 @@ classifier.add(Dense(units = 1, activation = 'sigmoid'))
 # Optimizer is stochastic gradient descent
 # Loss is loss function
 # Metric is performance metric
-classifier.compile(optimizer = 'rmsprop', loss = 'binary_crossentropy', metrics = ['accuracy'])
+optimizer = RMSprop(lr=1e-4)
+classifier.compile(optimizer = optimizer, loss = 'binary_crossentropy', metrics = ['accuracy'])
 
 print "Done!\n"
 
@@ -67,7 +74,19 @@ print "Done!\n"
 
 from keras.preprocessing.image import ImageDataGenerator
 
-print "Preparing training and test data..."
+print "Splitting all training data into 70% training and 30% test data directories..."
+
+cell_data = os.listdir('8-bit/training_data/cell/')
+nocell_data = os.listdir('8-bit/training_data/nocell/')
+
+test_cell_data = random.sample(cell_data, int(0.3*len(cell_data)))
+test_nocell_data = random.sample(nocell_data, int(0.3*len(nocell_data)))
+
+for f in test_cell_data:
+    shutil.move('8-bit/training_data/cell/'+f,'8-bit/test_data/cell/'+f)
+
+for f in test_nocell_data:
+    shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
 # training data
 train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.1, zoom_range = 0.1, width_shift_range=0.1, height_shift_range=0.1, horizontal_flip = True, vertical_flip = True)
@@ -95,6 +114,18 @@ checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_o
 callbacks_list = [checkpoint]
 
 # steps_per_epoch is number of images in training set
-classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 50, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
+classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 75, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
+
+print "Done!\n"
+
+#=============================================================================================
+# Recompiling training and test data together
+#=============================================================================================
+
+for f in os.listdir('8-bit/test_data/cell/'):
+    shutil.move('8-bit/test_data/cell/'+f,'8-bit/training_data/cell/'+f)
+
+for f in os.listdir('8-bit/test_data/nocell/'):
+    shutil.move('8-bit/test_data/nocell/'+f,'8-bit/training_data/nocell/'+f)
 
 print "Done!\n"

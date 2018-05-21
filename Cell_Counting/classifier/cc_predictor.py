@@ -1,3 +1,5 @@
+# Simple test to predict results
+
 import os, sys
 import numpy as np
 from keras.preprocessing import image
