@@ -7,6 +7,7 @@ from keras.models import load_model
 from PIL import Image
 from xml.dom import minidom
 from multiprocessing import Pool, cpu_count, Array, Manager
+from contextlib import closing
 from functools import partial
 import tqdm
 import csv
@@ -105,12 +106,13 @@ if __name__ == '__main__':
 
     cell_index = range(marker.shape[0])
 
-    pool = Pool(cpu_count())
-    for _ in tqdm.tqdm(pool.imap_unordered(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]):
-        pass
+    #pool = Pool(cpu_count())
+    with closing( Pool(cpu_count()) ) as pool:
+        for _ in tqdm.tqdm(pool.imap_unordered(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]):
+            pass
 
-    #pool.close()
-    #pool.join()
+    pool.close()
+    pool.join()
 
     print '\n'
     print 'Correct cell preditions:', result[:].count(1)

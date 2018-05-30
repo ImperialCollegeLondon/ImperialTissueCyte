@@ -1,3 +1,5 @@
+# Reads xml file and returns numpy array of markers
+
 from xml.dom import minidom
 import numpy as np
 
