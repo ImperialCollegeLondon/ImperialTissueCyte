@@ -6,20 +6,23 @@
 # 19/06/18 - Sped up model loading
 #          - Cleared keras session at start of each cell_predict function call
 #          - Added progress indicator
-#          - Use Pillow-SIMD over Pillow for faster image loading
 #
 # Author Gerald Moore - Imperial College London
 
-import os, sys, warnings, time, tqdm, csv
+from __future__ import division
+import os, sys, warnings, time
 import numpy as np
 from PIL import Image
 from xml.dom import minidom
 from multiprocessing import Pool, cpu_count, Array, Manager
 from contextlib import closing
 from functools import partial
-from keras import backend
+import tqdm
+import csv
 from keras.preprocessing import image
 from keras.models import load_model
+from keras import backend
+
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -114,9 +117,15 @@ if __name__ == '__main__':
 
     cell_index = range(marker.shape[0])
 
-    with closing( Pool(cpu_count()) ) as pool:
-        for _ in tqdm.tqdm(pool.imap_unordered(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]):
-            pass
+    tstart = time.time()
+
+    prog = []
+    pool = Pool(cpu_count())
+    r = [pool.apply_async(cellpredict, (i,), dict(model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), callback=prog.append) for i in cell_index]
+
+    while len(prog) != len(cell_index):
+        sys.stderr.write('\rDone    {0}/{1}    {2:.2%}'.format(len(prog), len(cell_index), float(len(prog))/len(cell_index)))
+        time.sleep(1)
 
     pool.close()
     pool.join()
@@ -124,3 +133,5 @@ if __name__ == '__main__':
     print '\n'
     print 'Correct cell preditions:', result[:].count(1)
     print 'Potential false cell predictions:', result[:].count(0)
+
+    print '{0:.0f}:{1:.0f}'.format(*divmod(time.time()-tstart,60))
