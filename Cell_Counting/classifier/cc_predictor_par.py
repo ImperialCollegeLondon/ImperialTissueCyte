@@ -42,7 +42,7 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
 
     #img = image.load_img(os.path.join(image_path, filename[cell]), target_size = (80, 80))
     #img = img.convert('I')
-    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]]))
+    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]-1]))
     #img = image.img_to_array(img)
     #img = np.lib.pad(img, pad_width = ((40, 40), (40, 40), (0, 0)), mode = 'constant', constant_values=0)
     #prev_slice = marker[cell, 2]
@@ -50,7 +50,8 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
     # The additional 1230 is a correction from the cropping between the original data and the segmented set - remove as necessary
     #cell_crop = img[marker[cell, 1]+1230 : marker[cell, 1]+1230 + 80, marker[cell, 0]+1230 : marker[cell, 0]+1230 + 80]
     #cell_crop = img[marker[cell, 1] : marker[cell, 1] + 80, marker[cell, 0] : marker[cell, 0] + 80]
-    img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
+    #img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
+    img = img.crop((marker[cell, 0]-40, marker[cell, 1]-40, marker[cell, 0]+40, marker[cell, 1]+40))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis = 0)
 
@@ -59,11 +60,11 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
     if prediction[0][0] == 0: # Cell
         cell_value = 1
         append_cell(marker[cell,:])
-        #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
+        image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
     else: # No cell
         cell_value = 0
         append_nocell(marker[cell,:])
-        #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
+        image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
 
     result[cell] = cell_value
 

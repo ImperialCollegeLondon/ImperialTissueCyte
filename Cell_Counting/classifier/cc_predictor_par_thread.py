@@ -53,7 +53,8 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
     # The additional 1230 is a correction from the cropping between the original data and the segmented set - remove as necessary
     #cell_crop = img[marker[cell, 1]+1230 : marker[cell, 1]+1230 + 80, marker[cell, 0]+1230 : marker[cell, 0]+1230 + 80]
     #cell_crop = img[marker[cell, 1] : marker[cell, 1] + 80, marker[cell, 0] : marker[cell, 0] + 80]
-    img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
+    #img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
+    img = img.crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis = 0)
 
