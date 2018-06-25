@@ -29,20 +29,17 @@ classifier = Sequential()
 # Shape of each filter
 # Input shape in first two, input type in third, 3 = RGB
 # activation function, relu = rectifier function
-classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
 
 # Pooling operation
 # Pooling reduces size of images in order to reduce number of nodes
 # 2x2 matrix
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
-classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
-classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
-classifier.add(MaxPooling2D(pool_size = (2, 2)))
-
-classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
 # Flattening operation
@@ -109,12 +106,12 @@ steps_epoch = len([filename for filename in os.listdir('8-bit/training_data/cell
 steps_valid = len([filename for filename in os.listdir('8-bit/test_data/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir('8-bit/test_data/nocell') if filename.endswith(".tif")])
 
 # Checkpoint to only save the best model, metric = val_acc
-filepath = "cc_model.h5"
+filepath = "cc_model_210618.h5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
 # steps_per_epoch is number of images in training set
-classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 75, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
+classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 50, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
 
 print "Done!\n"
 
