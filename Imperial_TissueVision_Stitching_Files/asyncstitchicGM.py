@@ -2,6 +2,10 @@ import os, sys, warnings, time, glob, errno, subprocess, shutil
 import numpy as np
 from PIL import Image
 
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+Image.MAX_IMAGE_PIXELS = 1000000000
+
 #=============================================================================================
 # Input parameters
 #=============================================================================================
@@ -18,18 +22,19 @@ zlayers = input('Number of Z layers per slice: ')
 xoverlap = input('X overlap % (default 5): ')
 yoverlap = input('Y overlap % (default 6): ')
 channel = input('Channel to stitch: ')
-convert = raw_input('Downsize 0.25? (y/n): ')
+convert = raw_input('Downsize 0.5 and save as JPEG? (y/n): ')
 
 # Create folders
+os.umask(0000)
 try:
-    os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections')
+    os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections', 0777)
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
 
 if convert == 'y':
     try:
-        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_0.25')
+        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_JPEG', 0777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -92,11 +97,10 @@ for section in range(startsec,endsec+1,1):
                 sys.stdout.flush()
 
         filenumber = firsttile
+        # Get file name structure and remove last 8 characters to leave behind filename template
+        filenamestruct = glob.glob(tcpath+'/'+folder+'/*-'+str(filenumber)+'_0'+str(channel)+'.tif')[0].rpartition('-')[0]+'-'
 
         for tile in range(firsttile, lasttile+1, 1):
-            # Get file name structure and remove last 8 characters to leave behind filename template
-            filenamestruct = glob.glob(tcpath+'/'+folder+'/*-'+str(filenumber)+'_0'+str(channel)+'.tif')[0].rpartition('-')[0]+'-'
-
             # Try to open file. If it doesn't exist, create an empty file
             try:
                 tileimage = Image.open('/'+filenamestruct+str(filenumber)+'_0'+str(channel)+'.tif')
@@ -111,7 +115,7 @@ for section in range(startsec,endsec+1,1):
                 crop = round(0.018*tileimage.size[0])
 
             # Crop and rotate image and convert to numpy array
-            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(-90))
+            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(90))
 
             if tile == firsttile:
                 sumimage = tileimage2
@@ -136,7 +140,7 @@ for section in range(startsec,endsec+1,1):
                 else:
                     raise
 
-            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(-90))
+            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(90))
             tileimage2 = Image.fromarray((tileimage2).astype(np.uint16))
 
             if x>=1 and x<=xtiles:
@@ -190,20 +194,19 @@ for section in range(startsec,endsec+1,1):
 
                 tilepath = temppath+'/'
                 stitchpath = tcpath+'/'+scanid+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections'
-                subprocess.call(['/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx', '--headless', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory='+tilepath+' file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory='+stitchpath+'") '], stdout=open(os.devnull, 'wb'))
+                subprocess.call(['/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx', '--headless', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=['+stitchpath+']");'], stdout=open(os.devnull, 'wb'))
 
+                shutil.rmtree(temppath)
+                os.makedirs(temppath, 0777)
 
                 os.rename(stitchpath+'/img_t1_z1_c1', stitchpath+'/Stitched_Z'+ztoken+'.tif')
 
                 if convert == 'y':
                     stitched_img = Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif')
-                    stitched_img.resize(0.25*stitched_img.size)
-                    stitched_img.save(stitchpath+'0.25/Stitched_Z'+ztoken+'.tif')
+                    stitched_img = stitched_img.resize((int(0.5*stitched_img.size[0]), int(0.5*stitched_img.size[1])))
+                    stitched_img.convert('L').save(stitchpath+'_JPEG/Stitched_Z'+ztoken+'.jpg')
 
                 print 'Complete!'
-
-                shutil.rmtree(temppath)
-                os.makedirs(temppath)
 
                 zcount+=1
                 y = ytiles
