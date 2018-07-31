@@ -1,4 +1,21 @@
-import os, sys, warnings, time, glob, errno, subprocess, shutil
+#============================================================================================
+# Asynchronous Stitching Script
+# Author: Gerald M
+#
+# This script pulls the data generated through TissueCyte (or another microscope system) and
+# can perfom image averaging correction on the images if requested, before calling ImageJ
+# from the command line to perform the stitching. You will need to have the plugin script
+# OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
+# registered. Otherwise the X overlap will be used for both.
+#
+# Instructions:
+# 1) Run the script in a Python IDE
+# 2) Fill in the parameters that you are asked for
+#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
+#    Note: The temporary directory is required to speed up ImageJ loading of the files
+#============================================================================================
+
+import os, sys, warnings, time, glob, errno, subprocess, shutil, math
 import numpy as np
 from PIL import Image
 
@@ -22,6 +39,7 @@ zlayers = input('Number of Z layers per slice: ')
 xoverlap = input('X overlap % (default 5): ')
 yoverlap = input('Y overlap % (default 6): ')
 channel = input('Channel to stitch: ')
+avgcorr = raw_input('Perform average correction? (y/n): ')
 convert = raw_input('Downsize 0.5 and save as JPEG? (y/n): ')
 
 # Create folders
@@ -82,7 +100,7 @@ for section in range(startsec,endsec+1,1):
     for layer in range(1,zlayers+1,1):
         completelayer = False
         firsttile = xtiles*ytiles*((zlayers*(section-1))+layer-1)
-        lasttile = xtiles*ytiles*((zlayers*(section-1))+layer)-1
+        lasttile = (xtiles*ytiles*((zlayers*(section-1))+layer))-1
 
         # If last tile doesn't exist yet, wait for it
         if glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0*.tif') == []:
@@ -115,7 +133,7 @@ for section in range(startsec,endsec+1,1):
                 crop = round(0.018*tileimage.size[0])
 
             # Crop and rotate image and convert to numpy array
-            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(90))
+            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop+1, tileimage.size[1]-crop+1)).rotate(90))
 
             if tile == firsttile:
                 sumimage = tileimage2
@@ -125,7 +143,7 @@ for section in range(startsec,endsec+1,1):
             filenumber+=1
 
         # Compute average tile
-        avgimage = (sumimage/(xtiles*ytiles)).astype(float)
+        avgimage = sumimage.astype(float)/(xtiles*ytiles)
         print 'Computed average tile.',
 
         tilenumber = firsttile
@@ -140,8 +158,11 @@ for section in range(startsec,endsec+1,1):
                 else:
                     raise
 
-            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop, tileimage.size[1]-crop)).rotate(90))
-            tileimage2 = Image.fromarray((tileimage2).astype(np.uint16))
+            tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop+1, tileimage.size[1]-crop+1)).rotate(90)).astype(float)
+
+            if avgcorr == 'y':
+                tileimage2 = np.multiply(np.divide(tileimage2, avgimage, where=avgimage!=0.), 1000)
+
 
             if x>=1 and x<=xtiles:
                 if x<10:
@@ -187,14 +208,14 @@ for section in range(startsec,endsec+1,1):
             else:
                 ztoken = str(zcount)
 
-            tileimage2.save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+            Image.fromarray(tileimage2.astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
             if (tile+1)%(xtiles*ytiles) == 0:
                 print 'Stitching Z'+ztoken+'...',
 
                 tilepath = temppath+'/'
                 stitchpath = tcpath+'/'+scanid+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections'
-                subprocess.call(['/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx', '--headless', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=['+stitchpath+']");'], stdout=open(os.devnull, 'wb'))
+                subprocess.call(['/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx', '--headless', '-eval', 'runMacro("/Applications/Fiji.app/plugins/OverlapY.ijm");', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=['+stitchpath+']");'], stdout=open(os.devnull, 'wb'))
 
                 shutil.rmtree(temppath)
                 os.makedirs(temppath, 0777)
@@ -202,7 +223,8 @@ for section in range(startsec,endsec+1,1):
                 os.rename(stitchpath+'/img_t1_z1_c1', stitchpath+'/Stitched_Z'+ztoken+'.tif')
 
                 if convert == 'y':
-                    stitched_img = Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif')
+                    stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif')).astype(float)
+                    stitched_img = Image.fromarray(np.multiply(np.divide(stitched_img,65535.), 255.).astype(np.uint8))
                     stitched_img = stitched_img.resize((int(0.5*stitched_img.size[0]), int(0.5*stitched_img.size[1])))
                     stitched_img.convert('L').save(stitchpath+'_JPEG/Stitched_Z'+ztoken+'.jpg')
 
@@ -211,7 +233,7 @@ for section in range(startsec,endsec+1,1):
                 zcount+=1
                 y = ytiles
                 x = xtiles
-                xstep+=-1
+                xstep = -1
 
             tilenumber+=1
 
