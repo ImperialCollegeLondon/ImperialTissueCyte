@@ -8,6 +8,10 @@
 # OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
 # registered. Otherwise the X overlap will be used for both.
 #
+# Installation;
+# 1) Navigate to the folder containing the AsyncstitchGM.py
+# 2) Run 'pip install -r requirements.txt'
+#
 # Instructions:
 # 1) Run the script in a Python IDE
 # 2) Fill in the parameters that you are asked for
