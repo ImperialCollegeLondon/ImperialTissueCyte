@@ -165,7 +165,7 @@ for section in range(startsec,endsec+1,1):
             tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop+1, tileimage.size[1]-crop+1)).rotate(90)).astype(float)
 
             if avgcorr == 'y':
-                tileimage2 = np.multiply(np.divide(tileimage2, avgimage, where=avgimage!=0.), 1000)
+                tileimage2 = np.multiply(np.divide(tileimage2, avgimage, where=avgimage!=0.), 10000)
 
 
             if x>=1 and x<=xtiles:
