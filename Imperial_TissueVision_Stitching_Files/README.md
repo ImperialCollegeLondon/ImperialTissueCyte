@@ -24,8 +24,8 @@ The first step is to get ImageJ/Fiji correctly set-up to allow MATLAB communicat
 
 ## MATLAB set-up
 Fiji is now set-up to receive MATLAB communication, but we now need to tell MATLAB how to start communicating.
-1. The “Grid/Collection stitching” plugin requires Java version 8. Start by installing this for your workstation using the following [link].
-2. MATLAB now needs to be configured to run in a Java version 8 environment. Go to the following [link] and download the `createMATLABShortcut.m` file. You will find there also exists links/files for *Windows* and *Linux* so download accordingly. 
+1. The “Grid/Collection stitching” plugin requires Java version 8. Start by installing this for your workstation using the following [link](https://java.com/en/download/).
+2. MATLAB now needs to be configured to run in a Java version 8 environment. Go to the following [link](https://uk.mathworks.com/matlabcentral/answers/103056-how-do-i-change-the-java-virtual-machine-jvm-that-matlab-is-using-on-macos) and download the `createMATLABShortcut.m` file. You will find there also exists links/files for *Windows* and *Linux* so download accordingly. 
 3. In MATLAB, execute the `createMATLABShortcut.m` script which will generate a desktop shortcut called "MATLAB\_JVM”. 
 4. Double-click on "MATLAB\_JVM” which will open up MATLAB then confirm that the environment is Java version 8 by typing into the console `version –java` which will return a couple of lines stating the version is 1.8.
 5. To allow MATLAB to communicate with Fiji, add the path of the Fiji plugins to MATLAB by typing in `addpath('/Applications/Fiji.app/scripts');` followed by `savepath;`. This is assuming the Fiji application resides in the Applications folder. Change this path accordingly. For *Windows* the script path will likely be different to check beforehand.
