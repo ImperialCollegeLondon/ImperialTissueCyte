@@ -61,6 +61,5 @@ The script will now execute by collecting the tile images per physical section a
 2. Run the `asyncstitchicGM.py` file.
 3. Each line which appears asks for the same parameters see in Executing Stitching on MATLAB above. 
 
-Further steps can be performed to downsize the images by 50% and convert to JPEGs using the script `tiff2jpegfastGM.m`. To save time, the script runs the conversion process in parallel using the available cores on the workstation.
-1. Run the script and navigate to the directory containing the stitched images. Highlight the number of images you want to convert by clicking on the first image, holding `shift-key` then clicking on the last image.
-2. Next choose the directory you want to output the converted images then let the script execute. 
+# Things to note
+In line 168 of the Python `asyncstitchicGM.py` script and line 190 of the MATLAB `asyncstitchicGM.m` script there is a multiplication by 10000. This is to multiply the pixel values of the image such that cover a greater range of pixel values than they would otherwise occupy. Typically, most images will look completely blank and will require contrast adjustments in ImageJ/Fiji to see the data. There is data there - don't worry, but its hidden behind the range of 16-bit values you can take. Multiplying the image by 10000 is intended to expand this range so the image is more easily seen. Not every image will require multiplication by this value so adjust this value as necessary depending on how your images look. You could ommit this multiplication if you want, but if you perform image averaging correction, note that you massively reduce the intensity range of your image as average correction involves dividing the image.
