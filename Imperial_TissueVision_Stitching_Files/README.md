@@ -1,16 +1,17 @@
 # About Imperial TissueVision Stitching Files
 
-**(Update 16/05/17)** `asyncstitchic.m` now incorporates conversion to JPEG in the script. A dialogue box asks the user whether they want to perform the conversion.
-
 This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
-The scripts are written in MATLAB and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. 
+The scripts are written in both MATLAB and Python and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. The Python version of the script should run much easier without having to do any changes other than install the packages in the requirements file.
 
 As a side note, there exists a bug in ImageJ/Fiji Bioformats import plugin which struggles to import images which reside on a NAS drive. The code therefore has a loophole written in to bypass this issue, but consequently requires at least 1 GB of available space on your local hard drive.
 
 Image stitching is a computationally intensive task, made more so due to the size of the image tiles acquired with TissueCyte. It is recommended to have a workstation with at least 16 GB of RAM. Currently, the scripts have been confirmed to run on *macOS*, but many of the instructions below should have corresponding instructions in a *Windows* operating system environment. 
 
-# Installation
+# Installation required for both MATLAB and Python
+Download ImageJ/Fiji. In the plugins folder of Fiji (on MacOS this is found by right clicking the application and showing package contents. Download the OverlapY.ijm file found on this GitHub page and move it into the plugins folder.
+
+# Installation for MATLAB version
 Download MATLAB and ImageJ/Fiji if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is discoverable with MATLAB.
 
 ## Fiji set-up
@@ -39,14 +40,26 @@ ImageJ/Fiji and MATLAB are now correctly set-up to communicate with one another.
 2. Confirm the change by typing `launchctl limit maxfiles` which will return information where the max file limits are set to a maximum value.
 Note that this max file change is only confirmed for the duration the workstation remains turned on. If there is a restart or the system is turned off at any point, the above steps will need to be repeated.
 
-# Executing Stitching
+# Executing Stitching on MATLAB
 Before starting, make sure the NAS drive or data storage drives are connected to the workstation which will be performing the stitching. This stitching process can be executed immediately following the execution of the TissueCyte scanning procedure.
 1. Open MATLAB using the shortcut generated during the installation process to load using the Java version 8 environment.
-2. Navigate to the `asyncstitchic.m` file downloaded from the directory and run it.
+2. Navigate to the `asyncstitchicGM.m` file downloaded from the directory and run it.
 3. The first file browser window which appears requests the path of the root folder where the image data from TissueCyte is being stored. This will be the folder manually created during the set-up for a TissueCyte scan and will contain the sections folders which subsequently contain the raw tile images.
 4. The second file browser window which appears requests the path for a temporary folder on the local workstation which can be used to bypass the Bioformats plugin bug associated with NAS drives. If you don’t have an empty folder created yet, use the new folder button to do so. This folder is routinely emptied over the course of the stitching so make sure this folder does not contain any other files.
-5. The third and final window which appears requests the parameters for the scan. These parameters can be found in the Mosaic text file which resides in the root folder of the scan. Fill these details in. The overlap percentage can be left at 6% but can be changed if desired. lastly choose the channel you intend to stitch.
+5. The third window which appears requests the parameters for the scan. These parameters can be found in the `Mosaic.txt` text file which resides in the root folder of the scan. Fill these details in. The overlap percentages can be left as they are but can be changed if desired. Finally, choose the channel you intend to stitch.
 The script will now execute by collecting the tile images per physical section and transferring them over to the temporary folder. Here the tiles are averaged together and each individual tile is illumination corrected before being fed into the stitching plugin using ImageJ/Fiji. Each stitched image is then moved back to the data storage drive under a newly generated Mosaic folder in the root directory of the scan. Following this, the temporary folder is emptied and the process repeated. For scans not involving optical sectioning, the stitching for a section completes before imaging so the script will appropriately wait until the corresponding tile images are generated by TissueCyte. 
+
+# Installation for Python version (tested on MaCOS)
+1. Download a Python distribution package or for MacOS you can use the native iPython in Terminal.
+2. Download the Python scripts and put them into a folder of your choice.
+3. From Terminal, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requiremnts file and manually install the packages listed there.
+4. Create a temporary folder on your hard drive which will temporarily store image data during the stitching process.
+5. Open the `asyncstitchicGM.py` file and go to line 222 which begins with a `subprocess.call`. Change the file path for ImageJ-macosx to the file path for your system. It should be reasonably similar to the one already there. Also change the file path for the OverlapY.ijm file for the path on your system. 
+
+# Executing Stitching on Python
+1. In Terminal, run Python such as `ipython` or use your own Python shell from your distribution.
+2. Run the `asyncstitchicGM.py` file.
+3. Each line which appears asks for the same parameters see in Executing Stitching on MATLAB above. 
 
 Further steps can be performed to downsize the images by 50% and convert to JPEGs using the script `tiff2jpegfastGM.m`. To save time, the script runs the conversion process in parallel using the available cores on the workstation.
 1. Run the script and navigate to the directory containing the stitched images. Highlight the number of images you want to convert by clicking on the first image, holding `shift-key` then clicking on the last image.
