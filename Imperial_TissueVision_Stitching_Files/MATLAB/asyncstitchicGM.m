@@ -14,17 +14,25 @@
 % Load up Fiji in MATLAB (without GUI)
 javaaddpath('/Applications/MATLAB_R2017a.app/java/mij.jar');
 javaaddpath('/Applications/MATLAB_R2017a.app/java/ij-1.51n.jar');
+addpath('/Applications/Fiji.app/scripts')
 Miji(false);
+MIJ.run('OverlapY');
+MIJ.run('Close All');
 
 % Collect TC path where raw data is outputted
 % This is the directory you create as the save directory when using TC
 tcpath = uigetdir('Select directory where TissueCyte will output the raw data');
 temppath = uigetdir('Select temp directory');
 
+% Check temporary directory is EMPTY
+if length(dir(temppath)) ~= 2
+    error('Temporary folder is not empty!')
+end
+
 % Collect relevant variables for TissueCyte scan and processing
-prompt={'Scan ID', 'Start section', 'End section', 'Number of X tiles', 'Number of Y tiles', 'Number of Z layers per slice', 'Overlap %', 'Channel to stitch'};
-defans={'', '1', '100', '0', '0', '1', '6', '1'}; % Overlap originally 5%
-fields = {'id', 'start', 'end', 'xtiles', 'ytiles', 'zlayers', 'overlap', 'channel'};
+prompt={'Scan ID', 'Start section', 'End section', 'Number of X tiles', 'Number of Y tiles', 'Number of Z layers per slice', 'X Overlap %', 'Y Overlap %', 'Channel to stitch'};
+defans={'', '1', '100', '0', '0', '1', '5', '6', '1'}; % Overlap originally 5%, 6%
+fields = {'id', 'start', 'end', 'xtiles', 'ytiles', 'zlayers', 'xoverlap', 'yoverlap', 'channel'};
 vars = inputdlg(prompt, 'Please fill in the details', 1, defans);
 
 id = vars{1};
@@ -33,8 +41,12 @@ endsec = vars{3};
 xtiles = vars{4};
 ytiles = vars{5};
 zlayers = vars{6};
-overlap = vars{7};
-channel = vars{8};
+xoverlap = vars{7};
+yoverlap = vars{8};
+channel = vars{9};
+
+% Check average correction
+avgcorr = questdlg('Perform average correction?');
 
 % Check conversion to JPEG condition
 convert = questdlg('Convert channel to JPEGs?');
@@ -52,7 +64,7 @@ end
 crop = 0;
 filenamestruct = struct();
 tstart = tic;
-zcount = 1;
+zcount = ((str2double(startsec)-1)*str2double(zlayers))+1;
 filenumber = 0;
 tilenumber = 0;
 lasttile = -1;
@@ -81,22 +93,24 @@ for section = (str2double(startsec):1:str2double(endsec))
     for layer = (1:1:str2double(zlayers))
         % Check all tiles per layer exist
         completelayer = false;
-        firsttile = str2double(xtiles)*str2double(ytiles)*(((section-1)*str2double(zlayers))+layer-1);
-        lasttile = str2double(xtiles)*str2double(ytiles)*(((section-1)*str2double(zlayers))+layer)-1;
+        firsttile = str2double(xtiles)*str2double(ytiles)*( (str2double(zlayers)*(section-1)) + (layer-1));
+        lasttile = (str2double(xtiles)*str2double(ytiles)*( (str2double(zlayers)*(section-1)) + layer)) - 1;
         
-        % If last tile doesn't exist yet, wait
-        if isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_0',channel,'.tif')))
-            fprintf('Last tile for layer not generated yet. Waiting.');
+        % If last tiles don't exist yet, wait for it...
+        if isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_01.tif'))) && isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_02.tif'))) && isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_03.tif')))
+            fprintf(strcat('Tile ',num2str(lasttile),' not generated yet. Waiting.'));
+            while isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_01.tif'))) && isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_02.tif'))) && isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_03.tif')))
+                pause(1);
+                fprintf('.');
+                pause(1);
+                fprintf('.\n');
+                pause(1);
+                fprintf('\b\b\b');
+            end
         end
-        while isempty(dir(strcat(tcpath,'/',folder,'/*-',num2str(lasttile),'_0',channel,'.tif')))
-            pause(1);
-            fprintf('.');
-            pause(1);
-            fprintf('.\n');
-            pause(1);
-            fprintf('\b\b\b');
-        end
-                        
+        
+        filenumber = firsttile;
+        
         % When all layer files exist, load each tile for averaging
         for tile = (firsttile:1:lasttile)
             % Get filename string if not already stored
@@ -104,8 +118,14 @@ for section = (str2double(startsec):1:str2double(endsec))
                 filenamestruct = dir(strcat(tcpath,'/',folder,'/*-',num2str(filenumber),'_01*'));
             end
             
-            if isempty(dir(strcat(tcpath,'/',folder,'/',filenamestruct.name(1:14),num2str(filenumber),'_0',channel,'.tif'))) == 0
-                tileimage = double(imread(strcat(tcpath,'/',folder,'/',filenamestruct.name(1:14),num2str(filenumber),'_0',channel,'.tif')));
+            if isempty(dir(strcat(tcpath,'/',folder,'/',filenamestruct(1).name(1:14),num2str(filenumber),'_0',channel,'.tif'))) == 0
+                try
+                    tileimage = double(imread(strcat(tcpath,'/',folder,'/',filenamestruct(1).name(1:14),num2str(filenumber),'_0',channel,'.tif')));
+                catch ERR
+                    if ~isempty(strfind(ERR.message, 'corrupt'))
+                        tileimage = double(zeros(length(tileimage), length(tileimage)));
+                    end
+                end
             else
                 tileimage = double(zeros(length(tileimage), length(tileimage)));
             end
@@ -132,20 +152,31 @@ for section = (str2double(startsec):1:str2double(endsec))
             
             filenumber = filenumber+1;
         end
-                
-        % Compute average image for layer
-        avgimage = sumimage/str2double(xtiles)*str2double(ytiles);
-        fprintf('\nComputed average for current layer\n');
-        %imwrite(avgimage, strcat('/Users/gm515/Desktop/Average',num2str(layer),'.tif'));
+        
+        switch avgcorr
+            case 'Yes'
+                % Compute average image for layer
+                avgimage = sumimage/str2double(xtiles)*str2double(ytiles);
+                fprintf('\nComputed average for current layer\n');
+                %imwrite(avgimage, strcat('/Users/gm515/Desktop/Average',num2str(layer),'.tif'));
+        end
+        
+        tilenumber = firsttile;
         
         % Stitch the images per layer together
         % When all layer files exist, load each tile for averaging
         for tile = (firsttile:1:lasttile)
             
-            if isempty(dir(strcat(tcpath,'/',folder,'/',filenamestruct.name(1:14),num2str(tilenumber),'_0',channel,'.tif'))) == 0
-                tileimage = double(imread(strcat(tcpath,'/',folder,'/',filenamestruct.name(1:14),num2str(tilenumber),'_0',channel,'.tif')));
+            if isempty(dir(strcat(tcpath,'/',folder,'/',filenamestruct(1).name(1:14),num2str(tilenumber),'_0',channel,'.tif'))) == 0
+                try
+                    tileimage = (imread(strcat(tcpath,'/',folder,'/',filenamestruct(1).name(1:14),num2str(tilenumber),'_0',channel,'.tif')));
+                catch ERR
+                    if ~isempty(strfind(ERR.message, 'corrupt'))
+                        tileimage = (zeros(length(tileimage), length(tileimage)));
+                    end
+                end
             else
-                tileimage = double(zeros(length(tileimage), length(tileimage)));
+                tileimage = (zeros(length(tileimage), length(tileimage)));
             end
                 
             % Process image
@@ -153,8 +184,11 @@ for section = (str2double(startsec):1:str2double(endsec))
             croplength = length(tileimage)-(2*crop);
             ycrop = (ysize/2) - (croplength/2);
             xcrop = (xsize/2) - (croplength/2);
-            tileimage2 = rot90(imcrop(tileimage, [ycrop xcrop croplength croplength]));
-            tileimage2 = tileimage2./avgimage;
+            tileimage2 = double(rot90(imcrop(tileimage, [ycrop xcrop croplength croplength])));
+            switch avgcorr
+                case 'Yes'
+                    tileimage2 = 10000*tileimage2./avgimage;
+            end 
                         
             % TC images in snake pattern starting from bottom left
             % tile. However stitching is done sequentially by row
@@ -212,7 +246,8 @@ for section = (str2double(startsec):1:str2double(endsec))
                 ztoken = num2str(zcount);
             end
             
-            tileimage2 = im2uint16(tileimage2);
+            tileimage2(1,1) = intmax('uint16');
+            tileimage2 = uint16(tileimage2);
             imwrite(tileimage2, strcat(temppath,'/Tile_Z',ztoken,'_Y',ytoken,'_X',xtoken,'.tif'));
                         
             % Stitch the files once all tiles per layer processed
@@ -220,7 +255,7 @@ for section = (str2double(startsec):1:str2double(endsec))
                 % Stitch using Fiji Grid/Collection plugin
                 tilepath = strcat(temppath,'/');
                 stitchpath = strcat(tcpath,'/',id,'-Mosaic/Ch',channel,'_Stitched_Sections');
-                args = strcat('type=[Filename defined position] grid_size_x=',xtiles,' grid_size_y=',ytiles,' tile_overlap=',overlap,' first_file_index_x=1 first_file_index_y=1 directory=',tilepath,' file_names=Tile_Z',ztoken,'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z',ztoken,'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=',stitchpath,'');
+                args = strcat('type=[Filename defined position] grid_size_x=',xtiles,' grid_size_y=',ytiles,' tile_overlap_x=',xoverlap,' tile_overlap_y=',yoverlap,' first_file_index_x=1 first_file_index_y=1 directory=',tilepath,' file_names=Tile_Z',ztoken,'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z',ztoken,'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=',stitchpath,'');
                 MIJ.run('Grid/Collection stitching', java.lang.String(args));
                 MIJ.run('Collect Garbage');
                 fclose('all');
