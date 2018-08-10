@@ -28,6 +28,28 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 
 #=============================================================================================
+# Check operating system
+#=============================================================================================
+# This check is to determine which file paths to use if run on the local Mac or Linux supercomputer
+def get_platform():
+    platforms = {
+        'linux1' : 'Linux',
+        'linux2' : 'Linux',
+        'darwin' : 'Mac'
+    }
+    if sys.platform not in platforms:
+        return sys.platform
+
+    return platforms[sys.platform]
+
+if get_platform() == 'Mac':
+    imagejpath = '/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx'
+    overlapypath = "/Applications/Fiji.app/plugins/OverlapY.ijm"
+if get_platform() == 'Linux':
+    imagejpath = '/home/gm515/Fiji.app/ImageJ-linux64'
+    overlapypath = "/home/gm515/Fiji.app/plugins/OverlapY.ijm"
+
+#=============================================================================================
 # Input parameters
 #=============================================================================================
 
@@ -44,7 +66,9 @@ xoverlap = input('X overlap % (default 5): ')
 yoverlap = input('Y overlap % (default 6): ')
 channel = input('Channel to stitch: ')
 avgcorr = raw_input('Perform average correction? (y/n): ')
-convert = raw_input('Downsize 0.5 and save as JPEG? (y/n): ')
+convert = raw_input('Perform additional downsize? (y/n): ')
+if convert == 'y':
+    downsize = input('Downsize amount (default 0.054 for 10 um/pixel): ')
 
 # Create folders
 os.umask(0000)
@@ -56,7 +80,7 @@ except OSError as e:
 
 if convert == 'y':
     try:
-        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_JPEG', 0777)
+        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_Scaled', 0777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -219,7 +243,7 @@ for section in range(startsec,endsec+1,1):
 
                 tilepath = temppath+'/'
                 stitchpath = tcpath+'/'+scanid+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections'
-                subprocess.call(['/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx', '--headless', '-eval', 'runMacro("/Applications/Fiji.app/plugins/OverlapY.ijm");', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=['+stitchpath+']");'], stdout=open(os.devnull, 'wb'))
+                subprocess.call([imagejpath, '--headless', '-eval', 'runMacro('+overlapypath+');', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=['+stitchpath+']");'], stdout=open(os.devnull, 'wb'))
 
                 shutil.rmtree(temppath)
                 os.makedirs(temppath, 0777)
@@ -229,7 +253,7 @@ for section in range(startsec,endsec+1,1):
                 if convert == 'y':
                     stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif')).astype(float)
                     stitched_img = Image.fromarray(np.multiply(np.divide(stitched_img,65535.), 255.).astype(np.uint8))
-                    stitched_img = stitched_img.resize((int(0.5*stitched_img.size[0]), int(0.5*stitched_img.size[1])))
+                    stitched_img = stitched_img.resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])))
                     stitched_img.convert('L').save(stitchpath+'_JPEG/Stitched_Z'+ztoken+'.jpg')
 
                 print 'Complete!'
