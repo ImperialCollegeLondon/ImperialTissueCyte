@@ -1,21 +1,23 @@
-%============================================================================================
-% Asynchronous Stitching Script
-% Author: Gerald M
-%
-% This script pulls the data generated through TissueCyte (or another microscope system) and
-% can perfom image averaging correction on the images if requested, before calling ImageJ
-% from the command line to perform the stitching. You will need to have the plugin script
-% OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
-% registered. Otherwise the X overlap will be used for both.
-%
-% Installation:
-% 1) Place this script in any folder you want to execute this from
-%
-% Instructions:
-% 1) Run the script in MATLAB
-% 2) Fill in the parameters that you are asked for
-%    Note: The temporary directory is required to speed up ImageJ loading of the files
-%============================================================================================
+#============================================================================================
+# Asynchronous Stitching Script
+# Author: Gerald M
+#
+# This script pulls the data generated through TissueCyte (or another microscope system) and
+# can perfom image averaging correction on the images if requested, before calling ImageJ
+# from the command line to perform the stitching. You will need to have the plugin script
+# OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
+# registered. Otherwise the X overlap will be used for both.
+#
+# Installation:
+# 1) Navigate to the folder containing the AsyncstitchGM.py
+# 2) Run 'pip install -r requirements.txt'
+#
+# Instructions:
+# 1) Run the script in a Python IDE
+# 2) Fill in the parameters that you are asked for
+#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
+#    Note: The temporary directory is required to speed up ImageJ loading of the files
+#============================================================================================
 
 % Load up Fiji in MATLAB (without GUI)
 javaaddpath('/Applications/MATLAB_R2017a.app/java/mij.jar');
