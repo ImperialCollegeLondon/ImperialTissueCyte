@@ -44,10 +44,10 @@ def get_platform():
 
 if get_platform() == 'Mac':
     imagejpath = '/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx'
-    overlapypath = "/Applications/Fiji.app/plugins/OverlapY.ijm"
+    overlapypath = '"/Applications/Fiji.app/plugins/OverlapY.ijm"'
 if get_platform() == 'Linux':
     imagejpath = '/home/gm515/Fiji.app/ImageJ-linux64'
-    overlapypath = "/home/gm515/Fiji.app/plugins/OverlapY.ijm"
+    overlapypath = '"/home/gm515/Fiji.app/plugins/OverlapY.ijm"'
 
 #=============================================================================================
 # Input parameters
@@ -189,7 +189,7 @@ for section in range(startsec,endsec+1,1):
             tileimage2 = np.array(tileimage.crop((crop, crop, tileimage.size[0]-crop+1, tileimage.size[1]-crop+1)).rotate(90)).astype(float)
 
             if avgcorr == 'y':
-                tileimage2 = np.multiply(np.divide(tileimage2, avgimage, where=avgimage!=0.), 10000)
+                tileimage2 = np.multiply(np.divide(tileimage2, avgimage, where=avgimage!=0.), 1000)
 
 
             if x>=1 and x<=xtiles:
