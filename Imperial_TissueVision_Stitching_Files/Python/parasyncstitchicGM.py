@@ -53,6 +53,7 @@ def get_platform():
         'linux1' : 'Linux',
         'linux2' : 'Linux',
         'darwin' : 'Mac'
+        'win32' : 'Windows'
     }
     if sys.platform not in platforms:
         return sys.platform
@@ -69,6 +70,9 @@ if __name__ == '__main__':
     if get_platform() == 'Linux':
         imagejpath = '/home/gm515/Fiji.app/ImageJ-linux64'
         overlapypath = '"/home/gm515/Fiji.app/plugins/OverlapY.ijm"'
+    if get_platform() == 'Windows':
+        imagejpath = 'fill in path to imagej executable'
+        overlapypath = '"fill in path to OverlapY.ijm"'
 
     #=============================================================================================
     # Input parameters

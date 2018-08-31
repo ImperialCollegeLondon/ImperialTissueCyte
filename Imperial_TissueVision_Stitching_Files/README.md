@@ -1,34 +1,39 @@
 # About Imperial TissueVision Stitching Files
-**Update 09/08/18** The Grid/Collection stitching plugin has a secret parameter which can be added allowing the overlap in X and Y to be separately defined. This is enabled by using the `OverlapY.ijm` file which is a bean shell file that can be run ImageJ/Fiji to enable that option.
+**Update 30/08/18** There is now a slightly parallelised version of the code `parasyncstiticGM.m` in Python, to help speed up processing. Currently it is only slightly faster due to the way the stitching is performed!
 
 This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
-The scripts are written in both MATLAB and Python and calls a stitching plugin from ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the stitching scripts can be correctly executed. The Python version of the script should run much easier without having to do any changes other than install the packages in the requirements file.
+Stitching scripts are written in both MATLAB and Python and both require the Grid/Collection stitching plugin in ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the MATLAB stitching can be executed. The Python scripts require much less set-up and is recommended. The only requirement is to install the required list of packages.
 
-As a side note, there exists a bug in ImageJ/Fiji Bioformats import plugin which struggles to import images which reside on a NAS drive. The code therefore has a loophole written in to bypass this issue, but consequently requires at least 1 GB of available space on your local hard drive.
+Unfortunately, there exists a bug with ImageJ/Fiji Bioformats which struggles to import images which reside on a network drive. The code therefore has a loophole which saves the pre-processed image data to a local directory. However, this requires at least 1 GB of available space on your local hard drive to avoid storage issues.
 
-Image stitching is a computationally intensive task, made more so due to the size of the image tiles acquired with TissueCyte. It is recommended to have a workstation with at least 16 GB of RAM. Currently, the scripts have been confirmed to run on *macOS*, but many of the instructions below should have corresponding instructions in a *Windows* operating system environment.
+Image stitching is a computationally intensive task, made more so due to the size of the image tiles acquired with TissueCyte. It is recommended to have a workstation with at least 16 GB of RAM. Currently, the scripts have been confirmed to run on *macOS* and *Linux*, but many of the instructions below should have corresponding instructions in a *Windows* operating system environment.
 
-The Grid/Collection stitching plugin has a secret parameter which can be added allowing the overlap in X and Y to be separately defined. This is enabled by using the `OverlapY.ijm` file which is a bean shell file that can be run ImageJ/Fiji to enable that option.
+The Grid/Collection stitching plugin has a secret parameter which can be added allowing the overlap in X and Y to be separately defined. This is enabled by using the `OverlapY.ijm` file which is a bean shell file that is run in ImageJ/Fiji to enable that option. This should be automatically run during the stitching process so requires no additional steps.
+
+To set up your workstation to perform the stitching, follow the required installation steps for both MATLAB and Python immediately below, then follow the more specific instructions for your programming language of choice.
 
 # Installation required for both MATLAB and Python
-The following is required for both the MATLAB and Python version of the sctitching pipeline.
+The following is required for both the MATLAB and Python version of the stitching pipeline.
 
 ## Fiji set-up
-The first step is to get ImageJ/Fiji correctly set-up to allow MATLAB communication.
-1. In Fiji, check the “Grid/Collection stitching” plugin is installed under `Plugins > Grid/Collection stitching`.
-2. Next, to install the MIJ plugin, go to `Help > Update Fiji` and click on “Manage update sites” on the bottom left of the window.
-3. On the package list which appears, scroll down to "ImageJ-MATLAB" and check the checkbox which is to the left of the package name. Click on “Close” to close the window.
-4. In the package window, there should now be a list of packages required to install MIJ. Click on “Apply changes” to install the plugin. Restart Fiji when finished.
-5. Next, the available RAM for Fiji needs to be increased to avoid memory shortage errors during the stitching. Go to `Edit > Options > Memory & Threads…`. The window which opens should contain a “Maximum Memory” field which can edited to a specific value. Change this to no more than three-quarters of your available system RAM. For example, a 32 GB workstation can be set to have 24000 MB of memory available for Fiji. Avoid exceeding the three-quarter rule as this can make your workstation unstable due to other background processes.
-6. Fiji should now be restarted then subsequently closed down.
-7. Finally, download the `OverlapY.ijm` file and move it to the Plugins folder of your ImageJ/Fiji application (on MacOS this is found by right clicking the application and showing package contents).
+1. Download ImageJ/Fiji if not already installed.
+2. In Fiji, check the “Grid/Collection stitching” plugin is installed under `Plugins > Grid/Collection stitching`.
+3. Next, the available RAM for Fiji needs to be increased to avoid memory shortage errors during the stitching. Go to `Edit > Options > Memory & Threads…`. The window which opens should contain a “Maximum Memory” field which can edited to a specific value. Change this to no more than three-quarters of your available system RAM. For example, a 32 GB workstation can be set to have 24000 MB of memory available for Fiji. Avoid exceeding the three-quarter rule as this can make your workstation unstable due to other background processes.
+4. Fiji should now be restarted then subsequently closed down.
+5. Finally, download the `OverlapY.ijm` file and move it to the `Plugins` folder of your ImageJ/Fiji application (on MacOS this is found by right clicking the application and showing package contents).
 
 # Installation specifically for MATLAB version
-Download MATLAB if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is discoverable with MATLAB.
+Download MATLAB if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is on your MATLAB path.
+
+# Fiji set-up
+These steps enable MATLAB to communicate with Fiji.
+1. Install the MIJ plugin, go to `Help > Update Fiji` and click on “Manage update sites” on the bottom left of the window.
+2. On the package list which appears, scroll down to "ImageJ-MATLAB" and check the checkbox which is to the left of the package name. Click on “Close” to close the window.
+3. In the package window, there should now be a list of packages required to install MIJ. Click on “Apply changes” to install the plugin. Restart Fiji when finished.
 
 ## MATLAB set-up
-Fiji is now set-up to receive MATLAB communication, but we now need to tell MATLAB how to start communicating.
+Fiji is now set-up to receive MATLAB communication, but we now need to tell MATLAB to use the correct JAVA environment and how to communicate.
 1. The “Grid/Collection stitching” plugin requires Java version 8. Start by installing this for your workstation using the following [link](https://java.com/en/download/).
 2. MATLAB now needs to be configured to run in a Java version 8 environment. Go to the following [link](https://uk.mathworks.com/matlabcentral/answers/103056-how-do-i-change-the-java-virtual-machine-jvm-that-matlab-is-using-on-macos) and download the `createMATLABShortcut.m` file. You will find there also exists links/files for *Windows* and *Linux* so download accordingly.
 3. In MATLAB, execute the `createMATLABShortcut.m` script which will generate a desktop shortcut called "MATLAB_JVM”.
@@ -52,17 +57,17 @@ Before starting, make sure the NAS drive or data storage drives are connected to
 5. The third window which appears requests the parameters for the scan. These parameters can be found in the `Mosaic.txt` text file which resides in the root folder of the scan. Fill these details in. The overlap percentages can be left as they are but can be changed if desired. Finally, choose the channel you intend to stitch.
 The script will now execute by collecting the tile images per physical section and transferring them over to the temporary folder. Here the tiles are averaged together and each individual tile is illumination corrected before being fed into the stitching plugin using ImageJ/Fiji. Each stitched image is then moved back to the data storage drive under a newly generated Mosaic folder in the root directory of the scan. Following this, the temporary folder is emptied and the process repeated. For scans not involving optical sectioning, the stitching for a section completes before imaging so the script will appropriately wait until the corresponding tile images are generated by TissueCyte.
 
-# Installation for specifically Python version (tested on MaCOS)
-1. Download a Python distribution package or for MacOS you can use the native iPython in Terminal.
+# Installation for specifically Python version (tested on MacOS and Linux)
+1. Download a Python distribution package or for MacOS you can use the native iPython in Terminal. We use the Anaconda distribution which is set up to be our default Python environment.
 2. Download the Python scripts and put them into a folder of your choice.
-3. From Terminal, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requiremnts file and manually install the packages listed there.
+3. Using a terminal environment, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requirements file and manually install the packages listed there.
 4. Create a temporary folder on your hard drive which will temporarily store image data during the stitching process.
-5. Open the `asyncstitchicGM.py` file and go to line 222 which begins with a `subprocess.call`. Change the file path for ImageJ-macosx to the file path for your system. It should be reasonably similar to the one already there. Also change the file path for the OverlapY.ijm file for the path on your system.
+5. Open either `parasyncstitchicGM.py` or `asyncstitchicGM.py` in a script editor and search for the beginning of the main function and the platform dependent code which sits there. For your operating system, change the `imagejpath` and `overlapypath` file paths for your own system. It should be reasonably similar to the ones already there.
 
 # Executing Stitching on Python
-1. In Terminal, run Python such as `ipython` or use your own Python shell from your distribution.
-2. Run the `asyncstitchicGM.py` file.
-3. Each line which appears asks for the same parameters see in Executing Stitching on MATLAB above.
+1. Using a terminal, start Python such as using the `ipython` command, or use your own Python shell from your chosen distribution.
+2. Execute the stitching file using for example `execfile('asyncstitchicGM.py')`.
+3. Each line which appears asks for the same parameters see in Executing Stitching on MATLAB above. Fill these in. You may drag and drop the folders if possible to make entering the file paths much easier. However, it may be required to input the paths manually.
 
 # Things to note
-In line 168 of the Python `asyncstitchicGM.py` script and line 190 of the MATLAB `asyncstitchicGM.m` script there is a multiplication by 10000. This is to multiply the pixel values of the image such that cover a greater range of pixel values than they would otherwise occupy. Typically, most images will look completely blank and will require contrast adjustments in ImageJ/Fiji to see the data. There is data there - don't worry, but its hidden behind the range of 16-bit values you can take. Multiplying the image by 10000 is intended to expand this range so the image is more easily seen. Not every image will require multiplication by this value so adjust this value as necessary depending on how your images look. You could ommit this multiplication if you want, but if you perform image averaging correction, note that you massively reduce the intensity range of your image as average correction involves dividing the image.
+In the parts of the code which compute the average tile and corrects each tile by dividing through by the average, there is a multiplication by 1000. This is to multiply the pixel values of the image such that they cover a greater range of values than they would otherwise occupy if this correction is done. Logically, if you divide an image by a similar image, most values will end up tending towards a value of 1. However, 16-bit images occupy the range 0-65535 so an image with pixel values close to 1 will appear blank, and this is made worse by the fact that converting an image to 16-bit also forces integer values so many pixels will be the same value and you lose detail in the image. Therefore, multiplying the image by 1000 is intended to expand this range so values are no longer close to 1 and detail is maintained when converting the image to 16-bit. You may need to change this value if you discover your images are either still dark, or too bright.
