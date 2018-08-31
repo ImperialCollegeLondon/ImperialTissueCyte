@@ -135,10 +135,10 @@ for section in range(startsec,endsec+1,1):
             while glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0*.tif') == []:
                 sys.stdout.write('\rLast tile not generated yet. Waiting.')
                 sys.stdout.flush()
-                time.sleep(2)
+                time.sleep(3)
                 sys.stdout.write('\rLast tile not generated yet. Waiting..')
                 sys.stdout.flush()
-                time.sleep(2)
+                time.sleep(3)
                 sys.stdout.write('\rLast tile not generated yet. Waiting...')
                 sys.stdout.flush()
 
