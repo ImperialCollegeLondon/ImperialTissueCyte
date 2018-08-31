@@ -25,6 +25,7 @@ import os, sys, warnings, time, glob, errno, subprocess, shutil, math
 import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
+from functools import partial
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
