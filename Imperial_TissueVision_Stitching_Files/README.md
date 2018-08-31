@@ -62,7 +62,7 @@ The script will now execute by collecting the tile images per physical section a
 2. Download the Python scripts and put them into a folder of your choice.
 3. Using a terminal environment, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requirements file and manually install the packages listed there.
 4. Create a temporary folder on your hard drive which will temporarily store image data during the stitching process.
-5. Open either `parasyncstitchicGM.py` or `asyncstitchicGM.py` in a script editor and search for the beginning of the main function and the platform dependent code which sits there. For your operating system, change the `imagejpath` and `overlapypath` file paths for your own system. It should be reasonably similar to the ones already there.
+5. Open either `parasyncstitchicGM.py` or `asyncstitchicGM.py` in a script editor and search for the beginning of the main function and the `get_platform()` code which sits there. For your operating system, change the `imagejpath` and `overlapypath` file paths for your own system file paths.
 
 # Executing Stitching on Python
 1. Using a terminal, start Python such as using the `ipython` command, or use your own Python shell from your chosen distribution.
