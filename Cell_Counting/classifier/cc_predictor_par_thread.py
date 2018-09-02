@@ -1,13 +1,20 @@
-# Perform CNN confirmation and correction of potential cells
-# This script takes an input of the CNN model, coordinates of detected cells
-# and the raw image data which contain the cells.
+#============================================================================================
+# Cell Counting Predictor - Parallel version
+# Author: Gerald M
 #
-# Ammendments
-# 19/06/18 - Sped up model loading
-#          - Cleared keras session at start of each cell_predict function call
-#          - Added progress indicator
+# This script uses a convolution neural network classifier, trained on manually identified
+# cells, to confirm whether a potential cell/neuron is correctly identified.
 #
-# Author Gerald Moore - Imperial College London
+#
+# Installation:
+# 1) Navigate to the folder containing cc_predictor_par_thread.py
+#
+# Instructions:
+# 1) Run the script in a Python IDE
+# 2) Fill in the parameters that you are asked for
+#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
+#    Note: The temporary directory is required to speed up ImageJ loading of the files
+#============================================================================================
 
 from __future__ import division
 import os, sys, warnings, time
