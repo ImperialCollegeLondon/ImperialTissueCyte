@@ -27,6 +27,7 @@ from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
 from tabCompleter import tabCompleter
+import readline
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
