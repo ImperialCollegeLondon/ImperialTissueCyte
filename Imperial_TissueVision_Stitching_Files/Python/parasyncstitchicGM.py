@@ -26,6 +26,7 @@ import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
+from tabCompleter import tabCompleter
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -52,7 +53,7 @@ def get_platform():
     platforms = {
         'linux1' : 'Linux',
         'linux2' : 'Linux',
-        'darwin' : 'Mac'
+        'darwin' : 'Mac',
         'win32' : 'Windows'
     }
     if sys.platform not in platforms:
@@ -68,8 +69,8 @@ if __name__ == '__main__':
         imagejpath = '/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx'
         overlapypath = '"/Applications/Fiji.app/plugins/OverlapY.ijm"'
     if get_platform() == 'Linux':
-        imagejpath = '/home/gm515/Fiji.app/ImageJ-linux64'
-        overlapypath = '"/home/gm515/Fiji.app/plugins/OverlapY.ijm"'
+        imagejpath = '/opt/fiji/Fiji.app/ImageJ-linux64'
+        overlapypath = '"/opt/fiji/Fiji.app/plugins/OverlapY.ijm"'
     if get_platform() == 'Windows':
         imagejpath = 'fill in path to imagej executable'
         overlapypath = '"fill in path to OverlapY.ijm"'
@@ -77,6 +78,9 @@ if __name__ == '__main__':
     #=============================================================================================
     # Input parameters
     #=============================================================================================
+    t = tabCompleter()
+    readline.set_completer(t.pathCompleter)
+
     tcpath = raw_input('Select TC data directory (drag-and-drop): ').rstrip()
     temppath = raw_input('Select temporary directory (drag-and-drop): ').rstrip()
 
