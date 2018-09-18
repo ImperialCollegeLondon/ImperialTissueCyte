@@ -39,11 +39,8 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 def load_tile(file, cropstart, cropend):
     try:
         tileimage = np.array(Image.open(file).crop((cropstart, cropstart, cropend, cropend)).rotate(90))
-    except IOError as e:
-        if e.errno == errno.ENOENT:
-            tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
-        else:
-            raise
+    except (ValueError, IOError, OSError):
+        tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     return tileimage
 
 #=============================================================================================
