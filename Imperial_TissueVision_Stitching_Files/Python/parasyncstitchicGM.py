@@ -78,6 +78,8 @@ if __name__ == '__main__':
     #=============================================================================================
     t = tabCompleter()
     readline.set_completer(t.pathCompleter)
+    readline.set_completer_delims('\t')
+    readline.parse_and_bind("tab: complete")
 
     tcpath = raw_input('Select TC data directory (drag-and-drop): ').rstrip()
     temppath = raw_input('Select temporary directory (drag-and-drop): ').rstrip()
