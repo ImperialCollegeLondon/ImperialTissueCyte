@@ -48,19 +48,3 @@ class tabCompleter(object):
                 return [c + " " for c in ll if c.startswith(line)][state]
 
         self.listCompleter = listCompleter
-
-if __name__=="__main__":
-    t = tabCompleter()
-    # t.createListCompleter(["ab","aa","bcd","bdf"])
-
-    readline.set_completer_delims('\t')
-    readline.parse_and_bind("tab: complete")
-
-    # readline.set_completer(t.listCompleter)
-
-    # ans = raw_input("Complete from list ")
-    # print ans
-
-    readline.set_completer(t.pathCompleter)
-    ans = raw_input("What file do you want? ")
-    print ans
