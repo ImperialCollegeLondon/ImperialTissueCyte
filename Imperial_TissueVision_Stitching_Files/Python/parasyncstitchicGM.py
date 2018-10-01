@@ -189,7 +189,7 @@ if __name__ == '__main__':
             if avgcorr == 'y':
                 avgimage = np.mean(img_arr, axis=0)
                 print 'Computed average tile.'
-                img_arr = np.multiply(img_arr/(avgimage[np.newaxis, :] + .000000000001), 1000)
+                img_arr = np.multiply(img_arr/(avgimage[np.newaxis, :] + .000000000001), 100)
 
             # Save each tile with corresponding name
             for tile_img in img_arr:
