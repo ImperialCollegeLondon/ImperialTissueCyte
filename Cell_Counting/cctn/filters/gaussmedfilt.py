@@ -45,4 +45,4 @@ def gaussmedfilt(A,RADIUS,SIGMA):
 
     A = col2im(A, (N, N), A_pad_shape[::-1])
 
-    return A_im
+    return A
