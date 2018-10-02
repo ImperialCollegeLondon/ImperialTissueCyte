@@ -33,15 +33,16 @@ def gaussmedfilt(A,RADIUS,SIGMA):
 
     Gg_col = Gg_norm.reshape((np.size(Gg_norm),1))
 
-    A_pad = np.lib.pad(A,((int(math.floor(N/2.)),int(math.floor(N/2.))),(int(math.floor(N/2.)),int(math.floor(N/2.)))),'constant')
-    A_col = im2col(A_pad, (N, N))
+    A = np.lib.pad(A,((int(math.floor(N/2.)),int(math.floor(N/2.))),(int(math.floor(N/2.)),int(math.floor(N/2.)))),'constant')
+    A_pad_shape = np.shape(A_pad)
+    A = im2col(A, (N, N))
 
-    A_weighted = np.multiply(A_col,Gg_col)
+    A = np.multiply(A,Gg_col)
 
-    A_sort = np.sort(A_weighted,0)
+    A = np.sort(A,0)
 
-    A_median = A_sort[int(math.floor(N*N/2)+1),:]
+    A = A[int(math.floor(N*N/2)+1),:]
 
-    A_im = col2im(A_median, (N, N), np.shape(A_pad)[::-1])
+    A = col2im(A, (N, N), A_pad_shape[::-1])
 
     return A_im
