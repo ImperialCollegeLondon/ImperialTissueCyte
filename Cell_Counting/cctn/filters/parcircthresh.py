@@ -26,17 +26,12 @@ def parcircthresh(A,SIZE,THRESHLIM):
 
     circ_all = []
     for thresh in thresh_all:
-        A_thresh = (A>thresh).astype(int)
-        A_thresh = scipy.ndimage.morphology.binary_fill_holes(A_thresh).astype(int)
+        A = (A>thresh).astype(int)
+        A = scipy.ndimage.morphology.binary_fill_holes(A).astype(int)
 
-        #Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/'+str(thresh)+'.tif')
+        A = label(A, connectivity=A.ndim)
 
-        A_thresh = label(A_thresh, connectivity=A_thresh.ndim)
-
-        # Find circularity
-        circfunc = lambda r: (4 * math.pi * r.area) / (r.perimeter * r.perimeter)
-
-        circ = [circfunc(region) for region in regionprops(A_thresh) if region.area>SIZE and region.area<SIZE*4 and region.perimeter>0]
+        circ = [circfunc(region) for region in regionprops(A) if region.area>SIZE and region.area<SIZE*4 and region.perimeter>0]
 
         if len(circ)>0:
             circ_all.append(np.mean(np.array(circ)))
