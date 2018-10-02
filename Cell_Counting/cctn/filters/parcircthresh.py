@@ -31,12 +31,12 @@ def parcircthresh(A,SIZE,THRESHLIM):
 
         #Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/'+str(thresh)+'.tif')
 
-        A_label = label(A_thresh, connectivity=A_thresh.ndim)
+        A_thresh = label(A_thresh, connectivity=A_thresh.ndim)
 
         # Find circularity
         circfunc = lambda r: (4 * math.pi * r.area) / (r.perimeter * r.perimeter)
 
-        circ = [circfunc(region) for region in regionprops(A_label) if region.area>SIZE and region.area<SIZE*4 and region.perimeter>0]
+        circ = [circfunc(region) for region in regionprops(A_thresh) if region.area>SIZE and region.area<SIZE*4 and region.perimeter>0]
 
         if len(circ)>0:
             circ_all.append(np.mean(np.array(circ)))
