@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
             # Load images through parallel
             pool = Pool(cpu_count())
-            img_arr = np.squeeze(np.array([pool.map(partial(load_tile, cropstart=cropstart, cropend=cropend), filenames)]), axis=0)
+            img_arr = np.squeeze(np.array([pool.map(partial(load_tile, cropstart=cropstart, cropend=cropend), filenames)]), axis=0).astype(np.float32)
             pool.close()
             pool.join()
 
@@ -189,7 +189,8 @@ if __name__ == '__main__':
             if avgcorr == 'y':
                 avgimage = np.mean(img_arr, axis=0)
                 print 'Computed average tile.'
-                img_arr = np.multiply(img_arr/(avgimage[np.newaxis, :] + .000000000001), 100)
+                #img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
+                img_arr = np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0)
 
             # Save each tile with corresponding name
             for tile_img in img_arr:
@@ -237,7 +238,7 @@ if __name__ == '__main__':
                 else:
                     ztoken = str(zcount)
 
-                Image.fromarray(tile_img.astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+                Image.fromarray(np.multiply(np.divide(tile_img, np.max(tile_img), out=np.zeros_like(tile_img), where=tile_img!=0), np.iinfo(np.uint16).max).astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
             print 'Stitching Z'+ztoken+'...'
 
