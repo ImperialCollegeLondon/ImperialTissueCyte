@@ -29,6 +29,7 @@ import csv
 from keras.preprocessing import image
 from keras.models import load_model
 from keras import backend
+from natsort import natsorted
 
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -109,14 +110,14 @@ if __name__ == '__main__':
         for elem in range (0, marker_x.length):
             marker = np.vstack((marker, [int(marker_x[elem].firstChild.data), int(marker_y[elem].firstChild.data), int(marker_z[elem].firstChild.data)]))
     if marker_file_extension == '.csv':
-        marker = np.genfromtxt(marker_path, delimiter=',').astype(int)
+        marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
 
     #=============================================================================================
     # Load images and correct cell count by predicting
     #=============================================================================================
 
     image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
-    filename = [file for file in os.listdir(image_path) if file.endswith('.tif')]
+    filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
     manager = Manager()
     result = Array('i', marker.shape[0])

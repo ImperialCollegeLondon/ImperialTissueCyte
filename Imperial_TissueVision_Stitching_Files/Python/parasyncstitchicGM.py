@@ -85,14 +85,14 @@ if __name__ == '__main__':
     temppath = raw_input('Select temporary directory (drag-and-drop): ').rstrip()
 
     scanid = raw_input('Scan ID: ')
-    startsec = input('Start section: ')
-    endsec = input('End section: ')
-    xtiles = input('Number of X tiles: ')
-    ytiles = input('Number of Y tiles: ')
-    zlayers = input('Number of Z layers per slice: ')
-    xoverlap = input('X overlap % (default 5): ')
-    yoverlap = input('Y overlap % (default 6): ')
-    channel = input('Channel to stitch: ')
+    startsec = int(input('Start section: '))
+    endsec = int(input('End section: '))
+    xtiles = int(input('Number of X tiles: '))
+    ytiles = int(input('Number of Y tiles: '))
+    zlayers = int(input('Number of Z layers per slice: '))
+    xoverlap = int(input('X overlap % (default 5): '))
+    yoverlap = int(input('Y overlap % (default 6): '))
+    channel = int(input('Channel to stitch: '))
     avgcorr = raw_input('Perform average correction? (y/n): ')
     convert = raw_input('Perform additional downsize? (y/n): ')
     if convert == 'y':
@@ -190,7 +190,7 @@ if __name__ == '__main__':
                 avgimage = np.mean(img_arr, axis=0)
                 print 'Computed average tile.'
                 #img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
-                img_arr = np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0)
+                img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
 
             # Save each tile with corresponding name
             for tile_img in img_arr:
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                 else:
                     ztoken = str(zcount)
 
-                Image.fromarray(np.multiply(np.divide(tile_img, np.max(tile_img), out=np.zeros_like(tile_img), where=tile_img!=0), np.iinfo(np.uint16).max).astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+                Image.fromarray(tile_img.astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
             print 'Stitching Z'+ztoken+'...'
 
