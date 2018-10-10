@@ -3,6 +3,7 @@
 import os
 import random
 import shutil
+import datetime
 from multiprocessing import cpu_count
 
 os.environ['MKL_NUM_THREADS'] = str(cpu_count())
@@ -107,7 +108,7 @@ steps_epoch = len([filename for filename in os.listdir('8-bit/training_data/cell
 steps_valid = len([filename for filename in os.listdir('8-bit/test_data/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir('8-bit/test_data/nocell') if filename.endswith(".tif")])
 
 # Checkpoint to only save the best model, metric = val_acc
-filepath = "cc_model_210618.h5"
+filepath = "cc_model_"+datetime.datetime.today().strftime('%Y_%m_%d')+".h5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
