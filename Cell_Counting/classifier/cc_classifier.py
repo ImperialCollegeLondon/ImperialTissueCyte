@@ -3,10 +3,11 @@
 import os
 import random
 import shutil
+from multiprocessing import cpu_count
 
-os.environ['MKL_NUM_THREADS'] = '4'
-os.environ['GOTO_NUM_THREADS'] = '4'
-os.environ['OMP_NUM_THREADS'] = '4'
+os.environ['MKL_NUM_THREADS'] = str(cpu_count())
+os.environ['GOTO_NUM_THREADS'] = str(cpu_count())
+os.environ['OMP_NUM_THREADS'] = str(cpu_count())
 os.environ['openmp'] = 'True'
 
 from keras.models import Sequential
