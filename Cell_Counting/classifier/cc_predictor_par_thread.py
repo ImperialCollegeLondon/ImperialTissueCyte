@@ -26,20 +26,15 @@ from contextlib import closing
 from functools import partial
 import tqdm
 import csv
+import keras
 from keras.preprocessing import image
 from keras.models import load_model
 from keras import backend
 from natsort import natsorted
 import tensorflow as tf
 
-os.environ['MKL_NUM_THREADS'] = str(cpu_count())
-os.environ['GOTO_NUM_THREADS'] = str(cpu_count())
-os.environ['OMP_NUM_THREADS'] = str(cpu_count())
-os.environ['openmp'] = 'True'
-
 config = tf.ConfigProto(device_count={"GPU" : 1, "CPU" : cpu_count()})
 keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
-
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
