@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     while len(prog) != len(cell_index):
         sys.stderr.write('\rDone    {0}/{1}    {2:.2%}'.format(len(prog), len(cell_index), float(len(prog))/len(cell_index)))
-        time.sleep(1)
+        time.sleep(0.5)
 
     pool.close()
     pool.join()
