@@ -32,8 +32,15 @@ from keras.models import load_model
 from keras import backend
 from natsort import natsorted
 import tensorflow as tf
+from tensorflow.python.client import device_lib
 
-config = tf.ConfigProto(device_count={"GPU" : 1, "CPU" : cpu_count()})
+GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']:
+
+if GPU_list:
+    config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
+else:
+    config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
+
 keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'

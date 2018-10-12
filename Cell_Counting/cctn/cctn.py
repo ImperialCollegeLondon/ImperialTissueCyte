@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        structure_list = 'lgd'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        structure_list = 'lgd,vpl,vpm'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.*(downsize**2)
@@ -248,7 +248,7 @@ if __name__ == '__main__':
         with open(csv_file, 'w+') as f:
             for key in total_cells.keys():
                 if len(total_cells[key])>0:
-                    csv.writer(f, delimiter=',').writerows(np.round(np.concatenate((np.ones((len(total_cells[key]), 1))*(key+1), [( (np.array(val) + np.arrray([xmin, ymin]))/downsize).tolist() for val in total_cells[key]]), axis=1)))
+                    csv.writer(f, delimiter=',').writerows(np.round(np.concatenate((np.ones((len(total_cells[key]), 1))*(key+1), [( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]]), axis=1)))
 
         structure_index += 1
 
