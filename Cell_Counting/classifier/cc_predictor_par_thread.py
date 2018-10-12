@@ -34,14 +34,14 @@ from natsort import natsorted
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-# GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
-#
-# if GPU_list:
-#     config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
-# else:
-#     config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
-#
-# keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
+GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
+
+if len(GPU_list) == 0:
+    config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
+else:
+    config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
+
+keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
