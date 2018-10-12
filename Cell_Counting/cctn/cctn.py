@@ -244,7 +244,7 @@ if __name__ == '__main__':
 
         print structure_list[structure_index]+' '+str(num_cells)
 
-        csv_file = structure_list[structure_index]+'_count.csv'
+        csv_file = count_path+'/'+structure_list[structure_index]+'_count.csv'
         with open(csv_file, 'w+') as f:
             for key in total_cells.keys():
                 if len(total_cells[key])>0:
