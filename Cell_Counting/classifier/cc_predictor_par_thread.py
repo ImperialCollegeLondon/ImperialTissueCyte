@@ -34,14 +34,14 @@ from natsort import natsorted
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
-
-if GPU_list:
-    config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
-else:
-    config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
-
-keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
+# GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
+#
+# if GPU_list:
+#     config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
+# else:
+#     config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
+#
+# keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -141,14 +141,14 @@ if __name__ == '__main__':
 
     prog = []
     pool = Pool(cpu_count())
-    r = [pool.apply_map(cellpredict, (i,), dict(model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), callback=prog.append) for i in cell_index]
+    r = [pool.apply_async(cellpredict, (i,), dict(model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), callback=prog.append) for i in cell_index]
+
+    pool.close()
+    pool.join()
 
     while len(prog) != len(cell_index):
         sys.stderr.write('\rDone    {0}/{1}    {2:.2%}'.format(len(prog), len(cell_index), float(len(prog))/len(cell_index)))
         time.sleep(0.5)
-
-    pool.close()
-    pool.join()
 
     print '\n'
     print 'Correct cell preditions:', result[:].count(1)
