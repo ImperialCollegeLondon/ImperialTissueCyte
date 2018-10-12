@@ -34,7 +34,7 @@ from natsort import natsorted
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']:
+GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
 
 if GPU_list:
     config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
