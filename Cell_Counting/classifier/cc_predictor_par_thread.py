@@ -143,12 +143,12 @@ if __name__ == '__main__':
     pool = Pool(cpu_count())
     r = [pool.apply_async(cellpredict, (i,), dict(model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), callback=prog.append) for i in cell_index]
 
-    pool.close()
-    pool.join()
-
     while len(prog) != len(cell_index):
         sys.stderr.write('\rDone    {0}/{1}    {2:.2%}'.format(len(prog), len(cell_index), float(len(prog))/len(cell_index)))
         time.sleep(0.5)
+
+    pool.close()
+    pool.join()
 
     print '\n'
     print 'Correct cell preditions:', result[:].count(1)
