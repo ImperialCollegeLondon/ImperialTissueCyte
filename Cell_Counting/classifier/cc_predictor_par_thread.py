@@ -90,7 +90,7 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
 
     result[cell] = cell_value
 
-    return
+    print cell
 
 
 # Main function
@@ -141,8 +141,8 @@ if __name__ == '__main__':
 
     pool = Pool(cpu_count())
 
-    for i, _ in enumerate(pool.apply_async(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
-        sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
+    # for i, _ in enumerate(pool.apply_async(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
+    #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
 
     pool.close()
     pool.join()
