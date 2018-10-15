@@ -64,7 +64,7 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
 
     #img = image.load_img(os.path.join(image_path, filename[cell]), target_size = (80, 80))
     #img = img.convert('I')
-    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]]))
+    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
     #img = image.img_to_array(img)
     #img = np.lib.pad(img, pad_width = ((40, 40), (40, 40), (0, 0)), mode = 'constant', constant_values=0)
     #prev_slice = marker[cell, 2]
@@ -73,7 +73,7 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
     #cell_crop = img[marker[cell, 1]+1230 : marker[cell, 1]+1230 + 80, marker[cell, 0]+1230 : marker[cell, 0]+1230 + 80]
     #cell_crop = img[marker[cell, 1] : marker[cell, 1] + 80, marker[cell, 0] : marker[cell, 0] + 80]
     #img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
-    img = img.crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
+    #img = img.crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis = 0)
 
@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
     pool = Pool(cpu_count())
 
-    for i, _ in enumerate(pool.imap(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
+    for i, _ in enumerate(pool.apply_async(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
         sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
 
     pool.close()
