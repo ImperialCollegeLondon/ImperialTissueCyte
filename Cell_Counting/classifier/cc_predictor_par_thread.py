@@ -92,6 +92,8 @@ def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, no
 
     print cell
 
+    return
+
 
 # Main function
 if __name__ == '__main__':
@@ -100,13 +102,15 @@ if __name__ == '__main__':
     # Load CNN classifier model
     #=============================================================================================
 
-    model_path = raw_input('Model file path (drag-and-drop): ').strip('\'').rstrip()
+    #model_path = raw_input('Model file path (drag-and-drop): ').strip('\'').rstrip()
+    model_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_2018_10_10.h5'
 
     #=============================================================================================
     # Parameters
     #=============================================================================================
 
-    marker_path = raw_input('XML or CSV file path (drag-and-drop): ').strip('\'').rstrip()
+    #marker_path = raw_input('XML or CSV file path (drag-and-drop): ').strip('\'').rstrip()
+    marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/lgd_count.csv'
 
     marker_filename, marker_file_extension = os.path.splitext(marker_path)
     if marker_file_extension == '.xml':
@@ -127,7 +131,8 @@ if __name__ == '__main__':
     # Load images and correct cell count by predicting
     #=============================================================================================
 
-    image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
+    #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
+    image_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/Ch2_Stitched_Sections'
     filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
     manager = Manager()
