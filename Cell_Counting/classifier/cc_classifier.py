@@ -22,6 +22,10 @@ os.environ['openmp'] = 'True'
 config = tf.ConfigProto(device_count={"GPU" : 1, "CPU" : cpu_count()})
 keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
+def AHE(img):
+    img_adapteq = exposure.equalize_adapthist(img, clip_limit=0.03)
+    return img_adapteq
+
 #=============================================================================================
 # Construction of Convolution Neural Network
 #=============================================================================================
@@ -93,7 +97,7 @@ for f in test_nocell_data:
     shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
 # training data
-train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.1, zoom_range = 0.1, width_shift_range=0.1, height_shift_range=0.1, horizontal_flip = True, vertical_flip = True)
+train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.15, zoom_range = 0.15, width_shift_range=0.15, height_shift_range=0.15, horizontal_flip = True, vertical_flip = True, preprocessing_function=AHE)
 training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale')
 #training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale', save_to_dir='preview', save_prefix='cell', save_format='jpeg')
 # test data

@@ -248,7 +248,7 @@ if __name__ == '__main__':
         with open(csv_file, 'w+') as f:
             for key in total_cells.keys():
                 if len(total_cells[key])>0:
-                    csv.writer(f, delimiter=',').writerows(np.round(np.concatenate((np.ones((len(total_cells[key]), 1))*(key+1), [( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]]), axis=1)))
+                    csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 
         structure_index += 1
 
