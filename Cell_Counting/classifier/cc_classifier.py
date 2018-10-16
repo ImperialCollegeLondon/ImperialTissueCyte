@@ -5,7 +5,7 @@ import random
 import shutil
 import datetime
 from multiprocessing import cpu_count
-import skimage
+import skimage.exposure
 
 import keras
 from keras.models import Sequential
