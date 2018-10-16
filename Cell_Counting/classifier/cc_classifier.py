@@ -5,7 +5,7 @@ import random
 import shutil
 import datetime
 from multiprocessing import cpu_count
-from skimage import exposure.equalize_adapthist
+import skimage
 
 import keras
 from keras.models import Sequential
@@ -24,7 +24,7 @@ config = tf.ConfigProto(device_count={"GPU" : 1, "CPU" : cpu_count()})
 keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
 def AHE(img):
-    img_adapteq = exposure.equalize_adapthist(img, clip_limit=0.03)
+    img_adapteq = skimage.exposure.equalize_adapthist(img, clip_limit=0.03)
     return img_adapteq
 
 #=============================================================================================
