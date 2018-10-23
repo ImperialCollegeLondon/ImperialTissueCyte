@@ -26,22 +26,11 @@ from contextlib import closing
 from functools import partial
 import tqdm
 import csv
+from natsort import natsorted
 import keras
 from keras.preprocessing import image
 from keras.models import load_model
-from keras import backend
-from natsort import natsorted
-import tensorflow as tf
-from tensorflow.python.client import device_lib
-
-GPU_list = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
-
-if len(GPU_list) == 0:
-    config = tf.ConfigProto(device_count={"CPU" : cpu_count()})
-else:
-    config = tf.ConfigProto(device_count={"GPU" : len(GPU_list), "CPU" : cpu_count()})
-
-keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
+from keras import backend as K
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -57,12 +46,18 @@ def append_cell(coord):
 def append_nocell(coord):
     nocell_markers.append(coord)
 
-def cellpredict(cell, model_path, marker, image_path, filename, cell_markers, nocell_markers):
+def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, filename, cell_markers, nocell_markers):
+    import keras
+    from keras.preprocessing import image
+    from keras.models import load_model, model_from_json
 
-    backend.clear_session()
-    model = load_model(model_path)
+    json_file = open(model_json_path, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
+    model.load_weights(model_weights_path)
 
-    #img = image.load_img(os.path.join(image_path, filename[cell]), target_size = (80, 80))
+    #img = image.load_img(os.path.join(image_path, filename[marker[cell, 2]]), target_size = (80, 80))
     #img = img.convert('I')
     img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
     #img = image.img_to_array(img)
@@ -103,14 +98,15 @@ if __name__ == '__main__':
     #=============================================================================================
 
     #model_path = raw_input('Model file path (drag-and-drop): ').strip('\'').rstrip()
-    model_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_2018_10_10.h5'
+    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_weights_2018_10_10.h5'
+    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_json_2018_10_10.h5'
 
     #=============================================================================================
     # Parameters
     #=============================================================================================
 
     #marker_path = raw_input('XML or CSV file path (drag-and-drop): ').strip('\'').rstrip()
-    marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/lgd_count.csv'
+    marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/vpl_count.csv'
 
     marker_filename, marker_file_extension = os.path.splitext(marker_path)
     if marker_file_extension == '.xml':
@@ -145,10 +141,10 @@ if __name__ == '__main__':
     tstart = time.time()
 
     pool = Pool(cpu_count())
+    print 'Starting pools'
+    res = pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
 
-    res = pool.map(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
-
-    # for i, _ in enumerate(pool.apply_async(partial(cellpredict, model_path=model_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
+    # for i, _ in enumerate(pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
     #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
 
     pool.close()
@@ -158,4 +154,4 @@ if __name__ == '__main__':
     print 'Correct cell preditions:', result[:].count(1)
     print 'Potential false cell predictions:', result[:].count(0)
 
-    print '{0:.0f}:{1:.0f}'.format(*divmod(time.time()-tstart,60))
+    print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
