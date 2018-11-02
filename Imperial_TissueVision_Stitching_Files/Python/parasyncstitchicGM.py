@@ -252,8 +252,9 @@ if __name__ == '__main__':
             os.rename(stitchpath+'/img_t1_z1_c1', stitchpath+'/Stitched_Z'+ztoken+'.tif')
 
             if convert == 'y':
-                stitched_img = Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif')
-                stitched_img = stitched_img.convert(mode='L').resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])), Image.ANTIALIAS)
+                stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif'))
+                stitched_img = Image.fromarray(np.multiply(np.divide(stitched_img.astype(float),np.max(stitched_img.astype(float))), 255.).astype('uint8'), 'L')
+                stitched_img = stitched_img.resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])), Image.ANTIALIAS)
                 stitched_img.save(stitchpath+'_Downsized/Stitched_Z'+ztoken+'.tif')
 
             print 'Complete!'
