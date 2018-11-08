@@ -124,7 +124,7 @@ if __name__ == '__main__':
     ids = []
     if mask:
         anno_file = json.load(open('2017_annotation_structure_info.json'))
-        structure_list = structure_list.lower().split(",")
+        structure_list = [x.strip() for x in structure_list.lower().split(",")]
         for elem in structure_list:
             ids.append(np.array(get_structure(anno_file['children'], elem)[1]))
     else:
@@ -244,7 +244,10 @@ if __name__ == '__main__':
 
         print structure_list[structure_index]+' '+str(num_cells)
 
-        csv_file = count_path+'/'+structure_list[structure_index]+'_count.csv'
+        if not os.path.exists(count_path+'/counts'):
+            os.makedirs(count_path+'/counts')
+
+        csv_file = count_path+'/counts/'+structure_list[structure_index]+'_count.csv'
         with open(csv_file, 'w+') as f:
             for key in total_cells.keys():
                 if len(total_cells[key])>0:

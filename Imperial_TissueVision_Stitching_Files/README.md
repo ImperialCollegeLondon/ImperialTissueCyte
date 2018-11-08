@@ -13,7 +13,7 @@ The Grid/Collection stitching plugin has a secret parameter which can be added a
 
 To set up your workstation to perform the stitching, follow the required installation steps for both MATLAB and Python immediately below, then follow the more specific instructions for your programming language of choice.
 
-# Installation required for both MATLAB and Python
+# Installation required for both MATLAB and Python Versions
 The following is required for both the MATLAB and Python version of the stitching pipeline.
 
 ## Fiji set-up
@@ -60,7 +60,7 @@ The script will now execute by collecting the tile images per physical section a
 # Installation for specifically Python version (tested on MacOS and Linux)
 1. Download a Python distribution package or for MacOS you can use the native iPython in Terminal. We use the Anaconda distribution which is set up to be our default Python environment.
 2. Download the Python scripts and put them into a folder of your choice.
-3. Using a terminal environment, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requirements file and manually install the packages listed there.
+3. Using a terminal environment, navigate to the folder and run `pip install -r requirements.txt`. If this doesn't work, then open up the requirements file and manually install the packages listed there using `pip install package` command.
 4. Create a temporary folder on your hard drive which will temporarily store image data during the stitching process.
 5. Open either `parasyncstitchicGM.py` or `asyncstitchicGM.py` in a script editor and search for the beginning of the main function and the `get_platform()` code which sits there. For your operating system, change the `imagejpath` and `overlapypath` file paths for your own system file paths.
 
