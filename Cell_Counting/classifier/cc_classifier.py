@@ -1,4 +1,10 @@
-# Importing Keras libraries
+#============================================================================================
+# Classifier Training
+# Author: Gerald M
+#
+# This script uses a convolution neural network classifier, to train for cells and non-cell
+# objects.
+#============================================================================================
 
 import os
 import random
@@ -41,17 +47,17 @@ classifier = Sequential()
 # Shape of each filter
 # Input shape in first two, input type in third, 3 = RGB
 # activation function, relu = rectifier function
-classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
 
 # Pooling operation
 # Pooling reduces size of images in order to reduce number of nodes
 # 2x2 matrix
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
-classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
-classifier.add(Conv2D(32, (5, 5), input_shape = (80, 80, 1), activation = 'relu'))
+classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 
 # Flattening operation
@@ -98,7 +104,7 @@ for f in test_nocell_data:
     shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
 # training data
-train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.15, zoom_range = 0.15, width_shift_range=0.15, height_shift_range=0.15, horizontal_flip = True, vertical_flip = True, preprocessing_function=AHE)
+train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.15, zoom_range = 0.15, width_shift_range=0.15, height_shift_range=0.15, horizontal_flip = True, vertical_flip = True)
 training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale')
 #training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale', save_to_dir='preview', save_prefix='cell', save_format='jpeg')
 # test data
