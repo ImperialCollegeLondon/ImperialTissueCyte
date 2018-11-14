@@ -72,7 +72,7 @@ if __name__ == '__main__':
     ################################################################################
 
     # Scale the data set to check if everything is the same
-    downsize = .5 #1.
+    downsize = 1. #.5 #1.
 
     # Fill in the following details to choose the analysis parameters
     mask = True
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        structure_list = 'lgd,vpl,vpm'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        structure_list = 'LGd-co,LGd-ip,LP,PO,POL,SGN,Eth,REth,AV,AMd,AMv,AD,IAM,IAD,LD,IMD,MDc,MDl,MDm,SMT,PR,PVT,PT,RE,Xi,RH,CM,PCN,CL,PF,PIL,RT,IGL,IntG,LGvl,LGvm,SubG,MH,LH,PIN'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.*(downsize**2)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
-    count_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [1,1000]
 
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     if mask:
         #path = raw_input('NII/TIFF file path (drag-and-drop): ').rstrip()
-        path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/SEGMENTATION_RES.tif'
+        path = '/home/gm515/Documents/SimpleElastix/registration/ko/SEGMENTATION_RES.tif'
         file, extension = os.path.splitext(path)
         if extension == '.nii':
             seg = nib.load(path).get_data()
@@ -137,9 +137,6 @@ if __name__ == '__main__':
 
     tstart = time.time()
 
-    # Dictionary to store centroids - each key is a new slice number
-    total_cells = dict()
-
     temp = Image.open(count_path+'/'+count_files[0])
     temp_size = temp.size
     temp = None
@@ -150,6 +147,11 @@ if __name__ == '__main__':
 
     for structure in ids:
         print 'Counting in '+str(structure_list[structure_index])
+        proceed = True
+
+        # Dictionary to store centroids - each key is a new slice number
+        total_cells = dict()
+
         ################################################################################
         ## Obtain crop information for structure if mask required
         ################################################################################
@@ -161,12 +163,15 @@ if __name__ == '__main__':
                 else:
                     structure = np.setdiff1d(structure, elem)
 
-            zmin = int(index[0].min())
-            zmax = int(index[0].max())
-            ymin = int(index[1].min()*scale*downsize)
-            ymax = int(index[1].max()*scale*downsize)
-            xmin = int(index[2].min()*scale*downsize)
-            xmax = int(index[2].max()*scale*downsize)
+            if index.size > 0:
+                zmin = int(index[0].min())
+                zmax = int(index[0].max())
+                ymin = int(index[1].min()*scale*downsize)
+                ymax = int(index[1].max()*scale*downsize)
+                xmin = int(index[2].min()*scale*downsize)
+                xmax = int(index[2].max()*scale*downsize)
+            else:
+                proceed = False
         else:
             zmin = 0
             zmax = len(count_files)
@@ -176,82 +181,87 @@ if __name__ == '__main__':
             xmax = temp_size[0]*downsize
 
         ################################################################################
-        ## Loop through slices based on cropped boundaries
+        ## Check whether to proceed with the count
         ################################################################################
-        for slice_number in range(zmin,zmax):
-            # Load image and convert to dtype=float
-            image = Image.open(count_path+'/'+count_files[slice_number])
-            image = np.array(image.resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
-            image = np.multiply(np.divide(image,65535.), 255.)
+        if proceed:
+            ################################################################################
+            ## Loop through slices based on cropped boundaries
+            ################################################################################
+            for slice_number in range(zmin,zmax):
+                # Load image and convert to dtype=float
+                image = Image.open(count_path+'/'+count_files[slice_number])
+                image = np.array(image.resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
+                image = np.multiply(np.divide(image,65535.), 255.)
 
-            # Apply mask if required
-            if mask:
-                mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
-                mask_image[mask_image!=structure] = 0
-                image[mask_image==0] = 0
-                print np.max(image)
-                mask_image = None
-                #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
+                # Apply mask if required
+                if mask:
+                    mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
+                    mask_image[mask_image!=structure] = 0
+                    image[mask_image==0] = 0
+                    #print np.max(image)
+                    mask_image = None
+                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
-            # Perform gaussian donut median filter
-            image = gaussmedfilt(image, 3, 1.5)
+                # Perform gaussian donut median filter
+                image = gaussmedfilt(image, 3, 1.5)
 
-            if np.max(image) != 0.:
-                image = np.multiply(np.divide(image, np.max(image)), 255.)
+                if np.max(image) != 0.:
+                    image = np.multiply(np.divide(image, np.max(image)), 255.)
 
-                # Perform circularity threshold
-                image = image>circthresh(image,size,50)
-                Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number)+'.tif')
+                    # Perform circularity threshold
+                    image = image>circthresh(image,size,50)
+                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number)+'.tif')
 
-                # Remove objects smaller than chosen size
-                image_label = label(image, connectivity=image.ndim)
+                    # Remove objects smaller than chosen size
+                    image_label = label(image, connectivity=image.ndim)
 
-                circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
+                    circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
 
-                circ = [circfunc(region) for region in regionprops(image_label)]
-                areas = [region.area for region in regionprops(image_label)]
-                labels = [region.label for region in regionprops(image_label)]
-                centroids = [region.centroid for region in regionprops(image_label)]
+                    circ = [circfunc(region) for region in regionprops(image_label)]
+                    areas = [region.area for region in regionprops(image_label)]
+                    labels = [region.label for region in regionprops(image_label)]
+                    centroids = [region.centroid for region in regionprops(image_label)]
 
-                #image = np.zeros_like(image_label)
+                    #image = np.zeros_like(image_label)
 
-                # Threshold the objects based on size and circularity and store centroids
-                cells = []
-                for i, _ in enumerate(areas):
-                    if areas[i] > size/2 and areas[i] < size*4 and circ[i] > 0.65:
-                        # (row, col) centroid
-                        cells.append(centroids[i])
-                        #image += image_label==labels[i]
-            else:
-                cells = []
+                    # Threshold the objects based on size and circularity and store centroids
+                    cells = []
+                    for i, _ in enumerate(areas):
+                        if areas[i] > size/2 and areas[i] < size*4 and circ[i] > 0.65:
+                            # (row, col) centroid
+                            cells.append(centroids[i])
+                            #image += image_label==labels[i]
+                else:
+                    cells = []
 
-            total_cells.update({slice_number : cells})
+                total_cells.update({slice_number : cells})
 
-            print 'Analysed slice '+str(slice_number)
+                sys.stdout.write("\r%d%%" % int(100*slice_number/zmax))
+                sys.stdout.flush()
 
-            #image = image>0 # Create image if needed
-            #Image.fromarray(np.uint8(image)*255).save('/Users/gm515/Desktop/temp/Z_'+str(slice_number)+'.tif')
+                #image = image>0 # Create image if needed
+                #Image.fromarray(np.uint8(image)*255).save('/Users/gm515/Desktop/temp/Z_'+str(slice_number)+'.tif')
 
 
-        # Peform correction for overlap
-        if over_sample:
-            print 'Correcting for oversampling'
-            for idx, (x, y) in enumerate(zip(total_cells.values()[1:], total_cells.values()[:-1])):
-                if len(x) * len(y) > 0:
-                    total_cells[zmin+idx] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
+            # Peform correction for overlap
+            if over_sample:
+                print 'Correcting for oversampling'
+                for idx, (x, y) in enumerate(zip(total_cells.values()[1:], total_cells.values()[:-1])):
+                    if len(x) * len(y) > 0:
+                        total_cells[zmin+idx] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
 
-        num_cells = sum(map(len, total_cells.values()))
+            num_cells = sum(map(len, total_cells.values()))
 
-        print structure_list[structure_index]+' '+str(num_cells)
+            print structure_list[structure_index]+' '+str(num_cells)
 
-        if not os.path.exists(count_path+'/counts'):
-            os.makedirs(count_path+'/counts')
+            if not os.path.exists(count_path+'/counts'):
+                os.makedirs(count_path+'/counts')
 
-        csv_file = count_path+'/counts/'+structure_list[structure_index]+'_count.csv'
-        with open(csv_file, 'w+') as f:
-            for key in total_cells.keys():
-                if len(total_cells[key])>0:
-                    csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
+            csv_file = count_path+'/counts/'+structure_list[structure_index]+'_count.csv'
+            with open(csv_file, 'w+') as f:
+                for key in total_cells.keys():
+                    if len(total_cells[key])>0:
+                        csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 
         structure_index += 1
 
