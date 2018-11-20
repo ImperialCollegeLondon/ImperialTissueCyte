@@ -34,6 +34,20 @@ def AHE(img):
     return img_adapteq
 
 #=============================================================================================
+# Precheck on directory structure
+#=============================================================================================
+
+if os.listdir('8-bit/test_data/cell/'):
+    print 'Warning! Files detected in test data directory!'
+    print 'Moving files back to training data directory...'
+    
+    for f in os.listdir('8-bit/test_data/cell/'):
+        shutil.move('8-bit/test_data/cell/'+f,'8-bit/training_data/cell/'+f)
+
+    for f in os.listdir('8-bit/test_data/nocell/'):
+        shutil.move('8-bit/test_data/nocell/'+f,'8-bit/training_data/nocell/'+f)
+
+#=============================================================================================
 # Construction of Convolution Neural Network
 #=============================================================================================
 
