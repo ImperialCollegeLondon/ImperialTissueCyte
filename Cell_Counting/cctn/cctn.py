@@ -155,7 +155,7 @@ if __name__ == '__main__':
     structure_index = 0
 
     for name, structure in zip(acr,ids):
-        print 'Counting in '+str(structure_list[structure_index])
+        print 'Counting in '+str(name)
         proceed = True
 
         # Dictionary to store centroids - each key is a new slice number
@@ -166,11 +166,10 @@ if __name__ == '__main__':
         ################################################################################
         if mask:
             index = np.array([[],[],[]])
-            for elem in structure:
-                if elem in seg:
-                    index = np.concatenate((index, np.array(np.nonzero(elem == seg))), axis=1)
-                else:
-                    structure = np.setdiff1d(structure, elem)
+            if structure in seg:
+                index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
+            else:
+                proceed = False
 
             if index.size > 0:
                 zmin = int(index[0].min())
@@ -261,12 +260,12 @@ if __name__ == '__main__':
 
             num_cells = sum(map(len, total_cells.values()))
 
-            print structure_list[structure_index]+' '+str(num_cells)
+            print str(name)+' '+str(num_cells)
 
             if not os.path.exists(count_path+'/counts'):
                 os.makedirs(count_path+'/counts')
 
-            csv_file = count_path+'/counts/'+structure_list[structure_index]+'_count.csv'
+            csv_file = count_path+'/counts/'+str(name)+'_count.csv'
             with open(csv_file, 'w+') as f:
                 for key in total_cells.keys():
                     if len(total_cells[key])>0:
