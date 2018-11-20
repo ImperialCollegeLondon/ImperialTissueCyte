@@ -40,27 +40,32 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 def distance(a, b):
     return (a[0] - b[0])**2  + (a[1] - b[1])**2
 
-def get_children(json_obj, ids):
+def get_children(json_obj, acr, ids):
     for obj in json_obj:
         if obj['children'] == []:
+            acr.append(obj['acronym'])
             ids.append(obj['id'])
         else:
-            get_children(obj['children'], ids)
-    return ids
+            acr.append(obj['acronym'])
+            ids.append(obj['id'])
+            get_children(obj['children'], acr, ids)
+    return (acr, ids)
 
 def get_structure(json_obj, acronym):
     found = (False, None)
     for obj in json_obj:
         if obj['acronym'].lower() == acronym:
             #print obj['acronym'], obj['id']
-            ids = get_children(obj['children'], [])
+            [acr, ids] = get_children(obj['children'], [], [])
             #print ids
             if ids == []:
+                acr = [obj['acronym']]
                 ids = [obj['id']]
-                return (True, ids)
+                return (True, acr, ids)
             else:
+                acr.append(obj['acronym'])
                 ids.append(obj['id'])
-                return (True, ids)
+                return (True, acr, ids)
         else:
             found = get_structure(obj['children'], acronym)
             if found:
@@ -83,7 +88,7 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        structure_list = 'LGd-co,LGd-ip,LP,PO,POL,SGN,Eth,REth,AV,AMd,AMv,AD,IAM,IAD,LD,IMD,MDc,MDl,MDm,SMT,PR,PVT,PT,RE,Xi,RH,CM,PCN,CL,PF,PIL,RT,IGL,IntG,LGvl,LGvm,SubG,MH,LH,PIN'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        structure_list = 'TH'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.*(downsize**2)
@@ -122,14 +127,18 @@ if __name__ == '__main__':
         print 'Loaded segmentation data'
 
     ids = []
+    acr = []
     if mask:
         anno_file = json.load(open('2017_annotation_structure_info.json'))
         structure_list = [x.strip() for x in structure_list.lower().split(",")]
         for elem in structure_list:
-            ids.append(np.array(get_structure(anno_file['children'], elem)[1]))
+            a, i = get_structure(anno_file['children'], elem)[1:]
+            ids.extend(i)
+            acr.extend(a)
     else:
-        ids.append('none')
-    print 'Counting in structures: '+str(structure_list)
+        ids.extend('none')
+        acr.entend('none')
+    print 'Counting in structures: '+str(acr)
 
     ################################################################################
     ## Counting
@@ -145,7 +154,7 @@ if __name__ == '__main__':
 
     structure_index = 0
 
-    for structure in ids:
+    for name, structure in zip(acr,ids):
         print 'Counting in '+str(structure_list[structure_index])
         proceed = True
 
