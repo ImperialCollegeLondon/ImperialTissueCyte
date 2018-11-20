@@ -52,7 +52,7 @@ def circthresh(A,SIZE,THRESHLIM):
     # yfit = np.poly1d(func)
     # print yfit(thresh_all[circ_all>0])
 
-    plot = True
+    plot = False
     if plot:
         plt.figure()
         plt.plot(thresh_all, circ_all, 'xb')

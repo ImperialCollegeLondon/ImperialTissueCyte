@@ -59,7 +59,7 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
 
     #img = image.load_img(os.path.join(image_path, filename[marker[cell, 2]]), target_size = (80, 80))
     #img = img.convert('I')
-    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
+    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-39, marker[cell, 0]-39, marker[cell, 1]+40, marker[cell, 0]+40))
     #img = image.img_to_array(img)
     #img = np.lib.pad(img, pad_width = ((40, 40), (40, 40), (0, 0)), mode = 'constant', constant_values=0)
     #prev_slice = marker[cell, 2]
