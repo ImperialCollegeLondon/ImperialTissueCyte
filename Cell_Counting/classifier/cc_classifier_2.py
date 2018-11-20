@@ -86,7 +86,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 2, activation = 'softmax'))
+classifier.add(Dense(units = 1, activation = 'softmax'))
 
 # Compile
 # Optimizer is stochastic gradient descent
