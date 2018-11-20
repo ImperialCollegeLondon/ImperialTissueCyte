@@ -13,6 +13,7 @@ from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
 from skimage.measure import regionprops, label
 from PIL import Image
+import matplotlib.pyplot as plt
 
 def func(x, a, x0, sigma):
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
@@ -46,13 +47,22 @@ def circthresh(A,SIZE,THRESHLIM):
     pool.close()
     pool.join()
 
-    # Fit a polynomial and find optimum threshold
-    func = np.polyfit(thresh_all, circ_all, 2)
-    yfit = np.poly1d(func)
+    # Fit a polynomial and find optimum threshold where circualrity measures are grater than 1
+    # func = np.polyfit(thresh_all[circ_all>0], circ_all[circ_all>0], 2)
+    # yfit = np.poly1d(func)
+    # print yfit(thresh_all[circ_all>0])
 
-    T = np.max(yfit)
+    plot = True
+    if plot:
+        plt.figure()
+        plt.plot(thresh_all, circ_all, 'xb')
+        plt.plot(thresh_all[circ_all>0], yfit(thresh_all[circ_all>0]), '-r')
+        plt.savefig('/Users/gm515/Desktop/test/fig.png')
 
-    # If threshold from fit is less than minimum threshold limit, set optimum threshold to threshold limit
+    #T = thresh_all[np.where(yfit(thresh_all[circ_all>0]) == np.max(yfit(thresh_all[circ_all>0])))]
+    T = thresh_all[np.argmax(circ_all>0.8)]
+
+    # If threshold from fit is less than minimum threshold limit, set optimum threshold to minimum
     if T<THRESHLIM:
         T = THRESHLIM
 
