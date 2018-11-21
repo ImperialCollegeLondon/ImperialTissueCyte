@@ -28,6 +28,7 @@ from skimage.measure import regionprops, label
 from PIL import Image
 from skimage import io
 from natsort import natsorted
+import scipy.ndimage as ndimage
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -88,6 +89,7 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
+        mask_path = '/home/gm515/Documents/SimpleElastix/registration/ko/SEGMENTATION_RES.tif'
         structure_list = 'TH'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
@@ -99,6 +101,9 @@ if __name__ == '__main__':
     count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [1,1000]
+
+    # Filter type
+    use_medfilt = False
 
     ################################################################################
     ## Initialisation parameters
@@ -118,12 +123,11 @@ if __name__ == '__main__':
 
     if mask:
         #path = raw_input('NII/TIFF file path (drag-and-drop): ').rstrip()
-        path = '/home/gm515/Documents/SimpleElastix/registration/ko/SEGMENTATION_RES.tif'
-        file, extension = os.path.splitext(path)
+        file, extension = os.path.splitext(mask_path)
         if extension == '.nii':
-            seg = nib.load(path).get_data()
+            seg = nib.load(mask_path).get_data()
         else:
-            seg = io.imread(path)
+            seg = io.imread(mask_path)
         print 'Loaded segmentation data'
 
     ids = []
@@ -198,8 +202,8 @@ if __name__ == '__main__':
             for slice_number in range(zmin,zmax):
                 # Load image and convert to dtype=float
                 image = Image.open(count_path+'/'+count_files[slice_number])
-                image = np.array(image.resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
-                image = np.multiply(np.divide(image,65535.), 255.)
+                image = np.array(image.resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST)).astype(float)[ymin:ymax, xmin:xmax]
+                image = np.multiply(np.divide(image,np.max(image)), 255.)
 
                 # Apply mask if required
                 if mask:
@@ -211,13 +215,16 @@ if __name__ == '__main__':
                     #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
                 # Perform gaussian donut median filter
-                image = gaussmedfilt(image, 3, 1.5)
+                if use_medfilt:
+                    image = gaussmedfilt(image, 3, 1.5)
+                else:
+                    image = ndimage.gaussian_filter(image, sigma=(3, 3))
 
                 if np.max(image) != 0.:
                     image = np.multiply(np.divide(image, np.max(image)), 255.)
 
                     # Perform circularity threshold
-                    image = image>circthresh(image,size,50)
+                    image = image>circthresh(image,size,15)
                     #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number)+'.tif')
 
                     # Remove objects smaller than chosen size
