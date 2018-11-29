@@ -106,52 +106,60 @@ if __name__ == '__main__':
     #=============================================================================================
 
     #marker_path = raw_input('XML or CSV file path (drag-and-drop): ').strip('\'').rstrip()
-    marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/vpl_count.csv'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
 
-    marker_filename, marker_file_extension = os.path.splitext(marker_path)
-    if marker_file_extension == '.xml':
-        xml_doc = minidom.parse(marker_path)
+    if os.path.isdir(count_path):
+        all_marker_path = glob.glob(count_path+'/*.csv')
+    else:
+        all_marker_path = count_path
 
-        marker_x = xml_doc.getElementsByTagName('MarkerX')
-        marker_y = xml_doc.getElementsByTagName('MarkerY')
-        marker_z = xml_doc.getElementsByTagName('MarkerZ')
+    for marker_path in all_marker_path:
+        #marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/vpl_count.csv'
 
-        marker = np.empty((0,3), int)
+        marker_filename, marker_file_extension = os.path.splitext(marker_path)
+        if marker_file_extension == '.xml':
+            xml_doc = minidom.parse(marker_path)
 
-        for elem in range (0, marker_x.length):
-            marker = np.vstack((marker, [int(marker_x[elem].firstChild.data), int(marker_y[elem].firstChild.data), int(marker_z[elem].firstChild.data)]))
-    if marker_file_extension == '.csv':
-        marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
+            marker_x = xml_doc.getElementsByTagName('MarkerX')
+            marker_y = xml_doc.getElementsByTagName('MarkerY')
+            marker_z = xml_doc.getElementsByTagName('MarkerZ')
 
-    #=============================================================================================
-    # Load images and correct cell count by predicting
-    #=============================================================================================
+            marker = np.empty((0,3), int)
 
-    #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
-    image_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/Ch2_Stitched_Sections'
-    filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
+            for elem in range (0, marker_x.length):
+                marker = np.vstack((marker, [int(marker_x[elem].firstChild.data), int(marker_y[elem].firstChild.data), int(marker_z[elem].firstChild.data)]))
+        if marker_file_extension == '.csv':
+            marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
 
-    manager = Manager()
-    result = Array('i', marker.shape[0])
-    cell_markers = manager.list()
-    nocell_markers = manager.list()
+        #=============================================================================================
+        # Load images and correct cell count by predicting
+        #=============================================================================================
 
-    cell_index = range(marker.shape[0])
+        #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
+        image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+        filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
-    tstart = time.time()
+        manager = Manager()
+        result = Array('i', marker.shape[0])
+        cell_markers = manager.list()
+        nocell_markers = manager.list()
 
-    pool = Pool(cpu_count())
-    print 'Starting pools'
-    res = pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
+        cell_index = range(marker.shape[0])
 
-    # for i, _ in enumerate(pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
-    #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
+        tstart = time.time()
 
-    pool.close()
-    pool.join()
+        pool = Pool(cpu_count())
+        res = pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
 
-    print '\n'
-    print 'Correct cell preditions:', result[:].count(1)
-    print 'Potential false cell predictions:', result[:].count(0)
+        # for i, _ in enumerate(pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
+        #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
 
-    print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
+        pool.close()
+        pool.join()
+
+        print marker_path
+        print 'Correct cell preditions:', result[:].count(1)
+        print 'Potential false cell predictions:', result[:].count(0)
+
+
+print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
