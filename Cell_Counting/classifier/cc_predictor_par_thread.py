@@ -31,6 +31,7 @@ import keras
 from keras.preprocessing import image
 from keras.models import load_model
 from keras import backend as K
+import glob
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -59,7 +60,7 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
 
     #img = image.load_img(os.path.join(image_path, filename[marker[cell, 2]]), target_size = (80, 80))
     #img = img.convert('I')
-    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-39, marker[cell, 0]-39, marker[cell, 1]+40, marker[cell, 0]+40))
+    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-40, marker[cell, 0]-40, marker[cell, 1]+40, marker[cell, 0]+40))
     #img = image.img_to_array(img)
     #img = np.lib.pad(img, pad_width = ((40, 40), (40, 40), (0, 0)), mode = 'constant', constant_values=0)
     #prev_slice = marker[cell, 2]
@@ -85,8 +86,6 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
 
     result[cell] = cell_value
 
-    print cell
-
     return
 
 
@@ -98,8 +97,8 @@ if __name__ == '__main__':
     #=============================================================================================
 
     #model_path = raw_input('Model file path (drag-and-drop): ').strip('\'').rstrip()
-    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_weights_2018_10_10.h5'
-    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_model_json_2018_10_10.h5'
+    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_weights_2018_11_20.h5'
+    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_json_2018_11_20.json'
 
     #=============================================================================================
     # Parameters
