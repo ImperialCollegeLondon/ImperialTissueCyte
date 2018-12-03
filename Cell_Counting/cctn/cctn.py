@@ -89,8 +89,8 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/home/gm515/Documents/SimpleElastix/registration/ko/SEGMENTATION_RES.tif'
-        structure_list = 'TH'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
+        structure_list = 'LGd,RT,LGv'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.*(downsize**2)
@@ -98,12 +98,15 @@ if __name__ == '__main__':
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
     # Number of files [None,None] for all, or [start,end] for specific range
-    number_files = [1,1000]
+    number_files = [None,None]
 
     # Filter type
     use_medfilt = False
+
+    if not os.path.exists(count_path+'/counts'):
+        os.makedirs(count_path+'/counts')
 
     ################################################################################
     ## Initialisation parameters
@@ -232,6 +235,7 @@ if __name__ == '__main__':
 
                     circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
 
+                    # Centroids returns (row, col) so switch over
                     circ = [circfunc(region) for region in regionprops(image_label)]
                     areas = [region.area for region in regionprops(image_label)]
                     labels = [region.label for region in regionprops(image_label)]
@@ -244,7 +248,7 @@ if __name__ == '__main__':
                     for i, _ in enumerate(areas):
                         if areas[i] > size/2 and areas[i] < size*4 and circ[i] > 0.65:
                             # (row, col) centroid
-                            cells.append(centroids[i])
+                            cells.append(centroids[i][::-1])
                             #image += image_label==labels[i]
                 else:
                     cells = []
@@ -268,9 +272,6 @@ if __name__ == '__main__':
             num_cells = sum(map(len, total_cells.values()))
 
             print str(name)+' '+str(num_cells)
-
-            if not os.path.exists(count_path+'/counts'):
-                os.makedirs(count_path+'/counts')
 
             csv_file = count_path+'/counts/'+str(name)+'_count.csv'
             with open(csv_file, 'w+') as f:
