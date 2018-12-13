@@ -77,9 +77,6 @@ if __name__ == '__main__':
     ## User defined parameters
     ################################################################################
 
-    # Scale the data set to check if everything is the same
-    downsize = 1. #.5 #1.
-
     # Fill in the following details to choose the analysis parameters
     mask = True
     over_sample = True
@@ -93,8 +90,8 @@ if __name__ == '__main__':
         structure_list = 'LGv,LGd,RT,VENT'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
-    size = 200.*(downsize**2)
-    radius = 12.*downsize
+    size = 200.
+    radius = 12.
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
@@ -181,19 +178,11 @@ if __name__ == '__main__':
             if index.size > 0:
                 zmin = int(index[0].min())
                 zmax = int(index[0].max())
-                ymin = int(index[1].min()*scale*downsize)
-                ymax = int(index[1].max()*scale*downsize)
-                xmin = int(index[2].min()*scale*downsize)
-                xmax = int(index[2].max()*scale*downsize)
             else:
                 proceed = False
         else:
             zmin = 0
             zmax = len(count_files)
-            ymin = 0
-            ymax = temp_size[1]*downsize
-            xmin = 0
-            xmax = temp_size[0]*downsize
 
         ################################################################################
         ## Check whether to proceed with the count
@@ -205,12 +194,12 @@ if __name__ == '__main__':
             for slice_number in range(zmin,zmax):
                 # Load image and convert to dtype=float and scale to full 255 range
                 image = Image.open(count_path+'/'+count_files[slice_number])
-                image = np.array(image).astype(float)[ymin:ymax, xmin:xmax]
+                image = np.array(image).astype(float)
                 image = np.multiply(np.divide(image,np.max(image)), 255.)
 
                 # Apply mask if required
                 if mask:
-                    mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(downsize*x) for x in temp_size]), Image.NEAREST))[ymin:ymax, xmin:xmax]
+                    mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
                     mask_image[mask_image!=structure] = 0
                     image[mask_image==0] = 0
                     #print np.max(image)
@@ -224,6 +213,12 @@ if __name__ == '__main__':
                     image = ndimage.gaussian_filter(image, sigma=(3, 3))
 
                 if np.max(image) != 0.:
+                    mask = img>0
+                    idx = np.ix_(mask.any(1),mask.any(0))
+                    row_idx = idx[0].flatten()
+                    col_idx = idx[1].flatten()
+                    image = image[idx]
+                    mask = None
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
 
                     # Perform circularity threshold
@@ -241,6 +236,11 @@ if __name__ == '__main__':
                     labels = [region.label for region in regionprops(image_label)]
                     centroids = [region.centroid for region in regionprops(image_label)]
 
+                    # Convert coordinate of centroid to coordinate of whole image
+                    coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+
+                    centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
+
                     #image = np.zeros_like(image_label)
 
                     # Threshold the objects based on size and circularity and store centroids
@@ -248,6 +248,7 @@ if __name__ == '__main__':
                     for i, _ in enumerate(areas):
                         if areas[i] > size/2 and areas[i] < size*4 and circ[i] > 0.65:
                             # (row, col) centroid
+                            # So flip the order for (col, row) as (x, y)
                             cells.append(centroids[i][::-1])
                             #image += image_label==labels[i]
                 else:
@@ -273,11 +274,11 @@ if __name__ == '__main__':
 
             print str(name)+' '+str(num_cells)
 
-            csv_file = count_path+'/counts/'+str(name)+'_count.csv'
+            csv_file = count_path+'/counts/'+str(name)+'_v2_count.csv'
             with open(csv_file, 'w+') as f:
                 for key in total_cells.keys():
                     if len(total_cells[key])>0:
-                        csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
+                        csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 
         structure_index += 1
 
