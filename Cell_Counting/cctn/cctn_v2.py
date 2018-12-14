@@ -79,15 +79,15 @@ if __name__ == '__main__':
 
     # Fill in the following details to choose the analysis parameters
     mask = True
-    over_sample = False
+    over_sample = True
     xy_res = 10
     z_res = 5
 
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'LGv'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
+        structure_list = 'LGv,LGd,LP,VPM,VPL,APN'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
-    count_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [None,None]
 
