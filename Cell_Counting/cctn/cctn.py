@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
             csv_file = count_path+'/counts/'+str(name)+'_count.csv'
             with open(csv_file, 'w+') as f:
-                for key in total_cells.keys():
+                for key in sorted(total_cells.keys()):
                     if len(total_cells[key])>0:
                         csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val) + np.array([xmin, ymin]))/downsize).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 

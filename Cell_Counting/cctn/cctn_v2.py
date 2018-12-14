@@ -16,7 +16,7 @@
 ## Module import
 ################################################################################
 
-import os, time, numpy, math, json, warnings, csv, sys
+import os, time, numpy, math, json, warnings, csv, sys, collections
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -79,15 +79,15 @@ if __name__ == '__main__':
 
     # Fill in the following details to choose the analysis parameters
     mask = True
-    over_sample = True
+    over_sample = False
     xy_res = 10
     z_res = 5
 
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'LGv,LGd,RT,VENT'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        mask_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
+        structure_list = 'LGv'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [None,None]
 
@@ -202,8 +202,14 @@ if __name__ == '__main__':
                     mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
                     mask_image[mask_image!=structure] = 0
                     image[mask_image==0] = 0
-                    #print np.max(image)
+
+                    # Crop image with idx
+                    mask_image = image>0
+                    idx = np.ix_(mask_image.any(1),mask_image.any(0))
                     mask_image = None
+                    row_idx = idx[0].flatten()
+                    col_idx = idx[1].flatten()
+                    image = image[idx]
                     #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
                 # Perform gaussian donut median filter
@@ -213,12 +219,6 @@ if __name__ == '__main__':
                     image = ndimage.gaussian_filter(image, sigma=(3, 3))
 
                 if np.max(image) != 0.:
-                    mask = img>0
-                    idx = np.ix_(mask.any(1),mask.any(0))
-                    row_idx = idx[0].flatten()
-                    col_idx = idx[1].flatten()
-                    image = image[idx]
-                    mask = None
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
 
                     # Perform circularity threshold
@@ -239,6 +239,7 @@ if __name__ == '__main__':
                     # Convert coordinate of centroid to coordinate of whole image
                     coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
+                    # (row, col) or (y, x)
                     centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
                     #image = np.zeros_like(image_label)
@@ -262,13 +263,15 @@ if __name__ == '__main__':
                 #image = image>0 # Create image if needed
                 #Image.fromarray(np.uint8(image)*255).save('/Users/gm515/Desktop/temp/Z_'+str(slice_number)+'.tif')
 
+            # Sort the dictionary so key are in order
+            total_cells = collections.OrderedDict(sorted(total_cells.items()))
 
             # Peform correction for overlap
             if over_sample:
                 print 'Correcting for oversampling'
-                for idx, (x, y) in enumerate(zip(total_cells.values()[1:], total_cells.values()[:-1])):
+                for index, (x, y) in enumerate(zip(total_cells.values()[1:], total_cells.values()[:-1])):
                     if len(x) * len(y) > 0:
-                        total_cells[zmin+idx] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
+                        total_cells[zmin+index] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
 
             num_cells = sum(map(len, total_cells.values()))
 
@@ -276,7 +279,7 @@ if __name__ == '__main__':
 
             csv_file = count_path+'/counts/'+str(name)+'_v2_count.csv'
             with open(csv_file, 'w+') as f:
-                for key in total_cells.keys():
+                for key in sorted(total_cells.keys()):
                     if len(total_cells[key])>0:
                         csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 
