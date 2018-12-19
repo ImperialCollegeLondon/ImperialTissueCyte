@@ -40,7 +40,7 @@ def AHE(img):
 if os.listdir('8-bit/test_data/cell/'):
     print 'Warning! Files detected in test data directory!'
     print 'Moving files back to training data directory...'
-    
+
     for f in os.listdir('8-bit/test_data/cell/'):
         shutil.move('8-bit/test_data/cell/'+f,'8-bit/training_data/cell/'+f)
 
@@ -100,7 +100,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 1, activation = 'softmax'))
+classifier.add(Dense(units = 1, activation = 'sigmoid')) #softmax
 
 # Compile
 # Optimizer is stochastic gradient descent
