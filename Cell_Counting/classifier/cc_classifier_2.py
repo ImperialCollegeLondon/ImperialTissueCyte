@@ -171,4 +171,17 @@ for f in os.listdir('8-bit/test_data/cell/'):
 for f in os.listdir('8-bit/test_data/nocell/'):
     shutil.move('8-bit/test_data/nocell/'+f,'8-bit/training_data/nocell/'+f)
 
+#=============================================================================================
+# Splitting final model into
+#=============================================================================================
+
+model = load_model(filepath)
+# Serialize model to JSON
+model_json = model.to_json()
+with open(filepath[:-3]+".json", "w") as json_file:
+    json_file.write(model_json)
+# Serialize weights to HDF5
+model.save_weights(filepath)
+
+
 print "Done!\n"
