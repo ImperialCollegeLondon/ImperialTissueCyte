@@ -16,11 +16,12 @@
 ## Module import
 ################################################################################
 
-import os, time, numpy, math, json, warnings, csv, sys, collections
+import os, time, numpy, math, json, warnings, csv, sys, collections, cv2
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 import scipy.misc as sc
+import scipy.ndimage as ndimage
 from filters.gaussmedfilt import gaussmedfilt
 from filters.medfilt import medfilt
 from filters.circthresh import circthresh
@@ -28,7 +29,7 @@ from skimage.measure import regionprops, label
 from PIL import Image
 from skimage import io
 from natsort import natsorted
-import scipy.ndimage as ndimage
+from filters.rollingballfilt import rolling_ball_filter
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -86,8 +87,8 @@ if __name__ == '__main__':
     # Fill in structure_list using acronyms and separating structures with a ','
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'LGv,LGd,LP,VPM,VPL,APN'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        mask_path = '/home/gm515/Documents/SimpleElastix/registration/het181218/SEGMENTATION_RES.tif'
+        structure_list = 'PMv'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Cell descriptors
     size = 200.
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 
     # Directory of files to count
     #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [None,None]
 
@@ -141,7 +142,7 @@ if __name__ == '__main__':
             acr.extend(a)
     else:
         ids.extend('none')
-        acr.entend('none')
+        acr.extend('none')
     print 'Counting in structures: '+str(acr)
 
     ################################################################################
@@ -218,11 +219,13 @@ if __name__ == '__main__':
                 else:
                     image = ndimage.gaussian_filter(image, sigma=(3, 3))
 
-                if np.max(image) != 0.:
+                if image.shape[0] != 0 and np.max(image) != 0.:
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
+                    # Perform rolling ball background subtraction to remove uneven background signal
+                    image, background = rolling_ball_filter(np.uint8(image), 10)
 
                     # Perform circularity threshold
-                    image = image>circthresh(image,size,15)
+                    image = image>circthresh(image,size,10)
                     #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number)+'.tif')
 
                     # Remove objects smaller than chosen size
