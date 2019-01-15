@@ -222,7 +222,7 @@ if __name__ == '__main__':
                 if image.shape[0] != 0 and np.max(image) != 0.:
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
                     # Perform rolling ball background subtraction to remove uneven background signal
-                    image, background = rolling_ball_filter(np.uint8(image), 10)
+                    image, background = rolling_ball_filter(np.uint8(image), 8)
 
                     # Perform circularity threshold
                     image = image>circthresh(image,size,10)
