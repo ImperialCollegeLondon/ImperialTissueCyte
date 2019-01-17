@@ -90,7 +90,7 @@ if __name__ == '__main__':
     xtiles = int(input('Number of X tiles: '))
     ytiles = int(input('Number of Y tiles: '))
     zlayers = int(input('Number of Z layers per slice: '))
-    xoverlap = int(input('X overlap % (default 5): '))
+    xoverlap = int(input('X overlap % (default 6): '))
     yoverlap = int(input('Y overlap % (default 6): '))
     channel = int(input('Channel to stitch: '))
     avgcorr = raw_input('Perform average correction? (y/n): ')
@@ -253,7 +253,7 @@ if __name__ == '__main__':
 
             if convert == 'y':
                 stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif'))
-                stitched_img = Image.fromarray(np.multiply(np.divide(stitched_img.astype(float),np.max(stitched_img.astype(float))), 255.).astype('uint8'), 'L')
+                stitched_img = Image.fromarray(np.divide(stitched_img.astype(float),np.max(stitched_img.astype(float))).astype('uint8'), 'L')
                 stitched_img = stitched_img.resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])), Image.ANTIALIAS)
                 stitched_img.save(stitchpath+'_Downsized/Stitched_Z'+ztoken+'.tif')
 
