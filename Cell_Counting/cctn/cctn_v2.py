@@ -8,8 +8,15 @@
 # The output provides a list of coordinates for identified cells. This should then be fed
 # into the image predictor to confirm whether objects are cells or not.
 #
+# Version 2 - v2
+# This version differes from original by removing all empty rows and columns to further
+# crop each image. In addition, a rolling ball background subtration is used to remove
+# uneven background and generally help the cell segmentation process.
+#
 # Instructions:
-# 1) Run the script in a Python IDE
+# 1) Go to the user defined parameters from roughly line 80
+# 2) Make changes to those parameters as neccessary
+# 3) Execute the code in a Python IDE
 #============================================================================================
 
 ################################################################################
@@ -75,40 +82,52 @@ def get_structure(json_obj, acronym):
 
 if __name__ == '__main__':
     ################################################################################
-    ## User defined parameters
+    ## User defined parameters - please fill in the parameters in this section only
     ################################################################################
 
-    # Fill in the following details to choose the analysis parameters
+    # Do you want to use a mask taken from a registered segmentation atlas
     mask = True
-    over_sample = True
-    xy_res = 10
-    z_res = 5
 
-    # Fill in structure_list using acronyms and separating structures with a ','
+    # Do you want to perform over sampling correction?
+    # Cells within a radius on successive images will be counted as one cell
+    over_sample = True
+
+    # The following is redundant and will be included when considering volume and density
+    # xy_res = 10
+    # z_res = 5
+
+    # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
         mask_path = '/home/gm515/Documents/SimpleElastix/registration/het181218/SEGMENTATION_RES.tif'
-        structure_list = 'PMv'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        structure_list = 'LGd'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
-    # Cell descriptors
+    # Input details for the cell morphology
+    # Can be left as default values
     size = 200.
     radius = 12.
 
-    # Directory of files to count
-    #count_path = raw_input('Image path (drag-and-drop): ').rstrip()
+    # Input the directory path of the TIFF images for counting
     count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
+
+    # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
     number_files = [None,None]
 
-    # Filter type
+    # Do you want to use the custom donut median filter?
     use_medfilt = False
 
-    if not os.path.exists(count_path+'/counts'):
-        os.makedirs(count_path+'/counts')
+    # For the circularity threshold, what minimum background threshold should be set
+    # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
+    bg_thresh = 5
 
     ################################################################################
-    ## Initialisation parameters
+    ## Initialisation
     ################################################################################
+
+    # Create directory to hold the counts in same folder as the images
+    if not os.path.exists(count_path+'/counts'):
+        os.makedirs(count_path+'/counts')
 
     # List of files to count
     count_files = []
@@ -223,10 +242,11 @@ if __name__ == '__main__':
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
                     # Perform rolling ball background subtraction to remove uneven background signal
                     image, background = rolling_ball_filter(np.uint8(image), 8)
+                    #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                     # Perform circularity threshold
-                    image = image>circthresh(image,size,10)
-                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number)+'.tif')
+                    image = image>circthresh(image,size,bg_thresh)
+                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                     # Remove objects smaller than chosen size
                     image_label = label(image, connectivity=image.ndim)
@@ -245,7 +265,7 @@ if __name__ == '__main__':
                     # (row, col) or (y, x)
                     centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
-                    #image = np.zeros_like(image_label)
+                    image = np.full(image.shape, False)
 
                     # Threshold the objects based on size and circularity and store centroids
                     cells = []
@@ -254,7 +274,7 @@ if __name__ == '__main__':
                             # (row, col) centroid
                             # So flip the order for (col, row) as (x, y)
                             cells.append(centroids[i][::-1])
-                            #image += image_label==labels[i]
+                            image += image_label==labels[i]
                 else:
                     cells = []
 
@@ -263,8 +283,8 @@ if __name__ == '__main__':
                 sys.stdout.write("\r%d%%" % int(100*slice_number/zmax))
                 sys.stdout.flush()
 
-                #image = image>0 # Create image if needed
-                #Image.fromarray(np.uint8(image)*255).save('/Users/gm515/Desktop/temp/Z_'+str(slice_number)+'.tif')
+                image = image>0 # Create image if needed
+                #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
             # Sort the dictionary so key are in order
             total_cells = collections.OrderedDict(sorted(total_cells.items()))
