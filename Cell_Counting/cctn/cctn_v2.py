@@ -99,16 +99,16 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/home/gm515/Documents/SimpleElastix/registration/het181218/SEGMENTATION_RES.tif'
+        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
         structure_list = 'LGd'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Input details for the cell morphology
     # Can be left as default values
-    size = 200.
+    size = 85.
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
@@ -265,16 +265,16 @@ if __name__ == '__main__':
                     # (row, col) or (y, x)
                     centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
-                    image = np.full(image.shape, False)
+                    #image = np.full(image.shape, False)
 
                     # Threshold the objects based on size and circularity and store centroids
                     cells = []
                     for i, _ in enumerate(areas):
-                        if areas[i] > size/2 and areas[i] < size*4 and circ[i] > 0.65:
+                        if areas[i] > size/2.5 and areas[i] < size*10 and circ[i] > 0.65:
                             # (row, col) centroid
                             # So flip the order for (col, row) as (x, y)
                             cells.append(centroids[i][::-1])
-                            image += image_label==labels[i]
+                            #image += image_label==labels[i]
                 else:
                     cells = []
 
@@ -283,7 +283,7 @@ if __name__ == '__main__':
                 sys.stdout.write("\r%d%%" % int(100*slice_number/zmax))
                 sys.stdout.flush()
 
-                image = image>0 # Create image if needed
+                #image = image>0 # Create image if needed
                 #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
             # Sort the dictionary so key are in order

@@ -22,14 +22,14 @@ def circularity(thresh, A, SIZE):
     A_thresh = (A>thresh).astype(int)
     A_thresh = scipy.ndimage.morphology.binary_fill_holes(A_thresh).astype(int)
 
-    #Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/'+str(thresh)+'.tif')
+    Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/circ/'+str(thresh)+'.tif')
 
     A_label = label(A_thresh, connectivity=A_thresh.ndim)
 
     # Find circularity
     circfunc = lambda r: (4 * math.pi * r.area) / (r.perimeter * r.perimeter)
 
-    circ = [circfunc(region) for region in regionprops(A_label) if region.area>SIZE and region.area<SIZE*4 and region.perimeter>0]
+    circ = [circfunc(region) for region in regionprops(A_label) if region.area>SIZE and region.area<SIZE*10 and region.perimeter>0]
 
     if len(circ)>0:
         return np.mean(np.array(circ))
@@ -37,9 +37,8 @@ def circularity(thresh, A, SIZE):
         return 0.
 
 def circthresh(A,SIZE,THRESHLIM):
-    B = 5
-    thresh_int = 5
-    thresh_all = np.arange(thresh_int,255,thresh_int)
+    thresh_int = 2
+    thresh_all = np.arange(np.min(A),np.max(A),thresh_int)
 
     # Get mean circularity
     pool = Pool(cpu_count())
