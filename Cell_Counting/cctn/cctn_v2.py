@@ -280,7 +280,7 @@ if __name__ == '__main__':
 
                 total_cells.update({slice_number : cells})
 
-                sys.stdout.write("\r%d%%" % int(100*slice_number/zmax))
+                sys.stdout.write("\r%d%%" % int(100*np.float(slice_number-zmin)/(zmax-zmin)))
                 sys.stdout.flush()
 
                 #image = image>0 # Create image if needed
