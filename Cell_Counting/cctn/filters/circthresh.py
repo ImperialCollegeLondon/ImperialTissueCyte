@@ -22,7 +22,7 @@ def circularity(thresh, A, SIZE):
     A_thresh = (A>thresh).astype(int)
     A_thresh = scipy.ndimage.morphology.binary_fill_holes(A_thresh).astype(int)
 
-    Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/circ/'+str(thresh)+'.tif')
+    #Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/circ/'+str(thresh)+'.tif')
 
     A_label = label(A_thresh, connectivity=A_thresh.ndim)
 
