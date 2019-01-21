@@ -33,46 +33,46 @@ from keras.models import load_model
 from keras import backend as K
 import glob
 
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-Image.MAX_IMAGE_PIXELS = 1000000000
-
 #=============================================================================================
 # Define function for predictions
 #=============================================================================================
 
+# Appends cell coordinates to manager list - manager allows access from a thread
 def append_cell(coord):
     cell_markers.append(coord)
 
+# Appends no-cell coordinates to manager list - manager allows access from a thread
 def append_nocell(coord):
     nocell_markers.append(coord)
 
+# Function to predict/classify object as cell or no-cell
 def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, filename, cell_markers, nocell_markers):
+    # Import modules - required for each independant thread
     import keras
     from keras.preprocessing import image
     from keras.models import load_model, model_from_json
 
+    # Warning supression and allowing large images to be laoded
+    os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+    warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+    Image.MAX_IMAGE_PIXELS = 1000000000
+
+    # Load the classifier model
+    print 'Loading model'
     json_file = open(model_json_path, 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model = model_from_json(loaded_model_json)
     model.load_weights(model_weights_path)
+    print 'Done'
 
-    #img = image.load_img(os.path.join(image_path, filename[marker[cell, 2]]), target_size = (80, 80))
-    #img = img.convert('I')
+
+    # Load each image then crop for the cell
     img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-40, marker[cell, 0]-40, marker[cell, 1]+40, marker[cell, 0]+40))
-    #img = image.img_to_array(img)
-    #img = np.lib.pad(img, pad_width = ((40, 40), (40, 40), (0, 0)), mode = 'constant', constant_values=0)
-    #prev_slice = marker[cell, 2]
-
-    # The additional 1230 is a correction from the cropping between the original data and the segmented set - remove as necessary
-    #cell_crop = img[marker[cell, 1]+1230 : marker[cell, 1]+1230 + 80, marker[cell, 0]+1230 : marker[cell, 0]+1230 + 80]
-    #cell_crop = img[marker[cell, 1] : marker[cell, 1] + 80, marker[cell, 0] : marker[cell, 0] + 80]
-    #img = img.crop((marker[cell, 1]+1230, marker[cell, 0]+1230, marker[cell, 1]+1230+80, marker[cell, 0]+1230+80))
-    #img = img.crop((marker[cell, 1], marker[cell, 0], marker[cell, 1]+80, marker[cell, 0]+80))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis = 0)
 
+    # Predict 0 or 1
     prediction = model.predict(np.asarray(img))
 
     if prediction[0][0] == 0: # Cell
@@ -85,27 +85,33 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
         #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
 
     result[cell] = cell_value
-
+    print 'Cell classified'
     return
 
 
 # Main function
 if __name__ == '__main__':
-
     #=============================================================================================
-    # Load CNN classifier model
-    #=============================================================================================
-
-    #model_path = raw_input('Model file path (drag-and-drop): ').strip('\'').rstrip()
-    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_weights_2018_11_20.h5'
-    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/cc_json_2018_11_20.json'
-
-    #=============================================================================================
-    # Parameters
+    # User definied parameters
     #=============================================================================================
 
-    #marker_path = raw_input('XML or CSV file path (drag-and-drop): ').strip('\'').rstrip()
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
+    # CNN model paths
+    model_weights_path = '/Users/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_weights_2018_11_20.h5'
+    model_json_path = '/Users/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_json_2018_11_20.json'
+
+    # Directory path to the files containing the cell coordinates
+    count_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
+
+    # Directory path to the TIFF files containing the cells
+    image_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+
+    #=============================================================================================
+    # Loop through the coordinate files and predict cells
+    #=============================================================================================
+
+    # Get list of files containing the coordinates in x, y, z
+    #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
+    filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
     if os.path.isdir(count_path):
         all_marker_path = glob.glob(count_path+'/*.csv')
@@ -113,9 +119,9 @@ if __name__ == '__main__':
         all_marker_path = count_path
 
     for marker_path in all_marker_path:
-        #marker_path = '/mnt/BrickleyLab/TissueCyte/Sox14/Gerald_170127_Sox14_HET2/het2-Mosaic/vpl_count.csv'
 
         marker_filename, marker_file_extension = os.path.splitext(marker_path)
+
         if marker_file_extension == '.xml':
             xml_doc = minidom.parse(marker_path)
 
@@ -134,10 +140,6 @@ if __name__ == '__main__':
         # Load images and correct cell count by predicting
         #=============================================================================================
 
-        #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
-        image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
-        filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
-
         manager = Manager()
         result = Array('i', marker.shape[0])
         cell_markers = manager.list()
@@ -145,8 +147,9 @@ if __name__ == '__main__':
 
         cell_index = range(marker.shape[0])
 
-        tstart = time.time()
+        print 'Classifiying in: '+marker_filename
 
+        tstart = time.time()
         pool = Pool(cpu_count())
         res = pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
 
@@ -156,7 +159,6 @@ if __name__ == '__main__':
         pool.close()
         pool.join()
 
-        print marker_path
         print 'Correct cell preditions:', result[:].count(1)
         print 'Potential false cell predictions:', result[:].count(0)
 
