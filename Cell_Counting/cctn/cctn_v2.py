@@ -259,11 +259,12 @@ if __name__ == '__main__':
                     labels = [region.label for region in regionprops(image_label)]
                     centroids = [region.centroid for region in regionprops(image_label)]
 
-                    # Convert coordinate of centroid to coordinate of whole image
-                    coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+                    # Convert coordinate of centroid to coordinate of whole image if mask was used
+                    if mask:
+                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                    # (row, col) or (y, x)
-                    centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
+                        # (row, col) or (y, x)
+                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
                     #image = np.full(image.shape, False)
 
