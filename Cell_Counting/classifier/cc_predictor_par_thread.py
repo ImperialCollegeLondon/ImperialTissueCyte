@@ -19,6 +19,7 @@
 from __future__ import division
 import os, sys, warnings, time
 import numpy as np
+import pandas as pd
 from PIL import Image
 from xml.dom import minidom
 from multiprocessing import Pool, cpu_count, Array, Manager
@@ -58,14 +59,11 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
     Image.MAX_IMAGE_PIXELS = 1000000000
 
     # Load the classifier model
-    print 'Loading model'
     json_file = open(model_json_path, 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model = model_from_json(loaded_model_json)
     model.load_weights(model_weights_path)
-    print 'Done'
-
 
     # Load each image then crop for the cell
     img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-40, marker[cell, 0]-40, marker[cell, 1]+40, marker[cell, 0]+40))
@@ -85,7 +83,7 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
         #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
 
     result[cell] = cell_value
-    print 'Cell classified'
+
     return
 
 
@@ -96,14 +94,14 @@ if __name__ == '__main__':
     #=============================================================================================
 
     # CNN model paths
-    model_weights_path = '/Users/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_weights_2018_11_20.h5'
-    model_json_path = '/Users/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_json_2018_11_20.json'
+    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_weights_2018_11_20.h5'
+    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_json_2018_11_20.json'
 
     # Directory path to the files containing the cell coordinates
-    count_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
 
     # Directory path to the TIFF files containing the cells
-    image_path = '/Volumes/TissueCyte/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
 
     #=============================================================================================
     # Loop through the coordinate files and predict cells
@@ -117,6 +115,9 @@ if __name__ == '__main__':
         all_marker_path = glob.glob(count_path+'/*.csv')
     else:
         all_marker_path = count_path
+
+    # Create empty pands dataframe to store data
+    df = pd.DataFrame(columns = ['ROI', 'Original', 'True', 'False'])
 
     for marker_path in all_marker_path:
 
@@ -151,7 +152,7 @@ if __name__ == '__main__':
 
         tstart = time.time()
         pool = Pool(cpu_count())
-        res = pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index)
+        res = list(tqdm.tqdm(pool.imap(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]))
 
         # for i, _ in enumerate(pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
         #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
@@ -159,8 +160,7 @@ if __name__ == '__main__':
         pool.close()
         pool.join()
 
-        print 'Correct cell preditions:', result[:].count(1)
-        print 'Potential false cell predictions:', result[:].count(0)
+        df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
 
 
 print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
