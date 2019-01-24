@@ -178,6 +178,7 @@ if __name__ == '__main__':
                 size = Image.open(filenames[-1]).size[0]
                 cropstart = int(round(0.018*size))
                 cropend = int(round(size-cropstart+1))
+            crop = 1
 
             # Load images through parallel
             pool = Pool(cpu_count())
