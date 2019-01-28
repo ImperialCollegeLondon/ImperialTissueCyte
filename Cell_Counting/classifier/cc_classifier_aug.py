@@ -146,7 +146,7 @@ training_datagen.random_distortion(probability=0.5, grid_width=5, grid_height=5,
 training_datagen.shear(probability=0.5,  max_shear_left=1, max_shear_right=1)
 training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 
-training_data = p.keras_generator(batch_size=32)
+training_data = training_datagen.keras_generator(batch_size=32)
 
 # test data
 test_datagen = ImageDataGenerator(rescale = 1./255)
