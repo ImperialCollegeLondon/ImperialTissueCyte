@@ -103,7 +103,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 2, activation = 'sigmoid')) #softmax
+classifier.add(Dense(units = 2, activation = 'softmax')) #sigmoid
 
 # Compile
 # Optimizer is stochastic gradient descent
@@ -165,10 +165,12 @@ steps_epoch = len([filename for filename in os.listdir('8-bit/training_data/cell
 steps_valid = len([filename for filename in os.listdir('8-bit/test_data/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir('8-bit/test_data/nocell') if filename.endswith(".tif")])//32
 
 # Checkpoint to only save the best model, metric = val_acc
-if not os.path.exists('models/'+datetime.datetime.today().strftime('%Y_%m_%d')):
-    os.makedirs('models/'+datetime.datetime.today().strftime('%Y_%m_%d'))
+strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-filepath = "models/cc_model_"+datetime.datetime.today().strftime('%Y_%m_%d')+".h5"
+if not os.path.exists('models/'+strdate):
+    os.makedirs('models/'+strdate)
+
+filepath = "models/"+strdate+"/cc_model_"+strdate+".h5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
