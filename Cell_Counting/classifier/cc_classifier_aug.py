@@ -17,7 +17,7 @@ import Augmentor
 
 import keras
 from keras import backend as K
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense, BatchNormalization
 from keras.callbacks import ModelCheckpoint
@@ -103,7 +103,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 1, activation = 'sigmoid')) #softmax
+classifier.add(Dense(units = 2, activation = 'sigmoid')) #softmax
 
 # Compile
 # Optimizer is stochastic gradient descent
@@ -149,8 +149,9 @@ training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 training_data = training_datagen.keras_generator(batch_size=32)
 
 # test data
-test_datagen = ImageDataGenerator(rescale = 1./255)
-test_data = test_datagen.flow_from_directory('8-bit/test_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale')
+test_datagen = Augmentor.Pipeline('8-bit/test_data')
+
+test_data = test_datagen.keras_generator(batch_size=32)
 
 print "Done!\n"
 
@@ -165,7 +166,10 @@ steps_epoch = len([filename for filename in os.listdir('8-bit/training_data/cell
 steps_valid = len([filename for filename in os.listdir('8-bit/test_data/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir('8-bit/test_data/nocell') if filename.endswith(".tif")])//32
 
 # Checkpoint to only save the best model, metric = val_acc
-filepath = "cc_model_"+datetime.datetime.today().strftime('%Y_%m_%d')+".h5"
+if not os.path.exists('models/'+datetime.datetime.today().strftime('%Y_%m_%d')):
+    os.makedirs('models/'+datetime.datetime.today().strftime('%Y_%m_%d'))
+
+filepath = "models/cc_model_"+datetime.datetime.today().strftime('%Y_%m_%d')+".h5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
