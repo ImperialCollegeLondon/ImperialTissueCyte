@@ -3,7 +3,7 @@
 # Author: Gerald M
 #
 # This script uses a convolution neural network classifier, to train for cells and non-cell
-# objects.
+# objects. This incorporates the Augmentor package to improve augmentation data.
 #============================================================================================
 
 import os
@@ -138,11 +138,10 @@ for f in test_nocell_data:
 training_datagen = Augmentor.Pipeline('8-bit/training_data')
 
 training_datagen.rotate(probability=0.5, max_left_rotation=25, max_right_rotation=25)
-training_datagen.zoom(probability=0.5, min_factor=0.95, max_factor=1.05)
 training_datagen.flip_left_right(probability=0.5)
 training_datagen.flip_top_bottom(probability=0.5)
 training_datagen.skew(probability=0.5, magnitude=0.1)
-training_datagen.random_distortion(probability=0.5, grid_width=5, grid_height=5, magnitude=1)
+training_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=1)
 training_datagen.shear(probability=0.5,  max_shear_left=1, max_shear_right=1)
 training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 
