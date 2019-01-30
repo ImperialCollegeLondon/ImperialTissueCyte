@@ -89,7 +89,7 @@ model.add(Dense(2, activation='softmax'))
 optimizer = RMSprop(lr=1e-4)
 model.compile(optimizer = optimizer, loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-print "Done!\n"
+print "Done!"
 
 #=============================================================================================
 # Preparing training and test data
@@ -142,7 +142,7 @@ test_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 
 test_data = test_datagen.keras_generator(batch_size=32, scaled=True)
 
-print "Done!\n"
+print "Done!"
 
 #=============================================================================================
 # Fitting data to model
@@ -167,7 +167,7 @@ callbacks_list = [checkpoint]
 # steps_per_epoch is number of images in training set
 model.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 10, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
 
-print "Done!\n"
+print "Done!"
 
 #=============================================================================================
 # Recompiling training and test data together
@@ -191,4 +191,4 @@ with open(filepath[:-3]+".json", "w") as json_file:
 # Serialize weights to HDF5
 model.save_weights(filepath)
 
-print "Done!\n"
+print "Done!"
