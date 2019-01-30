@@ -84,10 +84,6 @@ classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'
 classifier.add(MaxPooling2D(pool_size = (2, 2)))
 classifier.add(BatchNormalization())
 
-classifier.add(Conv2D(32, (3, 3), input_shape = (80, 80, 1), activation = 'relu'))
-classifier.add(MaxPooling2D(pool_size = (2, 2)))
-classifier.add(BatchNormalization())
-
 # Prevent nodes from generating same classifiers
 classifier.add(Dropout(0.5))
 
@@ -134,21 +130,34 @@ for f in test_cell_data:
 for f in test_nocell_data:
     shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
-# implement Augmentor for training data
+#=============================================================================================
+# Augmenting data
+#=============================================================================================
+
 training_datagen = Augmentor.Pipeline('8-bit/training_data')
 
-training_datagen.rotate(probability=0.5, max_left_rotation=25, max_right_rotation=25)
+training_datagen.rotate_without_crop(probability=0.5, max_left_rotation=25, max_right_rotation=25, expand=False)
+training_datagen.zoom(probability=0.5, min_factor=0.9, max_factor=1.1)
 training_datagen.flip_left_right(probability=0.5)
 training_datagen.flip_top_bottom(probability=0.5)
-training_datagen.skew(probability=0.5, magnitude=0.1)
-training_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=1)
-training_datagen.shear(probability=0.5,  max_shear_left=1, max_shear_right=1)
+training_datagen.skew(probability=0.5, magnitude=0.3)
+training_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=8)
+training_datagen.shear(probability=0.5,  max_shear_left=2, max_shear_right=2)
 training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 
 training_data = training_datagen.keras_generator(batch_size=32)
 
 # test data
 test_datagen = Augmentor.Pipeline('8-bit/test_data')
+
+test_datagen.rotate_without_crop(probability=0.5, max_left_rotation=25, max_right_rotation=25, expand=False)
+test_datagen.zoom(probability=0.5, min_factor=0.9, max_factor=1.1)
+test_datagen.flip_left_right(probability=0.5)
+test_datagen.flip_top_bottom(probability=0.5)
+test_datagen.skew(probability=0.5, magnitude=0.3)
+test_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=8)
+test_datagen.shear(probability=0.5,  max_shear_left=2, max_shear_right=2)
+test_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=1.)
 
 test_data = test_datagen.keras_generator(batch_size=32)
 
