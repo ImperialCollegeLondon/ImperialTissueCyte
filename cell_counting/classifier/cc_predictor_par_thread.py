@@ -73,7 +73,7 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
     # Predict 0 or 1
     prediction = model.predict(np.asarray(img))
 
-    if prediction[0][0] == 0: # Cell
+    if prediction[0][0] == 1: # Cell
         cell_value = 1
         append_cell(marker[cell,:])
         #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
@@ -94,14 +94,14 @@ if __name__ == '__main__':
     #=============================================================================================
 
     # CNN model paths
-    model_weights_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_weights_2018_11_20.h5'
-    model_json_path = '/home/gm515/Documents/GitHub/Cell_Counting/classifier/old_models/cc_json_2018_11_20.json'
+    model_weights_path = '/models/2019_01_29/cc_model_2019_01_29.h5'
+    model_json_path = '/models/2019_01_29/cc_model_2019_01_29.json'
 
     # Directory path to the files containing the cell coordinates
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
+    count_path = '/mnt/TissueCyte80TB/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
 
     # Directory path to the TIFF files containing the cells
-    image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    image_path = '/mnt/TissueCyte80TB/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
 
     #=============================================================================================
     # Loop through the coordinate files and predict cells
