@@ -100,7 +100,7 @@ if __name__ == '__main__':
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
         mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'LGd'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
+        structure_list = 'HY,TH'#,LGv,IGL,RT,LP,VPM,VPL,APN,ZI,LD'
 
     # Input details for the cell morphology
     # Can be left as default values
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     # For the circularity threshold, what minimum background threshold should be set
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
-    bg_thresh = 5
+    bg_thresh = 10.
 
     ################################################################################
     ## Initialisation
@@ -271,7 +271,7 @@ if __name__ == '__main__':
                     # Threshold the objects based on size and circularity and store centroids
                     cells = []
                     for i, _ in enumerate(areas):
-                        if areas[i] > size/2.5 and areas[i] < size*10 and circ[i] > 0.65:
+                        if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
                             # (row, col) centroid
                             # So flip the order for (col, row) as (x, y)
                             cells.append(centroids[i][::-1])
