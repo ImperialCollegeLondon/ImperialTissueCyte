@@ -154,13 +154,14 @@ if __name__ == '__main__':
         pool = Pool(cpu_count())
         res = list(tqdm.tqdm(pool.imap(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]))
 
-        # for i, _ in enumerate(pool.map(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), 1):
-        #     sys.stderr.write('\rDone {0:%}'.format(i/len(cell_index)))
-
         pool.close()
         pool.join()
 
+        # Append to Pandas dataframe
         df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
+
+        # Write dataframe to csv
+        df.to_csv(count_path+'/all_corrected_counts.csv', index=False)
 
 print df
 print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))

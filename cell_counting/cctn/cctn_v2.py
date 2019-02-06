@@ -244,38 +244,40 @@ if __name__ == '__main__':
                     image, background = rolling_ball_filter(np.uint8(image), 8)
                     #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
-                    # Perform circularity threshold
-                    image = image>circthresh(image,size,bg_thresh)
-                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+                    if image.shape[0] != 0 and np.max(image) != 0.:
 
-                    # Remove objects smaller than chosen size
-                    image_label = label(image, connectivity=image.ndim)
+                        # Perform circularity threshold
+                        image = image>circthresh(image,size,bg_thresh)
+                        #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
-                    circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
+                        # Remove objects smaller than chosen size
+                        image_label = label(image, connectivity=image.ndim)
 
-                    # Centroids returns (row, col) so switch over
-                    circ = [circfunc(region) for region in regionprops(image_label)]
-                    areas = [region.area for region in regionprops(image_label)]
-                    labels = [region.label for region in regionprops(image_label)]
-                    centroids = [region.centroid for region in regionprops(image_label)]
+                        circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
 
-                    # Convert coordinate of centroid to coordinate of whole image if mask was used
-                    if mask:
-                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+                        # Centroids returns (row, col) so switch over
+                        circ = [circfunc(region) for region in regionprops(image_label)]
+                        areas = [region.area for region in regionprops(image_label)]
+                        labels = [region.label for region in regionprops(image_label)]
+                        centroids = [region.centroid for region in regionprops(image_label)]
 
-                        # (row, col) or (y, x)
-                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
+                        # Convert coordinate of centroid to coordinate of whole image if mask was used
+                        if mask:
+                            coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                    #image = np.full(image.shape, False)
+                            # (row, col) or (y, x)
+                            centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
-                    # Threshold the objects based on size and circularity and store centroids
-                    cells = []
-                    for i, _ in enumerate(areas):
-                        if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
-                            # (row, col) centroid
-                            # So flip the order for (col, row) as (x, y)
-                            cells.append(centroids[i][::-1])
-                            #image += image_label==labels[i]
+                        #image = np.full(image.shape, False)
+
+                        # Threshold the objects based on size and circularity and store centroids
+                        cells = []
+                        for i, _ in enumerate(areas):
+                            if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
+                                # (row, col) centroid
+                                # So flip the order for (col, row) as (x, y)
+                                cells.append(centroids[i][::-1])
+                                #image += image_label==labels[i]
                 else:
                     cells = []
 
