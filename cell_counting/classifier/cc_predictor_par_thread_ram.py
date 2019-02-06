@@ -47,16 +47,16 @@ def append_nocell(coord):
     nocell_markers.append(coord)
 
 # Function to predict/classify object as cell or no-cell
-def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, filename, cell_markers, nocell_markers):
+def cellpredict(img, model_weights_path, model_json_path):
     # Import modules - required for each independant thread
     import keras
     from keras.preprocessing import image
     from keras.models import load_model, model_from_json
-
-    # Warning supression and allowing large images to be laoded
-    os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-    warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-    Image.MAX_IMAGE_PIXELS = 1000000000
+    #
+    # # Warning supression and allowing large images to be laoded
+    # os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+    # warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+    # Image.MAX_IMAGE_PIXELS = 1000000000
 
     # Load the classifier model
     json_file = open(model_json_path, 'r')
@@ -67,20 +67,22 @@ def cellpredict(cell, model_weights_path, model_json_path, marker, image_path, f
 
     # Load each image then crop for the cell
     # img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-40, marker[cell, 0]-40, marker[cell, 1]+40, marker[cell, 0]+40))
-    img = Image.open(os.path.join(image_path, filename[marker[cell, 2]-1])).crop((marker[cell, 0]-40, marker[cell, 1]-40, marker[cell, 0]+40, marker[cell, 1]+40))
-    img = image.img_to_array(img)
-    img = np.expand_dims(img, axis = 0)
+    # img = Image.open(os.path.join(image_path, filename[marker[cell, 2]-1])).crop((marker[cell, 0]-40, marker[cell, 1]-40, marker[cell, 0]+40, marker[cell, 1]+40))
+    # img = image.img_to_array(img)
+    # img = np.expand_dims(img, axis = 0)
+
+
 
     # Predict 0 or 1
     prediction = model.predict(np.asarray(img))
 
     if prediction[0][0] == 1: # Cell
         cell_value = 1
-        append_cell(marker[cell,:])
+        #append_cell(marker[cell,:])
         #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
     else: # No cell
         cell_value = 0
-        append_nocell(marker[cell,:])
+        #append_nocell(marker[cell,:])
         #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
 
     result[cell] = cell_value
@@ -142,10 +144,19 @@ if __name__ == '__main__':
         # Load images and correct cell count by predicting
         #=============================================================================================
 
+        print 'Loading all images to RAM'
+
+        all_img = np.empty((0,1,80,80,1))
+        for slice in np.unique(marker[:,2]):
+            img = Image.open(os.path.join(image_path, filename[slice-1]))
+            for cell in marker[marker[:,2] == slice]:
+                img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
+                img_crop = image.img_to_array(img_crop)
+                img_crop = np.expand_dims(img_crop, axis = 0)
+                all_img.append(all_img, img_crop, axis = 0)
+
         manager = Manager()
         result = Array('i', marker.shape[0])
-        cell_markers = manager.list()
-        nocell_markers = manager.list()
 
         cell_index = range(marker.shape[0])
 
@@ -153,7 +164,7 @@ if __name__ == '__main__':
 
         tstart = time.time()
         pool = Pool(cpu_count())
-        res = list(tqdm.tqdm(pool.imap(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path, marker=marker, image_path=image_path, filename=filename, cell_markers=cell_markers, nocell_markers=nocell_markers), cell_index), total=marker.shape[0]))
+        res = list(tqdm.tqdm(pool.imap(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path), all_img), total=marker.shape[0]))
 
         pool.close()
         pool.join()
