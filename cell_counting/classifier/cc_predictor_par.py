@@ -5,15 +5,14 @@
 # This script uses a convolution neural network classifier, trained on manually identified
 # cells, to confirm whether a potential cell/neuron is correctly identified.
 #
+# This version uses a parallel thread.
 #
 # Installation:
-# 1) Navigate to the folder containing cc_predictor_par_thread.py
+# 1) Navigate to the folder containing cc_predictor_par.py
 #
 # Instructions:
-# 1) Run the script in a Python IDE
-# 2) Fill in the parameters that you are asked for
-#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
-#    Note: The temporary directory is required to speed up ImageJ loading of the files
+# 1) Fill in the user defined parameters from line 94
+# 2) Run the script in a Python IDE
 #============================================================================================
 
 from __future__ import division

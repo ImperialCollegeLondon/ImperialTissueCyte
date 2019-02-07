@@ -5,15 +5,14 @@
 # This script uses a convolution neural network classifier, trained on manually identified
 # cells, to confirm whether a potential cell/neuron is correctly identified.
 #
+# This version uses serial computation.
 #
 # Installation:
-# 1) Navigate to the folder containing cc_predictor_par_thread.py
+# 1) Navigate to the folder containing cc_predictor_par.py
 #
 # Instructions:
-# 1) Run the script in a Python IDE
-# 2) Fill in the parameters that you are asked for
-#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
-#    Note: The temporary directory is required to speed up ImageJ loading of the files
+# 1) Fill in the user defined parameters from line 94
+# 2) Run the script in a Python IDE
 #============================================================================================
 
 from __future__ import division
@@ -34,6 +33,11 @@ from keras.models import load_model
 from keras import backend as K
 import glob
 
+# Warning supression and allowing large images to be laoded
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+Image.MAX_IMAGE_PIXELS = 1000000000
+
 #=============================================================================================
 # Define function for predictions
 #=============================================================================================
@@ -47,33 +51,9 @@ def append_nocell(coord):
     nocell_markers.append(coord)
 
 # Function to predict/classify object as cell or no-cell
-def cellpredict(img, model_weights_path, model_json_path):
-    # Import modules - required for each independant thread
-    import keras
-    from keras.preprocessing import image
-    from keras.models import load_model, model_from_json
-    #
-    # # Warning supression and allowing large images to be laoded
-    # os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-    # warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-    # Image.MAX_IMAGE_PIXELS = 1000000000
+def cellpredict(cell, img):
 
-    # Load the classifier model
-    json_file = open(model_json_path, 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    model = model_from_json(loaded_model_json)
-    model.load_weights(model_weights_path)
-
-    # Load each image then crop for the cell
-    # img = Image.open(os.path.join(image_path, filename[marker[cell, 2]])).crop((marker[cell, 1]-40, marker[cell, 0]-40, marker[cell, 1]+40, marker[cell, 0]+40))
-    # img = Image.open(os.path.join(image_path, filename[marker[cell, 2]-1])).crop((marker[cell, 0]-40, marker[cell, 1]-40, marker[cell, 0]+40, marker[cell, 1]+40))
-    # img = image.img_to_array(img)
-    # img = np.expand_dims(img, axis = 0)
-
-
-
-    # Predict 0 or 1
+    # Predict [1,0] for cell or [0,1] for no cell
     prediction = model.predict(np.asarray(img))
 
     if prediction[0][0] == 1: # Cell
@@ -92,19 +72,31 @@ def cellpredict(img, model_weights_path, model_json_path):
 
 # Main function
 if __name__ == '__main__':
+    # Import modules - required for each independant thread
+    import keras
+    from keras.preprocessing import image
+    from keras.models import load_model, model_from_json
+
     #=============================================================================================
     # User definied parameters
     #=============================================================================================
 
     # CNN model paths
-    model_weights_path = 'models/2019_01_29/cc_model_2019_01_29.h5'
-    model_json_path = 'models/2019_01_29/cc_model_2019_01_29.json'
+    model_weights_path = '/Users/gm515/Documents/GitHub/cell_counting/classifier/models/2019_01_29/cc_model_2019_01_29.h5'
+    model_json_path = '/Users/gm515/Documents/GitHub/cell_counting/classifier/models/2019_01_29/cc_model_2019_01_29.json'
 
     # Directory path to the files containing the cell coordinates
-    count_path = '/mnt/TissueCyte80TB/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
+    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
 
     # Directory path to the TIFF files containing the cells
-    image_path = '/mnt/TissueCyte80TB/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
+    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
+
+    # Load the classifier model
+    json_file = open(model_json_path, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
+    model.load_weights(model_weights_path)
 
     #=============================================================================================
     # Loop through the coordinate files and predict cells
@@ -141,10 +133,10 @@ if __name__ == '__main__':
             marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
 
         #=============================================================================================
-        # Load images and correct cell count by predicting
+        # Load images into RAM
         #=============================================================================================
 
-        print 'Loading all images to RAM'
+        print 'Loading all images to RAM...'
 
         all_img = np.empty((0,1,80,80,1))
         for slice in np.unique(marker[:,2]):
@@ -153,27 +145,41 @@ if __name__ == '__main__':
                 img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                 img_crop = image.img_to_array(img_crop)
                 img_crop = np.expand_dims(img_crop, axis = 0)
-                all_img.append(all_img, img_crop, axis = 0)
+                img_crop = np.expand_dims(img_crop, axis = 0)
+                all_img = np.append(all_img, img_crop, axis = 0)
+
+        print 'Done!'
 
         manager = Manager()
         result = Array('i', marker.shape[0])
 
+        print 'Classifiying '+marker_filename
+
         cell_index = range(marker.shape[0])
 
-        print 'Classifiying in: '+marker_filename
-
         tstart = time.time()
-        pool = Pool(cpu_count())
-        res = list(tqdm.tqdm(pool.imap(partial(cellpredict, model_weights_path=model_weights_path, model_json_path=model_json_path), all_img), total=marker.shape[0]))
 
-        pool.close()
-        pool.join()
+        #=============================================================================================
+        # Classify images
+        #=============================================================================================
+
+        pbar = tqdm(total=len(all_img))
+        for cell, img in zip(range(len(all_img)), all_img):
+            cellpredict(cell, img)
+            pbar.update(1)
+        pbar.close()
 
         # Append to Pandas dataframe
         df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
 
+        # Create directory to hold the counts in same folder as the images
+        if not os.path.exists(count_path+'_class'):
+            os.makedirs(count_path+'_class')
+
         # Write dataframe to csv
-        df.to_csv(count_path[:-7]+'/counts_cc_corrected.csv', index=False)
+        df.to_csv(count_path+'_class/counts_class_corrected.csv', index=False)
+
+        print 'Done!'
 
 print df
 print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
