@@ -59,7 +59,10 @@ def circthresh(A,SIZE,THRESHLIM):
         plt.savefig('/Users/gm515/Desktop/test/fig.png')
 
     #T = thresh_all[np.where(yfit(thresh_all[circ_all>0]) == np.max(yfit(thresh_all[circ_all>0])))]
-    T = thresh_all[np.argmax(circ_all>0.8)]
+    if circ_all.size:
+        T = thresh_all[np.argmax(circ_all>0.8)]
+    else:
+        T = 0.
 
     # If threshold from fit is less than minimum threshold limit, set optimum threshold to minimum
     if T<THRESHLIM:

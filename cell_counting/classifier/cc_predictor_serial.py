@@ -136,17 +136,30 @@ if __name__ == '__main__':
         # Load images into RAM
         #=============================================================================================
 
-        print 'Loading all images to RAM...'
+        if marker.shape[0] > 0:
 
-        all_img = np.empty((0,1,80,80,1))
-        for slice in np.unique(marker[:,2]):
-            img = Image.open(os.path.join(image_path, filename[slice-1]))
-            for cell in marker[marker[:,2] == slice]:
-                img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
-                img_crop = image.img_to_array(img_crop)
-                img_crop = np.expand_dims(img_crop, axis = 0)
-                img_crop = np.expand_dims(img_crop, axis = 0)
-                all_img = np.append(all_img, img_crop, axis = 0)
+            print 'Loading all images to RAM...'
+
+            all_img = np.empty((0,1,80,80,1))
+
+            if marker.ndim == 1:
+                for slice in np.unique(marker[2]):
+                    img = Image.open(os.path.join(image_path, filename[slice-1]))
+                    for cell in marker[marker[2] == slice]:
+                        img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
+                        img_crop = image.img_to_array(img_crop)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        all_img = np.append(all_img, img_crop, axis = 0)
+            else:
+                for slice in np.unique(marker[:,2]):
+                    img = Image.open(os.path.join(image_path, filename[slice-1]))
+                    for cell in marker[marker[:,2] == slice]:
+                        img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
+                        img_crop = image.img_to_array(img_crop)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        all_img = np.append(all_img, img_crop, axis = 0)
 
         print 'Done!'
 
