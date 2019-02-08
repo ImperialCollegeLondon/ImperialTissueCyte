@@ -82,14 +82,14 @@ if __name__ == '__main__':
     #=============================================================================================
 
     # CNN model paths
-    model_weights_path = '/Users/gm515/Documents/GitHub/cell_counting/classifier/models/2019_01_29/cc_model_2019_01_29.h5'
-    model_json_path = '/Users/gm515/Documents/GitHub/cell_counting/classifier/models/2019_01_29/cc_model_2019_01_29.json'
+    model_weights_path = 'models/2019_01_29/cc_model_2019_01_29.h5'
+    model_json_path = 'models/2019_01_29/cc_model_2019_01_29.json'
 
     # Directory path to the files containing the cell coordinates
-    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
 
     # Directory path to the TIFF files containing the cells
-    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
+    image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
 
     # Load the classifier model
     json_file = open(model_json_path, 'r')
