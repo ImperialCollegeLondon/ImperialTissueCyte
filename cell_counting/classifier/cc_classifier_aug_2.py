@@ -44,31 +44,31 @@ print "Constructing Convolution Neural Network..."
 
 model = Sequential()
 model.add(ZeroPadding2D((1,1),input_shape=(80, 80, 1)))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Conv2D(8, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(8, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(128, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(Conv2D(16, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(16, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(Conv2D(32, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(32, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(ZeroPadding2D((1,1)))
-model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(Conv2D(32, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(32, (3, 3), activation='relu'))
+# model.add(ZeroPadding2D((1,1)))
+# model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 # model.add(ZeroPadding2D((1,1)))
@@ -88,8 +88,8 @@ model.add(MaxPooling2D((2,2), strides=(2,2)))
 # model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
+# model.add(Dense(128, activation='relu'))
+# model.add(Dropout(0.5))
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(2, activation='softmax'))
@@ -198,5 +198,13 @@ with open(filepath[:-3]+".json", "w") as json_file:
     json_file.write(model_json)
 # Serialize weights to HDF5
 model.save_weights(filepath)
+
+#=============================================================================================
+# Writing model summary to file
+#=============================================================================================
+
+with open('models/'+strdate+'/'+strdate+'_model_summary.txt','w') as fh:
+    # Pass the file handle in as a lambda function to make it callable
+    model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
 print "Done!"

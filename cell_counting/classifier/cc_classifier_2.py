@@ -29,10 +29,6 @@ os.environ['openmp'] = 'True'
 config = tf.ConfigProto(device_count={"GPU" : 1, "CPU" : cpu_count()})
 keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
 
-def AHE(img):
-    img_adapteq = skimage.exposure.equalize_adapthist(img, clip_limit=0.03)
-    return img_adapteq
-
 #=============================================================================================
 # Precheck on directory structure
 #=============================================================================================
@@ -100,7 +96,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 1, activation = 'sigmoid')) #softmax
+classifier.add(Dense(units = 1, activation = 'softmax')) #sigmoid
 
 # Compile
 # Optimizer is stochastic gradient descent
@@ -132,7 +128,6 @@ for f in test_nocell_data:
     shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
 # training data
-train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.15, zoom_range = 0.15, width_shift_range=0.15, height_shift_range=0.15, horizontal_flip = True, vertical_flip = True)
 training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale')
 #training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale', save_to_dir='preview', save_prefix='cell', save_format='jpeg')
 # test data
@@ -152,12 +147,17 @@ steps_epoch = len([filename for filename in os.listdir('8-bit/training_data/cell
 steps_valid = len([filename for filename in os.listdir('8-bit/test_data/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir('8-bit/test_data/nocell') if filename.endswith(".tif")])//32
 
 # Checkpoint to only save the best model, metric = val_acc
-filepath = "cc_model_"+datetime.datetime.today().strftime('%Y_%m_%d')+".h5"
+strdate = datetime.datetime.today().strftime('%Y_%m_%d')
+
+if not os.path.exists('models/'+strdate):
+    os.makedirs('models/'+strdate)
+
+filepath = 'models/'+strdate+'/cc_model_'+strdate+'.h5'
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
 # steps_per_epoch is number of images in training set
-classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 50, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
+classifier.fit_generator(training_data, steps_per_epoch = steps_epoch, epochs = 10, callbacks=callbacks_list, validation_data = test_data, validation_steps = steps_valid, shuffle = True)
 
 print "Done!\n"
 
@@ -183,5 +183,12 @@ with open(filepath[:-3]+".json", "w") as json_file:
 # Serialize weights to HDF5
 model.save_weights(filepath)
 
+#=============================================================================================
+# Writing model summary to file
+#=============================================================================================
+
+with open('models/'+strdate+'/'+strdate+'_model_summary.txt','w') as fh:
+    # Pass the file handle in as a lambda function to make it callable
+    classifier.summary(print_fn=lambda x: fh.write(x + '\n'))
 
 print "Done!\n"
