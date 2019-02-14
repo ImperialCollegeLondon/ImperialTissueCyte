@@ -14,7 +14,7 @@ from multiprocessing import cpu_count
 import skimage.exposure
 
 import keras
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense, BatchNormalization
 from keras.callbacks import ModelCheckpoint
@@ -96,7 +96,7 @@ classifier.add(Dense(units = 128, activation = 'relu'))
 classifier.add(Dropout(0.5))
 
 # Initialise output layer
-classifier.add(Dense(units = 1, activation = 'softmax')) #sigmoid
+classifier.add(Dense(units = 1, activation = 'sigmoid')) #sigmoid
 
 # Compile
 # Optimizer is stochastic gradient descent
@@ -128,6 +128,7 @@ for f in test_nocell_data:
     shutil.move('8-bit/training_data/nocell/'+f,'8-bit/test_data/nocell/'+f)
 
 # training data
+train_datagen = ImageDataGenerator(rotation_range=180, rescale = 1./255, shear_range = 0.15, zoom_range = 0.15, width_shift_range=0.15, height_shift_range=0.15, horizontal_flip = True, vertical_flip = True)
 training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale')
 #training_data = train_datagen.flow_from_directory('8-bit/training_data', target_size = (80, 80), batch_size = 32, class_mode = 'binary', color_mode = 'grayscale', save_to_dir='preview', save_prefix='cell', save_format='jpeg')
 # test data

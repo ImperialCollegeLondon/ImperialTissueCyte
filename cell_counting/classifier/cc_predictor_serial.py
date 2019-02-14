@@ -86,10 +86,10 @@ if __name__ == '__main__':
     model_json_path = 'models/2019_01_29/cc_model_2019_01_29.json'
 
     # Directory path to the files containing the cell coordinates
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections/counts'
+    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
 
     # Directory path to the TIFF files containing the cells
-    image_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
 
     # Load the classifier model
     json_file = open(model_json_path, 'r')
@@ -161,29 +161,29 @@ if __name__ == '__main__':
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img = np.append(all_img, img_crop, axis = 0)
 
-        print 'Done!'
+            print 'Done!'
 
-        manager = Manager()
-        result = Array('i', marker.shape[0])
+            manager = Manager()
+            result = Array('i', marker.shape[0])
 
-        print 'Classifiying '+marker_filename
+            print 'Classifiying '+marker_filename
 
-        cell_index = range(marker.shape[0])
+            cell_index = range(marker.shape[0])
 
-        tstart = time.time()
+            tstart = time.time()
 
-        #=============================================================================================
-        # Classify images
-        #=============================================================================================
+            #=============================================================================================
+            # Classify images
+            #=============================================================================================
 
-        pbar = tqdm(total=len(all_img))
-        for cell, img in zip(range(len(all_img)), all_img):
-            cellpredict(cell, img)
-            pbar.update(1)
-        pbar.close()
+            pbar = tqdm.tqdm(total=len(all_img))
+            for cell, img in zip(range(len(all_img)), all_img):
+                cellpredict(cell, img)
+                pbar.update(1)
+            pbar.close()
 
-        # Append to Pandas dataframe
-        df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
+            # Append to Pandas dataframe
+            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
 
         # Create directory to hold the counts in same folder as the images
         if not os.path.exists(count_path+'_class'):
