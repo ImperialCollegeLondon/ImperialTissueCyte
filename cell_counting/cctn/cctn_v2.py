@@ -80,6 +80,14 @@ def get_structure(json_obj, acronym):
             if found:
                 return found
 
+def progressBar(sliceno, value, endvalue, bar_length=50):
+        percent = float(value) / endvalue
+        arrow = '-' * int(round(percent * bar_length)-1) + '/'
+        spaces = ' ' * (bar_length - len(arrow))
+
+        sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
+        sys.stdout.flush()
+
 if __name__ == '__main__':
     ################################################################################
     ## User defined parameters - please fill in the parameters in this section only
@@ -283,8 +291,10 @@ if __name__ == '__main__':
 
                 total_cells.update({slice_number : cells})
 
-                sys.stdout.write("\r%d%%" % int(100*np.float(slice_number-zmin)/(zmax-zmin)))
-                sys.stdout.flush()
+                progressBar(slice_number, slice_number-zmin, zmax-zmin)
+
+                # sys.stdout.write("\r%d%%" % int(100*np.float(slice_number-zmin)/(zmax-zmin)))
+                # sys.stdout.flush()
 
                 #image = image>0 # Create image if needed
                 #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
