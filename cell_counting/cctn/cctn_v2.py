@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     # For the circularity threshold, what minimum background threshold should be set
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
-    bg_thresh = 10.
+    bg_thresh = 6.
 
     ################################################################################
     ## Initialisation
@@ -236,7 +236,7 @@ if __name__ == '__main__':
                 if use_medfilt:
                     image = gaussmedfilt(image, 3, 1.5)
                 else:
-                    image = ndimage.gaussian_filter(image, sigma=(3, 3))
+                    image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
 
                 if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
@@ -294,7 +294,7 @@ if __name__ == '__main__':
 
             # Peform correction for overlap
             if over_sample:
-                print 'Correcting for oversampling'
+                print '\nCorrecting for oversampling'
                 for index, (x, y) in enumerate(zip(total_cells.values()[1:], total_cells.values()[:-1])):
                     if len(x) * len(y) > 0:
                         total_cells[zmin+index] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]

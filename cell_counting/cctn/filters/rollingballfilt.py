@@ -1,13 +1,10 @@
 import numpy as np
 import scipy.ndimage as ndi
 from scipy.ndimage._ni_support import _normalize_sequence
+import cv2
 
 def rolling_ball_filter(data, ball_radius, spacing=None, top=False, **kwargs):
-    """Rolling ball filter implemented with morphology operations
-
-    This implenetation is very similar to that in ImageJ and uses a top hat transform
-    with a ball shaped structuring element
-    https://en.wikipedia.org/wiki/Top-hat_transform
+    """Rolling ball filter implemented with OpenCV morphology operations
 
     Parameters
     ----------
@@ -38,16 +35,17 @@ def rolling_ball_filter(data, ball_radius, spacing=None, top=False, **kwargs):
 
     radius = np.asarray(_normalize_sequence(ball_radius, ndim))
     mesh = np.array(np.meshgrid(*[np.arange(-r, r + s, s) for r, s in zip(radius, spacing)], indexing="ij"))
-    structure = 2 * np.sqrt(2 - ((mesh / radius.reshape(-1, *((1,) * ndim)))**2).sum(0))
+    structure = np.uint8(2 * np.sqrt(2 - ((mesh / radius.reshape(-1, *((1,) * ndim)))**2).sum(0)))
     structure[~np.isfinite(structure)] = 0
+
     if not top:
         # ndi.white_tophat(y, structure=structure, output=background)
-        background = ndi.grey_erosion(data, structure=structure, **kwargs)
-        background = ndi.grey_dilation(background, structure=structure, **kwargs)
+        background = cv2.erode(data, structure, **kwargs)
+        background = cv2.dilate(background, structure, **kwargs)
     else:
         # ndi.black_tophat(y, structure=structure, output=background)
-        background = ndi.grey_dilation(data, structure=structure, **kwargs)
-        background = ndi.grey_erosion(background, structure=structure, **kwargs)
+        background = cv2.dilate(data, structure, **kwargs)
+        background = cv2.erode(background, structure, **kwargs)
 
     data_corr = data - background
     data_corr[data_corr<0] = 0
