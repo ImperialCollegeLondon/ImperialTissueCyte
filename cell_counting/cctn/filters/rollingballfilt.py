@@ -1,31 +1,39 @@
+"""
+################################################################################
+Rolling ball filter
+Author: Gerald M
+
+This function returns a rolling ball subtracted image.
+
+Parameters
+data : ndarray type uint8
+    image data (assumed to be on a regular grid)
+ball_radius : float
+    the radius of the ball to roll
+spacing : int or sequence
+    the spacing of the image data
+top : bool
+    whether to roll the ball on the top or bottom of the data
+kwargs : key word arguments
+    these are passed to the ndimage morphological operations
+
+Returns
+data_nb : ndarray
+    data with background subtracted as uint8
+bg : ndarray
+    background that was subtracted from the data
+
+Updates
+20.02.19 - Modified the code to use OpenCV for faster image processing.
+################################################################################
+"""
+
 import numpy as np
 import scipy.ndimage as ndi
 from scipy.ndimage._ni_support import _normalize_sequence
 import cv2
 
 def rolling_ball_filter(data, ball_radius, spacing=None, top=False, **kwargs):
-    """Rolling ball filter implemented with OpenCV morphology operations
-
-    Parameters
-    ----------
-    data : ndarray type uint8
-        image data (assumed to be on a regular grid)
-    ball_radius : float
-        the radius of the ball to roll
-    spacing : int or sequence
-        the spacing of the image data
-    top : bool
-        whether to roll the ball on the top or bottom of the data
-    kwargs : key word arguments
-        these are passed to the ndimage morphological operations
-
-    Returns
-    -------
-    data_nb : ndarray
-        data with background subtracted as uint8
-    bg : ndarray
-        background that was subtracted from the data
-    """
     data = data.astype(np.int16)
     ndim = data.ndim
     if spacing is None:

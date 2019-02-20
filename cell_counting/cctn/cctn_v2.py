@@ -1,23 +1,31 @@
-#============================================================================================
-# Cell Counting in Target Nuclei Script
-# Author: Gerald M
-#
-# This script performs automated cell counting in anatomical structures of interest, or a
-# a stack of TIFFs. It works by first determining an ideal threshold based on the circularity
-# of objects. Then by tracking cells/objects over multiple layers to account for oversampling.
-# The output provides a list of coordinates for identified cells. This should then be fed
-# into the image predictor to confirm whether objects are cells or not.
-#
-# Version 2 - v2
-# This version differes from original by removing all empty rows and columns to further
-# crop each image. In addition, a rolling ball background subtration is used to remove
-# uneven background and generally help the cell segmentation process.
-#
-# Instructions:
-# 1) Go to the user defined parameters from roughly line 80
-# 2) Make changes to those parameters as neccessary
-# 3) Execute the code in a Python IDE
-#============================================================================================
+"""
+################################################################################
+Cell Counting in Target Nuclei Script
+Author: Gerald M
+
+This script performs automated cell counting in anatomical structures of
+interest, or a stack of TIFFs. It works by first determining an ideal threshold
+based on the circularity of objects. Then by tracking cells/objects over
+multiple layers to account for oversampling. The output provides a list of
+coordinates for identified cells. This should then be fed into the image
+predictor to confirm whether objects are cells or not.
+
+Version 2 - v2
+This version differes from original by removing all empty rows and columns to
+further crop each image. In addition, a rolling ball background subtration is
+used to remove uneven background and generally help the cell segmentation
+process.
+
+Instructions:
+1) Go to the user defined parameters from roughly line 80
+2) Make changes to those parameters as neccessary
+3) Execute the code in a Python IDE
+
+Updates
+20.02.19 - Modified script to use new rolling ball filter and circthresh to save
+           time - see fitlers/rollingballfilt.py and filters/circthresh.py
+################################################################################
+"""
 
 ################################################################################
 ## Module import
@@ -107,8 +115,8 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'ME'
+        mask_path = '/mnt/TissueCyte30TB/190117_Gerald_Het5/het5-Mosaic/het190117_seg_10um.tif'
+        structure_list = 'DTN'
 
     # Input details for the cell morphology
     # Can be left as default values
@@ -116,7 +124,7 @@ if __name__ == '__main__':
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte30TB/190117_Gerald_Het5/het5-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
@@ -125,9 +133,10 @@ if __name__ == '__main__':
     # Do you want to use the custom donut median filter?
     use_medfilt = False
 
-    # For the circularity threshold, what minimum background threshold should be set
+    # For the circularity threshold, what minimum background threshold should be set and what circularity value needs to be achieved
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
     bg_thresh = 6.
+    circ_thresh = 0.8
 
     ################################################################################
     ## Initialisation
@@ -249,13 +258,13 @@ if __name__ == '__main__':
                 if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
                     # Perform rolling ball background subtraction to remove uneven background signal
-                    image, background = rolling_ball_filter(np.uint8(image), 8)
+                    image, background = rolling_ball_filter(np.uint8(image), 24)
                     #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                     if np.max(image) != 0.:
 
                         # Perform circularity threshold
-                        image = image>circthresh(image,size,bg_thresh)
+                        image = image>circthresh(image,size,bg_thresh,circ_thresh,True)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                         # Remove objects smaller than chosen size

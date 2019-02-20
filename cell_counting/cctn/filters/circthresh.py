@@ -1,9 +1,20 @@
-#============================================================================================
-# Circularity Based Thresholding Function
-# Author: Gerald M
-#
-# This function returns the threshold at which the image has the highest mean circularity.
-#============================================================================================
+"""
+################################################################################
+Circularity Based Thresholding Function
+Author: Gerald M
+
+This function returns the threshold at which the image has a mean circularity
+above a chosen threshold value.
+
+Updates
+20.02.19 - Added CIRCLIM as the circularity limit and PAR for the parallel
+           computation as input variables. The parallel code has been modified
+           to terminate once the CIRCLIM condition has been met to prevent
+           unneccessary calculation. circularity() now returns a tuple with the
+           threshold to allow that condition to be checked. Speed increase from
+           5.00775 to 0.6733 seconds.
+################################################################################
+"""
 
 import scipy.ndimage
 from scipy.optimize import curve_fit
@@ -14,16 +25,17 @@ from functools import partial
 from skimage.measure import regionprops, label
 from PIL import Image
 import matplotlib.pyplot as plt
+import time
 
 def func(x, a, x0, sigma):
     return a*np.exp(-(x-x0)**2/(2*sigma**2))
 
 def circularity(thresh, A, SIZE):
     A_thresh = (A>thresh).astype(int)
+
     A_thresh = scipy.ndimage.morphology.binary_fill_holes(A_thresh).astype(int)
 
     #Image.fromarray(A_thresh.astype(float)).save('/Users/gm515/Desktop/temp/circ/'+str(thresh)+'.tif')
-
     A_label = label(A_thresh, connectivity=A_thresh.ndim)
 
     # Find circularity
@@ -32,37 +44,34 @@ def circularity(thresh, A, SIZE):
     circ = [circfunc(region) for region in regionprops(A_label) if region.area>SIZE and region.area<SIZE*10 and region.perimeter>0]
 
     if len(circ)>0:
-        return np.mean(np.array(circ))
+        return (thresh, np.mean(np.array(circ)))
     else:
-        return 0.
+        return (thresh, 0.)
 
-def circthresh(A,SIZE,THRESHLIM):
+def circthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
     thresh_int = 2
-    thresh_all = np.arange(np.min(A),np.max(A),thresh_int)
 
-    # Get mean circularity
-    pool = Pool(cpu_count())
-    circ_all = np.squeeze(np.array([pool.map(partial(circularity, A=A, SIZE=SIZE), thresh_all)]), axis=0)
-    pool.close()
-    pool.join()
+    if PAR:
+        thresh_all = np.arange(THRESHLIM,np.max(A),thresh_int)
+        # Get mean circularity
+        pool = Pool(cpu_count())
+        # circ_all = np.squeeze(np.array([pool.map(partial(circularity, A=A, SIZE=SIZE), thresh_all)]), axis=0)
+        circ_all = pool.imap(partial(circularity, A=A, SIZE=SIZE), thresh_all)
+        pool.close()
+        for th, circ in circ_all:
+            if circ > CIRCLIM:  # or set other condition here
+                pool.terminate()
+                T = th
+                break
+            else:
+                T = 0.
+        pool.join()
 
-    # Fit a polynomial and find optimum threshold where circualrity measures are grater than 1
-    # func = np.polyfit(thresh_all[circ_all>0], circ_all[circ_all>0], 2)
-    # yfit = np.poly1d(func)
-    # print yfit(thresh_all[circ_all>0])
-
-    plot = False
-    if plot:
-        plt.figure()
-        plt.plot(thresh_all, circ_all, 'xb')
-        plt.plot(thresh_all[circ_all>0], yfit(thresh_all[circ_all>0]), '-r')
-        plt.savefig('/Users/gm515/Desktop/test/fig.png')
-
-    #T = thresh_all[np.where(yfit(thresh_all[circ_all>0]) == np.max(yfit(thresh_all[circ_all>0])))]
-    if circ_all.size:
-        T = thresh_all[np.argmax(circ_all>0.8)]
     else:
-        T = 0.
+        thresh = THRESHLIM
+        while circularity(thresh, A, SIZE) < CIRCLIM:
+            thresh += thresh_int
+        T = thresh
 
     # If threshold from fit is less than minimum threshold limit, set optimum threshold to minimum
     if T<THRESHLIM:
