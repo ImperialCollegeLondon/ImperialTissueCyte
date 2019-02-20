@@ -115,8 +115,8 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte30TB/190117_Gerald_Het5/het5-Mosaic/het190117_seg_10um.tif'
-        structure_list = 'DTN'
+        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
+        structure_list = 'LGd'
 
     # Input details for the cell morphology
     # Can be left as default values
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/mnt/TissueCyte30TB/190117_Gerald_Het5/het5-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
@@ -329,6 +329,7 @@ if __name__ == '__main__':
                         csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
 
         structure_index += 1
+        print ''
 
     print '~Fin~'
 
