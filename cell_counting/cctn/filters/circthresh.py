@@ -53,6 +53,7 @@ def circthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
 
     if PAR:
         thresh_all = np.arange(THRESHLIM,np.max(A),thresh_int)
+        T = 0
         # Get mean circularity
         pool = Pool(cpu_count())
         # circ_all = np.squeeze(np.array([pool.map(partial(circularity, A=A, SIZE=SIZE), thresh_all)]), axis=0)
@@ -63,13 +64,11 @@ def circthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
                 pool.terminate()
                 T = th
                 break
-            else:
-                T = 0.
         pool.join()
 
     else:
         thresh = THRESHLIM
-        while circularity(thresh, A, SIZE) < CIRCLIM:
+        while circularity(thresh, A, SIZE)[1] < CIRCLIM:
             thresh += thresh_int
         T = thresh
 
