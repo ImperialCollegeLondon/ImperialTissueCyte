@@ -1,25 +1,29 @@
-#============================================================================================
-# Asynchronous Stitching Script - Parallel version
-# Author: Gerald M
-#
-# This script pulls the data generated through TissueCyte (or another microscope system) and
-# can perfom image averaging correction on the images if requested, before calling ImageJ
-# from the command line to perform the stitching. You will need to have the plugin script
-# OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
-# registered. Otherwise the X overlap will be used for both.
-#
-# The pipeline has been sped up in some areas by parallelising some functions.
-#
-# Installation:
-# 1) Navigate to the folder containing the AsyncstitchGM.py
-# 2) Run 'pip install -r requirements.txt'
-#
-# Instructions:
-# 1) Run the script in a Python IDE
-# 2) Fill in the parameters that you are asked for
-#    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
-#    Note: The temporary directory is required to speed up ImageJ loading of the files
-#============================================================================================
+'''
+Asynchronous Stitching Script - Parallel version
+Author: Gerald M
+
+This script pulls the data generated through TissueCyte (or another microscope system) and
+can perfom image averaging correction on the images if requested, before calling ImageJ
+from the command line to perform the stitching. You will need to have the plugin script
+OverlapY.ijm installed in ImageJ in order for the difference in the X and Y overlap to be
+registered. Otherwise the X overlap will be used for both.
+
+The pipeline has been sped up in some areas by parallelising some functions.
+
+Installation:
+1) Navigate to the folder containing the AsyncstitchGM.py
+2) Run 'pip install -r requirements.txt'
+
+Instructions:
+1) Run the script in a Python IDE
+2) Fill in the parameters that you are asked for
+   Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
+   Note: The temporary directory is required to speed up ImageJ loading of the files
+
+Updates:
+06.03.19 - Updated the overlap and crop parameters to improve the image average result and
+tiling artefacts.
+'''
 
 import os, sys, warnings, time, glob, errno, subprocess, shutil, math
 import numpy as np
@@ -38,7 +42,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 #=============================================================================================
 def load_tile(file, cropstart, cropend):
     try:
-        tileimage = np.array(Image.open(file).crop((cropstart, cropstart, cropend, cropend)).rotate(90))
+        tileimage = np.array(Image.open(file).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
     except (ValueError, IOError, OSError):
         tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     return tileimage
@@ -90,8 +94,8 @@ if __name__ == '__main__':
     xtiles = int(input('Number of X tiles: '))
     ytiles = int(input('Number of Y tiles: '))
     zlayers = int(input('Number of Z layers per slice: '))
-    xoverlap = int(input('X overlap % (default 6): '))
-    yoverlap = int(input('Y overlap % (default 6): '))
+    xoverlap = int(input('X overlap % (recommend 1): '))
+    yoverlap = int(input('Y overlap % (recommend 1): '))
     channel = int(input('Channel to stitch: '))
     avgcorr = raw_input('Perform average correction? (y/n): ')
     convert = raw_input('Perform additional downsize? (y/n): ')
@@ -176,7 +180,7 @@ if __name__ == '__main__':
             # Get crop value
             if crop == 0:
                 size = Image.open(filenames[-1]).size[0]
-                cropstart = int(round(0.018*size))
+                cropstart = int(round(0.04*size))
                 cropend = int(round(size-cropstart+1))
             crop = 1
 
@@ -188,7 +192,7 @@ if __name__ == '__main__':
 
             # Compute average tile and divide if required
             if avgcorr == 'y':
-                avgimage = np.mean(img_arr, axis=0)
+                avgimage = (np.mean(img_arr, axis=0)/2)+5
                 print 'Computed average tile.'
                 #img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
                 img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
