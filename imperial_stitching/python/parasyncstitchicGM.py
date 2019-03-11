@@ -120,10 +120,11 @@ if __name__ == '__main__':
         yoverlap = 1
     else:
         yoverlap = int(yoverlap)
-    if not downsize:
-        downsize = 0.054
-    else:
-        downsize = float(downsize)
+    if convert == 'y':
+        if not downsize:
+            downsize = 0.054
+        else:
+            downsize = float(downsize)
 
     # Search the mosaic file for remaining parameters
     mosaicfile = glob.glob(tcpath+'/Mosaic*.txt')[0]
