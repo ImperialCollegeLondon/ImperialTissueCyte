@@ -23,7 +23,7 @@ Instructions:
 Updates:
 06.03.19 - Updated the overlap and crop parameters to improve the image average result and
 tiling artefacts.
-11.03.19 - INcluded default values and parameter search from Mosaic file.
+11.03.19 - Included default values and parameter search from Mosaic file.
 '''
 
 import os, sys, warnings, time, glob, errno, subprocess, shutil, math, readline, re
@@ -110,6 +110,8 @@ if __name__ == '__main__':
         startsec = 1
     else:
          startsec = int(startsec)
+    if endsec:
+        endsec = int(endsec)
     if not xoverlap:
         xoverlap = 1
     else:
