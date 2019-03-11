@@ -23,15 +23,15 @@ Instructions:
 Updates:
 06.03.19 - Updated the overlap and crop parameters to improve the image average result and
 tiling artefacts.
+11.03.19 - INcluded default values and parameter search from Mosaic file.
 '''
 
-import os, sys, warnings, time, glob, errno, subprocess, shutil, math
+import os, sys, warnings, time, glob, errno, subprocess, shutil, math, readline, re
 import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
 from tabCompleter import tabCompleter
-import readline
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -85,22 +85,60 @@ if __name__ == '__main__':
     readline.set_completer_delims('\t')
     readline.parse_and_bind("tab: complete")
 
-    tcpath = raw_input('Select TC data directory (drag-and-drop): ').rstrip()
-    temppath = raw_input('Select temporary directory (drag-and-drop): ').rstrip()
+    tcpath = raw_input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
+    temppath = raw_input('Select temporary directory (drag-and-drop or tab-complete): ').rstrip()
 
-    scanid = raw_input('Scan ID: ')
-    startsec = int(input('Start section: '))
-    endsec = int(input('End section: '))
-    xtiles = int(input('Number of X tiles: '))
-    ytiles = int(input('Number of Y tiles: '))
-    zlayers = int(input('Number of Z layers per slice: '))
-    xoverlap = int(input('X overlap % (recommend 1): '))
-    yoverlap = int(input('Y overlap % (recommend 1): '))
-    channel = int(input('Channel to stitch: '))
+    acknowledge = raw_input('Fill in the following variables. To accept default value, leave response blank and press Enter. Press Enter to continue: ')
+    startsec = raw_input('Start section (default start): ')
+    endsec = raw_input('End section (default end): ')
+    xoverlap = raw_input('X overlap % (default 1): ')
+    yoverlap = raw_input('Y overlap % (default 1): ')
+    channel = raw_input('Channel to stitch: ')
+    while not channel:
+        channel = raw_input('Channel to stitch: ')
     avgcorr = raw_input('Perform average correction? (y/n): ')
+    while avgcorr not in ('y', 'n'):
+        avgcorr = raw_input('Perform average correction? (y/n): ')
     convert = raw_input('Perform additional downsize? (y/n): ')
+    while convert not in ('y', 'n'):
+        convert = raw_input('Perform additional downsize? (y/n): ')
     if convert == 'y':
-        downsize = input('Downsize amount (default 0.054 for 10 um/pixel): ')
+        downsize = raw_input('Downsize amount (default 0.054 for 10 um/pixel): ')
+
+    # Handle default values
+    if not startsec:
+        startsec = 1
+    else:
+         startsec = int(startsec)
+    if not xoverlap:
+        xoverlap = 1
+    else:
+        xoverlap = int(xoverlap)
+    if not yoverlap:
+        yoverlap = 1
+    else:
+        yoverlap = int(yoverlap)
+    if not downsize:
+        downsize = 0.054
+    else:
+        downsize = float(downsize)
+
+    # Search the mosaic file for remaining parameters
+    mosaicfile = glob.glob(tcpath+'/Mosaic*.txt')[0]
+    with open(mosaicfile, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            if not endsec:
+                if 'sections' in line:
+                    endsec = int(re.split(':', line.rstrip())[-1])
+            if 'Sample ID' in line:
+                scanid = re.split(':', line.rstrip())[-1]
+            if 'mrows' in line:
+                xtiles = int(re.split(':', line.rstrip())[-1])
+            if 'mcolumns' in line:
+                ytiles = int(re.split(':', line.rstrip())[-1])
+            if 'layers' in line:
+                zlayers = int(re.split(':', line.rstrip())[-1])
 
     # Create folders
     os.umask(0000)
@@ -117,7 +155,7 @@ if __name__ == '__main__':
             if e.errno != errno.EEXIST:
                 raise
 
-    # Check if temporaty folder is empty
+    # Check if temporary folder is empty
     if os.listdir(temppath) != []:
         raise Exception('Temporary folder needs to be empty!')
 
