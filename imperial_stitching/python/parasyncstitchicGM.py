@@ -164,12 +164,7 @@ if __name__ == '__main__':
                 raise
 
     # create temporary folder in home path
-    temppath = tempfile.TemporaryDirectory(dir='~').name
-    try:
-        os.makedirs(temppath, 0777)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+    temppath = tempfile.mkdtemp(dir=os.path.expanduser('~'))
 
     crop = 0
     filenamestruct = []
