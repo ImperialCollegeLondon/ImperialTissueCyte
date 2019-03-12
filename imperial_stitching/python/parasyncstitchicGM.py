@@ -90,8 +90,8 @@ if __name__ == '__main__':
     print '             Parameter Input              '
     print '------------------------------------------'
     print ''
-    print 'Fill in the following variables. To accept default value, leave response blank.')
-    print 'Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.')
+    print 'Fill in the following variables. To accept default value, leave response blank.'
+    print 'Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.'
     acknowledge = raw_input('Press Enter to continue: ')
     tcpath = raw_input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
     startsec = raw_input('Start section (default start): ')
