@@ -26,7 +26,7 @@ tiling artefacts.
 11.03.19 - Included default values and parameter search from Mosaic file.
 '''
 
-import os, sys, warnings, time, glob, errno, subprocess, shutil, math, readline, re
+import os, sys, warnings, time, glob, errno, subprocess, shutil, math, readline, re, tempfile
 import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
@@ -85,10 +85,15 @@ if __name__ == '__main__':
     readline.set_completer_delims('\t')
     readline.parse_and_bind("tab: complete")
 
+    print ''
+    print '------------------------------------------'
+    print '             Parameter Input              '
+    print '------------------------------------------'
+    print ''
+    print 'Fill in the following variables. To accept default value, leave response blank.')
+    print 'Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.')
+    acknowledge = raw_input('Press Enter to continue: ')
     tcpath = raw_input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
-    temppath = raw_input('Select temporary directory (drag-and-drop or tab-complete): ').rstrip()
-
-    acknowledge = raw_input('Fill in the following variables. To accept default value, leave response blank and press Enter. Press Enter to continue: ')
     startsec = raw_input('Start section (default start): ')
     endsec = raw_input('End section (default end): ')
     xoverlap = raw_input('X overlap % (default 1): ')
@@ -143,7 +148,7 @@ if __name__ == '__main__':
             if 'layers' in line:
                 zlayers = int(re.split(':', line.rstrip())[-1])
 
-    # Create folders
+    # Create stitch output folders
     os.umask(0000)
     try:
         os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections', 0777)
@@ -158,9 +163,13 @@ if __name__ == '__main__':
             if e.errno != errno.EEXIST:
                 raise
 
-    # Check if temporary folder is empty
-    if os.listdir(temppath) != []:
-        raise Exception('Temporary folder needs to be empty!')
+    # create temporary folder in home path
+    temppath = tempfile.TemporaryDirectory(dir='~').name
+    try:
+        os.makedirs(temppath, 0777)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
     crop = 0
     filenamestruct = []
@@ -176,8 +185,9 @@ if __name__ == '__main__':
     #=============================================================================================
     print ''
     print '------------------------------------------'
-    print '          Asynchronous stitching          '
+    print '          Asynchronous Stitching          '
     print '------------------------------------------'
+    print ''
 
     tstart = time.time()
 
