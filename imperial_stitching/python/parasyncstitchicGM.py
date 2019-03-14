@@ -226,7 +226,7 @@ if __name__ == '__main__':
             # Get crop value
             if crop == 0:
                 size = Image.open(filenames[-1]).size[0]
-                cropstart = int(round(0.04*size))
+                cropstart = int(round(0.045*size))
                 cropend = int(round(size-cropstart+1))
             crop = 1
 
@@ -240,7 +240,6 @@ if __name__ == '__main__':
             if avgcorr == 'y':
                 avgimage = (np.mean(img_arr, axis=0)/2)+5
                 print 'Computed average tile.'
-                #img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
                 img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
 
             # Save each tile with corresponding name
