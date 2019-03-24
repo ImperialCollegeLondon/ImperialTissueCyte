@@ -10,20 +10,13 @@ multiple layers to account for oversampling. The output provides a list of
 coordinates for identified cells. This should then be fed into the image
 predictor to confirm whether objects are cells or not.
 
-Version 2 - v2
-This version differes from original by removing all empty rows and columns to
-further crop each image. In addition, a rolling ball background subtration is
-used to remove uneven background and generally help the cell segmentation
-process.
+Version 3 - v3
+This version incorporates parallelisation using a queuing system.
 
 Instructions:
 1) Go to the user defined parameters from roughly line 80
 2) Make changes to those parameters as neccessary
 3) Execute the code in a Python IDE
-
-Updates
-20.02.19 - Modified script to use new rolling ball filter and circthresh to save
-           time - see fitlers/rollingballfilt.py and filters/circthresh.py
 ################################################################################
 """
 
@@ -31,7 +24,7 @@ Updates
 ## Module import
 ################################################################################
 
-import os, time, numpy, math, json, warnings, csv, sys, collections, cv2
+import os, time, numpy, math, json, warnings, csv, sys, collections, cv2, psutil, tqdm
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -45,6 +38,8 @@ from PIL import Image
 from skimage import io
 from natsort import natsorted
 from filters.rollingballfilt import rolling_ball_filter
+from multiprocessing import Pool, cpu_count, Array, Process, Queue, Manager
+from functools import partial
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -96,6 +91,63 @@ def progressBar(sliceno, value, endvalue, bar_length=50):
         sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
+def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res):
+    while True:
+        item = imagequeue.get()
+        if item is None:
+            break
+        else:
+            qnum, image, row_idx, col_idx = item
+            cells = []
+
+            if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
+                # Perform gaussian donut median filter
+                if use_medfilt:
+                    image = gaussmedfilt(image, 3, 1.5)
+                else:
+                    image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
+
+                if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
+                    #image = np.multiply(np.divide(image, np.max(image)), 255.)
+                    # Perform rolling ball background subtraction to remove uneven background signal
+                    image, background = rolling_ball_filter(np.uint8(image), 24)
+                    #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+
+                    if np.max(image) != 0.:
+                        # Perform circularity threshold
+                        image = image>circthresh(image,size,bg_thresh,circ_thresh,False)
+                        #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+
+                        # Remove objects smaller than chosen size
+                        image_label = label(image, connectivity=image.ndim)
+
+                        circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
+
+                        # Centroids returns (row, col) so switch over
+                        circ = [circfunc(region) for region in regionprops(image_label)]
+                        areas = [region.area for region in regionprops(image_label)]
+                        labels = [region.label for region in regionprops(image_label)]
+                        centroids = [region.centroid for region in regionprops(image_label)]
+
+                        # Convert coordinate of centroid to coordinate of whole image if mask was used
+                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+
+                        # (row, col) or (y, x)
+                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
+                        #image = np.full(image.shape, False)
+
+                        # Threshold the objects based on size and circularity and store centroids
+                        for i, _ in enumerate(areas):
+                            if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
+                                # (row, col) centroid
+                                # So flip the order for (col, row) as (x, y)
+                                cells.append(centroids[i][::-1])
+                                #image += image_label==labels[i]
+
+            # Append centroid information to shared dictionary
+            res[qnum] = cells
+            print 'Finished processing queue position '+str(qnum)
+
 if __name__ == '__main__':
     ################################################################################
     ## User defined parameters - please fill in the parameters in this section only
@@ -115,8 +167,8 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/SEGMENTATION_RES.tif'
-        structure_list = 'LGd'
+        mask_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/het181218_segres_10um.tif'
+        structure_list = 'LGd, LP'
 
     # Input details for the cell morphology
     # Can be left as default values
@@ -124,19 +176,23 @@ if __name__ == '__main__':
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/mnt/TissueCyte80TB/181012_Gerald_KO/ko-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
-    number_files = [None,None]
+    number_files = [1,500]
 
-    # Do you want to use the custom donut median filter?
+    # Do you want to use the donut median filter?
     use_medfilt = False
 
     # For the circularity threshold, what minimum background threshold should be set and what circularity value needs to be achieved
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
-    bg_thresh = 6.
+    bg_thresh = 10.
     circ_thresh = 0.8
+
+    # Voxel size for volume calculation
+    xyvox = 0.54
+    zvox = 10.
 
     ################################################################################
     ## Initialisation
@@ -190,8 +246,6 @@ if __name__ == '__main__':
     temp = Image.open(count_path+'/'+count_files[0])
     temp_size = temp.size
     temp = None
-    if mask:
-        scale = float(temp_size[1])/seg[1].shape[0]
 
     structure_index = 0
 
@@ -226,88 +280,78 @@ if __name__ == '__main__':
         ################################################################################
         if proceed:
             ################################################################################
-            ## Loop through slices based on cropped boundaries
+            ## Loop through slices based on cropped boundaries and store into one array
             ################################################################################
+            image_array = []
+            row_idx_array = []
+            col_idx_array = []
+            pxvolume = 0
+
+            # Create shared dictionary
+            manager = Manager()
+            res = manager.dict()
+
+            # Create a Queue and push images to queue
+            print 'Setting up Queue'
+            imagequeue = Queue()
+
+            # Start processing images
+            print 'Starting processing of Queue items'
+            imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
+            imageprocess.start()
+
+            print 'Loading all images and storing into parallel array'
             for slice_number in range(zmin,zmax):
                 # Load image and convert to dtype=float and scale to full 255 range
+                tstart1 = time.time()
                 image = Image.open(count_path+'/'+count_files[slice_number])
                 image = np.array(image).astype(float)
                 image = np.multiply(np.divide(image,np.max(image)), 255.)
 
                 # Apply mask if required
                 if mask:
+                    # Resize mask
+                    tstart1 = time.time()
                     mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
                     mask_image[mask_image!=structure] = 0
-                    mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
-                    image[mask_image==0] = 0
+                    # print 'Extracted and resized mask image: '+str((time.time()-tstart1))
 
-                    # Crop image with idx
-                    mask_image = image>0
+                    # Get crop idx
+                    tstart1 = time.time()
+                    # mask_image = image>0
                     idx = np.ix_(mask_image.any(1),mask_image.any(0))
-                    mask_image = None
                     row_idx = idx[0].flatten()
                     col_idx = idx[1].flatten()
+                    # print 'Extracted crop coordinates: '+str((time.time()-tstart1))
+
+                    # Apply crop to image and mask then apply mask
+                    tstart1 = time.time()
                     image = image[idx]
-                    #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
+                    mask_image = mask_image[idx]
+                    # print 'Cropped image and mask: '+str((time.time()-tstart1))
+                    tstart1 = time.time()
+                    mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
+                    pxvolume += mask_image.any(axis=-1).sum()
 
-                # Perform gaussian donut median filter
-                if use_medfilt:
-                    image = gaussmedfilt(image, 3, 1.5)
-                else:
-                    image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
+                    # print 'Apply median blur: '+str((time.time()-tstart1))
+                    tstart1 = time.time()
+                    image[mask_image==0] = 0
+                    mask_image = None
+                    # print 'Applied mask to image: '+str((time.time()-tstart1))
 
-                if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
-                    #image = np.multiply(np.divide(image, np.max(image)), 255.)
-                    # Perform rolling ball background subtraction to remove uneven background signal
-                    image, background = rolling_ball_filter(np.uint8(image), 24)
-                    #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+                # Add queue number, image, row and col idx to queue
+                imagequeue.put((slice_number-zmin, image, row_idx, col_idx))
+                print count_path.split(os.sep)[3]+' Added item to queue position '+str(slice_number-zmin)+' [Memory info] Percent: '+str(psutil.virtual_memory().percent)+' Used: '+str(int(psutil.virtual_memory().used*1e-6))+' MB'
 
-                    if np.max(image) != 0.:
+                #progressBar(slice_number, slice_number-zmin, zmax-zmin)
 
-                        # Perform circularity threshold
-                        image = image>circthresh(image,size,bg_thresh,circ_thresh,True)
-                        #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+            imagequeue.put(None)
+            imageprocess.join()
 
-                        # Remove objects smaller than chosen size
-                        image_label = label(image, connectivity=image.ndim)
+            print 'Finished queue processing'
 
-                        circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
-
-                        # Centroids returns (row, col) so switch over
-                        circ = [circfunc(region) for region in regionprops(image_label)]
-                        areas = [region.area for region in regionprops(image_label)]
-                        labels = [region.label for region in regionprops(image_label)]
-                        centroids = [region.centroid for region in regionprops(image_label)]
-
-                        # Convert coordinate of centroid to coordinate of whole image if mask was used
-                        if mask:
-                            coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
-
-                            # (row, col) or (y, x)
-                            centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
-
-                        #image = np.full(image.shape, False)
-
-                        # Threshold the objects based on size and circularity and store centroids
-                        cells = []
-                        for i, _ in enumerate(areas):
-                            if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
-                                # (row, col) centroid
-                                # So flip the order for (col, row) as (x, y)
-                                cells.append(centroids[i][::-1])
-                                #image += image_label==labels[i]
-                else:
-                    cells = []
-
+            for slice_number, cells in zip(range(zmin,zmax+1),res.values()):
                 total_cells.update({slice_number : cells})
-
-                progressBar(slice_number, slice_number-zmin, zmax-zmin)
-
-                # sys.stdout.write("\r%d%%" % int(100*np.float(slice_number-zmin)/(zmax-zmin)))
-                # sys.stdout.flush()
-
-                #image = image>0 # Create image if needed
-                #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp4/Z_'+str(slice_number)+'.tif')
 
             # Sort the dictionary so key are in order
             total_cells = collections.OrderedDict(sorted(total_cells.items()))
@@ -319,15 +363,22 @@ if __name__ == '__main__':
                     if len(x) * len(y) > 0:
                         total_cells[zmin+index] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
 
+            # Count number of possible cells
             num_cells = sum(map(len, total_cells.values()))
 
             print str(name)+' '+str(num_cells)
 
+            # Save cell centroids to csv
             csv_file = count_path+'/counts/'+str(name)+'_v2_count.csv'
             with open(csv_file, 'w+') as f:
                 for key in sorted(total_cells.keys()):
                     if len(total_cells[key])>0:
                         csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
+
+            # Save volume
+            vol_file = count_path+'/counts/volumes.csv'
+            with open(vol_file, 'a') as f:
+                csv.writer(f, delimiter=',').writerows(np.array([[str(name), pxvolume*xyvox*zvox]]))
 
         structure_index += 1
         print ''

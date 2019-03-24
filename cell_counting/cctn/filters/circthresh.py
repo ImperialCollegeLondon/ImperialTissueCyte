@@ -68,7 +68,7 @@ def circthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
 
     else:
         thresh = THRESHLIM
-        while circularity(thresh, A, SIZE)[1] < CIRCLIM:
+        while (circularity(thresh, A, SIZE)[1] < CIRCLIM) & (thresh < np.max(A)):
             thresh += thresh_int
         T = thresh
 

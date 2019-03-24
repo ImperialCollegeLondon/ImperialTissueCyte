@@ -1,19 +1,19 @@
-#============================================================================================
-# Cell Counting Predictor - Parallel version
-# Author: Gerald M
+'''
+Cell Counting Predictor - Parallel version
+Author: Gerald M
 #
-# This script uses a convolution neural network classifier, trained on manually identified
-# cells, to confirm whether a potential cell/neuron is correctly identified.
-#
-# This version uses serial computation.
-#
-# Installation:
-# 1) Navigate to the folder containing cc_predictor_par.py
-#
-# Instructions:
-# 1) Fill in the user defined parameters from line 94
-# 2) Run the script in a Python IDE
-#============================================================================================
+This script uses a convolution neural network classifier, trained on manually identified
+cells, to confirm whether a potential cell/neuron is correctly identified.
+
+This version uses serial computation.
+
+Installation:
+1) Navigate to the folder containing cc_predictor_par.py
+
+Instructions:
+1) Pass in directory containing count files as first argument. Optionally pass in image
+directory as second argument if count directory is not nested into the image directory
+'''
 
 from __future__ import division
 import os, sys, warnings, time
@@ -42,28 +42,28 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 # Define function for predictions
 #=============================================================================================
 
-# Appends cell coordinates to manager list - manager allows access from a thread
-def append_cell(coord):
-    cell_markers.append(coord)
-
-# Appends no-cell coordinates to manager list - manager allows access from a thread
-def append_nocell(coord):
-    nocell_markers.append(coord)
+# # Appends cell coordinates to manager list - manager allows access from a thread
+# def append_cell(coord):
+#     cell_markers.append(coord)
+#
+# # Appends no-cell coordinates to manager list - manager allows access from a thread
+# def append_nocell(coord):
+#     nocell_markers.append(coord)
 
 # Function to predict/classify object as cell or no-cell
-def cellpredict(cell, img):
+def cellpredict(cell, img, cell_markers, nocell_markers):
 
     # Predict [1,0] for cell or [0,1] for no cell
     prediction = model.predict(np.asarray(img))
 
     if prediction[0][0] == 1: # Cell
         cell_value = 1
-        #append_cell(marker[cell,:])
-        #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
+        cell_markers.append(cell)
+        # image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
     else: # No cell
         cell_value = 0
-        #append_nocell(marker[cell,:])
-        #image.array_to_img(cell_crop[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
+        nocell_markers.append(cell)
+        # image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
 
     result[cell] = cell_value
 
@@ -85,11 +85,32 @@ if __name__ == '__main__':
     model_weights_path = 'models/2019_01_29/cc_model_2019_01_29.h5'
     model_json_path = 'models/2019_01_29/cc_model_2019_01_29.json'
 
-    # Directory path to the files containing the cell coordinates
-    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections/counts'
+    if len(sys.argv) == 2:
+        try:
+            sys.argv[1]
+        except NameError:
+            count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
+            image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New'
+        else:
+            count_path = str(sys.argv[1])
+            image_path = str(sys.argv[1])[:-7]
+    if len(sys.argv) == 3:
+        try:
+            sys.argv[1]
+        except NameError:
+            count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
+        else:
+            count_path = sys.argv[1]
 
-    # Directory path to the TIFF files containing the cells
-    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections'
+        try:
+            sys.argv[2]
+        except NameError:
+            image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New'
+        else:
+            image_path = sys.argv[2]
+
+    print count_path
+    print image_path
 
     # Load the classifier model
     json_file = open(model_json_path, 'r')
@@ -102,12 +123,16 @@ if __name__ == '__main__':
     # Loop through the coordinate files and predict cells
     #=============================================================================================
 
+    # Create directory to hold the counts in same folder as the images
+    if not os.path.exists(count_path+'_cnn'):
+        os.makedirs(count_path+'_cnn')
+
     # Get list of files containing the coordinates in x, y, z
     #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
     filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
     if os.path.isdir(count_path):
-        all_marker_path = glob.glob(count_path+'/*.csv')
+        all_marker_path = glob.glob(count_path+'/*_count.csv')
     else:
         all_marker_path = count_path
 
@@ -165,6 +190,8 @@ if __name__ == '__main__':
 
             manager = Manager()
             result = Array('i', marker.shape[0])
+            cell_markers = manager.list()
+            nocell_markers = manager.list()
 
             print 'Classifiying '+marker_filename
 
@@ -176,21 +203,25 @@ if __name__ == '__main__':
             # Classify images
             #=============================================================================================
 
+
             pbar = tqdm.tqdm(total=len(all_img))
             for cell, img in zip(range(len(all_img)), all_img):
-                cellpredict(cell, img)
+                cellpredict(cell, img, cell_markers, nocell_markers)
                 pbar.update(1)
             pbar.close()
 
             # Append to Pandas dataframe
             df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
 
+            correct_markers = marker[cell_markers[:],:]
+            pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
+
         # Create directory to hold the counts in same folder as the images
-        if not os.path.exists(count_path+'_class'):
-            os.makedirs(count_path+'_class')
+        if not os.path.exists(count_path+'_cnn'):
+            os.makedirs(count_path+'_cnn')
 
         # Write dataframe to csv
-        df.to_csv(count_path+'_class/counts_class_corrected.csv', index=False)
+        df.to_csv(count_path+'_cnn/counts_table.csv', index=False)
 
         print 'Done!'
 
