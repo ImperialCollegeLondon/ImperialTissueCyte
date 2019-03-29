@@ -85,12 +85,15 @@ if __name__ == '__main__':
     model_weights_path = 'models/2019_01_29/cc_model_2019_01_29.h5'
     model_json_path = 'models/2019_01_29/cc_model_2019_01_29.json'
 
+    count_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections/counts'
+    image_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections/'
+
     if len(sys.argv) == 2:
         try:
             sys.argv[1]
         except NameError:
-            count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
-            image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New'
+            count_path = count_path
+            image_path = image_path
         else:
             count_path = str(sys.argv[1])
             image_path = str(sys.argv[1])[:-7]
@@ -98,14 +101,16 @@ if __name__ == '__main__':
         try:
             sys.argv[1]
         except NameError:
-            count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
+            count_path = count_path
+            image_path = image_path
         else:
             count_path = sys.argv[1]
 
         try:
             sys.argv[2]
         except NameError:
-            image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New'
+            count_path = count_path
+            image_path = image_path
         else:
             image_path = sys.argv[2]
 
