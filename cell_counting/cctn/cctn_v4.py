@@ -138,32 +138,33 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         # Get centroids of remaining objects
                         centroids = [region.centroid for region in regionprops(img_label)]
 
-                        # Run CNN classification here using local coordinates
-                        # centroids as (row, col) - (y, x)
-                        # crop takes (left, upper, right, lower)
-                        cell_markers = []
-                        nocell_markers = []
-                        for point in centroids:
-                            point = tuple(int(x) for x in point)
-                            img_crop = Image.fromarray(orig_img).crop((centroids[1]-40, centroids[0]-40, centroids[1]+40, centroids[0]+40)).convert(mode='RGB')
-                            img_crop = image.img_to_array(img_crop)
-                            prediction = model.predict(np.asarray(img_crop))
+                        if len(centroids) > 0:
+                            # Run CNN classification here using local coordinates
+                            # centroids as (row, col) - (y, x)
+                            # crop takes (left, upper, right, lower)
+                            cell_markers = []
+                            nocell_markers = []
+                            for point in centroids:
+                                point = tuple(int(x) for x in point)
+                                img_crop = Image.fromarray(orig_img).crop((point[1]-40, point[0]-40, point[1]+40, point[0]+40)).convert(mode='RGB')
+                                img_crop = image.img_to_array(img_crop)
+                                prediction = model.predict(np.asarray(img_crop))
 
-                            # GoogleInception model returns three values [x, x1, x2]
-                            # Only take first value [x] and find max value index
-                            if np.argmax(prediction[0]) == 0: # Cell
-                                cell_markers.append(list(point))
-                            else: # No cell
-                                nocell_markers.append(list(point))
+                                # GoogleInception model returns three values [x, x1, x2]
+                                # Only take first value [x] and find max value index
+                                if np.argmax(prediction[0]) == 0: # Cell
+                                    cell_markers.append(list(point))
+                                else: # No cell
+                                    nocell_markers.append(list(point))
 
-                        # Convert coordinate of centroid to coordinate of whole image if mask was used
-                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+                            # Convert coordinate of centroid to coordinate of whole image if mask was used
+                            coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                        # (row, col) or (y, x)
-                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in cell_markers]
+                            # (row, col) or (y, x)
+                            centroids = [coordfunc(int(c[0]), int(c[1])) for c in cell_markers]
 
-                        # Reverse order so cells is (x, y)
-                        cells = centroids[::-1]
+                            # Reverse order so cells is (x, y)
+                            cells = centroids[::-1]
 
             # Append centroid information to shared dictionary
             res[qnum] = cells
