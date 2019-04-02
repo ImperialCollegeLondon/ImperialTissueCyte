@@ -101,7 +101,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
         else:
             qnum, img, row_idx, col_idx = item
 
-            orig_img = image
+            orig_img = img
             cells = []
 
             if img.shape[0]*img.shape[1] > (radius*2)**2 and np.max(img) != 0.:
