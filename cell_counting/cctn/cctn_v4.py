@@ -143,7 +143,8 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         # crop takes (left, upper, right, lower)
                         cell_markers = []
                         nocell_markers = []
-                        for obj in centroids:
+                        for point in centroids:
+                            point = tuple(int(x) for x in point)
                             img_crop = Image.fromarray(orig_img).crop((centroids[1]-40, centroids[0]-40, centroids[1]+40, centroids[0]+40)).convert(mode='RGB')
                             img_crop = image.img_to_array(img_crop)
                             prediction = model.predict(np.asarray(img_crop))
