@@ -148,6 +148,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                                 point = tuple(int(x) for x in point)
                                 img_crop = Image.fromarray(orig_img).crop((point[1]-40, point[0]-40, point[1]+40, point[0]+40)).convert(mode='RGB')
                                 img_crop = image.img_to_array(img_crop)
+                                img_crop = np.expand_dims(img_crop, axis = 0)
                                 prediction = model.predict(np.asarray(img_crop))
 
                                 # GoogleInception model returns three values [x, x1, x2]
