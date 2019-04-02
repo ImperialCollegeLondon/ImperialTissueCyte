@@ -99,25 +99,25 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
         if item is None:
             break
         else:
-            qnum, image, row_idx, col_idx = item
+            qnum, img, row_idx, col_idx = item
 
-            orig_image = image
+            orig_img = image
             cells = []
 
-            if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
+            if img.shape[0]*img.shape[1] > (radius*2)**2 and np.max(img) != 0.:
                 # Perform gaussian donut median filter
                 if use_medfilt:
-                    image = gaussmedfilt(image, 3, 1.5)
+                    img = gaussmedfilt(img, 3, 1.5)
                 else:
-                    image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
+                    img = cv2.GaussianBlur(img, ksize=(0,0), sigmaX=3)
 
-                if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
+                if img.shape[0]*img.shape[1] > (radius*2)**2 and np.max(img) != 0.:
                     #image = np.multiply(np.divide(image, np.max(image)), 255.)
                     # Perform rolling ball background subtraction to remove uneven background signal
-                    image, background = rolling_ball_filter(np.uint8(image), 24)
+                    img, background = rolling_ball_filter(np.uint8(img), 24)
                     #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
-                    if np.max(image) != 0.:
+                    if np.max(img) != 0.:
                         from keras.preprocessing import image
                         from keras.models import load_model, model_from_json
 
@@ -129,14 +129,14 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         model.load_weights(model_weights_path)
 
                         # Perform circularity threshold
-                        image = adaptcircthresh(image,size,bg_thresh,circ_thresh,False)
+                        img = adaptcircthresh(img,size,bg_thresh,circ_thresh,False)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                         # Remove objects smaller than chosen size
-                        image_label = label(image, connectivity=image.ndim)
+                        img_label = label(img, connectivity=img.ndim)
 
                         # Get centroids of remaining objects
-                        centroids = [region.centroid for region in regionprops(image_label)]
+                        centroids = [region.centroid for region in regionprops(img_label)]
 
                         # Run CNN classification here using local coordinates
                         # centroids as (row, col) - (y, x)
@@ -144,7 +144,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         cell_markers = []
                         nocell_markers = []
                         for obj in centroids:
-                            img_crop = Image.fromarray(orig_image).crop((centroids[1]-40, centroids[0]-40, centroids[1]+40, centroids[0]+40)).convert(mode='RGB')
+                            img_crop = Image.fromarray(orig_img).crop((centroids[1]-40, centroids[0]-40, centroids[1]+40, centroids[0]+40)).convert(mode='RGB')
                             img_crop = image.img_to_array(img_crop)
                             prediction = model.predict(np.asarray(img_crop))
 
