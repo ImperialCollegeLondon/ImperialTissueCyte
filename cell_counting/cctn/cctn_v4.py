@@ -118,16 +118,6 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                     #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                     if np.max(img) != 0.:
-                        from keras.preprocessing import image
-                        from keras.models import load_model, model_from_json
-
-                        # Load the classifier model
-                        json_file = open(model_json_path, 'r')
-                        loaded_model_json = json_file.read()
-                        json_file.close()
-                        model = model_from_json(loaded_model_json)
-                        model.load_weights(model_weights_path)
-
                         # Perform circularity threshold
                         img = adaptcircthresh(img,size,bg_thresh,circ_thresh,False)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
@@ -139,6 +129,16 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         centroids = [region.centroid for region in regionprops(img_label)]
 
                         if len(centroids) > 0:
+                            from keras.preprocessing import image
+                            from keras.models import load_model, model_from_json
+
+                            # Load the classifier model
+                            json_file = open(model_json_path, 'r')
+                            loaded_model_json = json_file.read()
+                            json_file.close()
+                            model = model_from_json(loaded_model_json)
+                            model.load_weights(model_weights_path)
+
                             # Run CNN classification here using local coordinates
                             # centroids as (row, col) - (y, x)
                             # crop takes (left, upper, right, lower)
