@@ -10,8 +10,10 @@ multiple layers to account for oversampling. The output provides a list of
 coordinates for identified cells. This should then be fed into the image
 predictor to confirm whether objects are cells or not.
 
-Version 3 - v3
-This version incorporates parallelisation using a queuing system.
+Version 4 - v4
+This version incorporates parallelisation using a queuing system and adds new
+circularity threshold. It also combines the CNN classification step to cut down
+on execution time.
 
 Instructions:
 1) Go to the user defined parameters from roughly line 80
@@ -91,13 +93,15 @@ def progressBar(sliceno, value, endvalue, bar_length=50):
         sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
-def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res):
+def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res, model_weights_path, model_json_path):
     while True:
         item = imagequeue.get()
         if item is None:
             break
         else:
             qnum, image, row_idx, col_idx = item
+
+            orig_image = image
             cells = []
 
             if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
@@ -114,6 +118,16 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                     #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                     if np.max(image) != 0.:
+                        from keras.preprocessing import image
+                        from keras.models import load_model, model_from_json
+
+                        # Load the classifier model
+                        json_file = open(model_json_path, 'r')
+                        loaded_model_json = json_file.read()
+                        json_file.close()
+                        model = model_from_json(loaded_model_json)
+                        model.load_weights(model_weights_path)
+
                         # Perform circularity threshold
                         image = adaptcircthresh(image,size,bg_thresh,circ_thresh,False)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
@@ -121,28 +135,34 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         # Remove objects smaller than chosen size
                         image_label = label(image, connectivity=image.ndim)
 
-                        # circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
-                        #
-                        # # Centroids returns (row, col) so switch over
-                        # circ = [circfunc(region) for region in regionprops(image_label)]
-                        # areas = [region.area for region in regionprops(image_label)]
-                        # labels = [region.label for region in regionprops(image_label)]
+                        # Get centroids of remaining objects
                         centroids = [region.centroid for region in regionprops(image_label)]
+
+                        # Run CNN classification here using local coordinates
+                        # centroids as (row, col) - (y, x)
+                        # crop takes (left, upper, right, lower)
+                        cell_markers = []
+                        nocell_markers = []
+                        for obj in centroids:
+                            img_crop = Image.fromarray(orig_image).crop((centroids[1]-40, centroids[0]-40, centroids[1]+40, centroids[0]+40)).convert(mode='RGB')
+                            img_crop = image.img_to_array(img_crop)
+                            prediction = model.predict(np.asarray(img_crop))
+
+                            # GoogleInception model returns three values [x, x1, x2]
+                            # Only take first value [x] and find max value index
+                            if np.argmax(prediction[0]) == 0: # Cell
+                                cell_markers.append(list(point))
+                            else: # No cell
+                                nocell_markers.append(list(point))
 
                         # Convert coordinate of centroid to coordinate of whole image if mask was used
                         coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
                         # (row, col) or (y, x)
-                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
-                        #image = np.full(image.shape, False)
+                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in cell_markers]
 
-                        # Threshold the objects based on size and circularity and store centroids
-                        for i, _ in enumerate(areas):
-                            if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
-                                # (row, col) centroid
-                                # So flip the order for (col, row) as (x, y)
-                                cells.append(centroids[i][::-1])
-                                #image += image_label==labels[i]
+                        # Reverse order so cells is (x, y)
+                        cells = centroids[::-1]
 
             # Append centroid information to shared dictionary
             res[qnum] = cells
@@ -159,10 +179,6 @@ if __name__ == '__main__':
     # Do you want to perform over sampling correction?
     # Cells within a radius on successive images will be counted as one cell
     over_sample = True
-
-    # The following is redundant and will be included when considering volume and density
-    # xy_res = 10
-    # z_res = 5
 
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
@@ -193,6 +209,10 @@ if __name__ == '__main__':
     # Voxel size for volume calculation
     xyvox = 0.54
     zvox = 10.
+
+    # CNN model paths
+    model_weights_path = '/home/gm515/Documents/GitHub/cell_counting/classifier/models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
+    model_json_path = '/home/gm515/Documents/GitHub/cell_counting/classifier/models/2019_03_29_GoogleInception/model_2019_03_29.json'
 
     ################################################################################
     ## Initialisation
@@ -297,7 +317,7 @@ if __name__ == '__main__':
 
             # Start processing images
             print 'Starting processing of Queue items'
-            imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
+            imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res, model_weights_path, model_json_path))
             imageprocess.start()
 
             print 'Loading all images and storing into parallel array'

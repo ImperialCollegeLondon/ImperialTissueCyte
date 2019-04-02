@@ -179,17 +179,18 @@ if __name__ == '__main__':
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        # img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img = np.append(all_img, img_crop, axis = 0)
             else:
                 for slice in np.unique(marker[:,2]):
-                    img = Image.open(os.path.join(image_path, filename[slice-1])).convert(mode='RGB') # RGB as 3 channel for Google Inception 
+                    img = Image.open(os.path.join(image_path, filename[slice-1])).convert(mode='RGB') # RGB as 3 channel for Google Inception
                     for cell in marker[marker[:,2] == slice]:
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
+                        # img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img = np.append(all_img, img_crop, axis = 0)
+                        print slice
 
             print 'Done!'
 
