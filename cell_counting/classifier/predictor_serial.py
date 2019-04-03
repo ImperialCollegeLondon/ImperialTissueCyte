@@ -56,7 +56,7 @@ def cellpredict(cell, img, cell_markers, nocell_markers):
     # Predict [1,0] for cell or [0,1] for no cell
     prediction = model.predict(np.asarray(img))
 
-    if prediction[0][0] == 1: # Cell
+    if np.argmax(prediction[0]) == 0: # Cell
         cell_value = 1
         cell_markers.append(cell)
         # image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
@@ -179,7 +179,7 @@ if __name__ == '__main__':
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        # img_crop = np.expand_dims(img_crop, axis = 0)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img = np.append(all_img, img_crop, axis = 0)
             else:
                 for slice in np.unique(marker[:,2]):
@@ -188,9 +188,9 @@ if __name__ == '__main__':
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        # img_crop = np.expand_dims(img_crop, axis = 0)
+                        img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img = np.append(all_img, img_crop, axis = 0)
-                        print slice
+                    print slice
 
             print 'Done!'
 

@@ -57,11 +57,11 @@ def circularity(thresh, A, SIZE, CIRCLIM):
     return A_out
 
 def adaptcircthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
-    thresh_int = 1
+    thresh_int = 2
     A_out = np.full(A.shape, False)
 
     if PAR:
-        thresh_all = np.arange(THRESHLIM,int(np.max(A)/2),thresh_int)
+        thresh_all = np.arange(THRESHLIM,int(np.max(A)/4),thresh_int)
         T = 0
         # Get mean circularity
         pool = Pool(cpu_count())
@@ -76,7 +76,7 @@ def adaptcircthresh(A,SIZE,THRESHLIM,CIRCLIM,PAR=False):
         pool.join()
 
     else:
-        for thresh in np.arange(THRESHLIM,int(np.max(A)/2),thresh_int):
+        for thresh in np.arange(THRESHLIM,int(np.max(A)/4),thresh_int):
             A_out += circularity(thresh, A, SIZE, CIRCLIM)
 
     return A_out

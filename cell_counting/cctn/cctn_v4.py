@@ -116,7 +116,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
 
                     if np.max(image) != 0.:
                         # Perform circularity threshold
-                        image = adaptcircthresh(image,size,bg_thresh,circ_thresh,False)
+                        image = adaptcircthresh(image,size,int(np.max(image)),circ_thresh,False)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                         # Remove objects smaller than chosen size
