@@ -25,7 +25,17 @@ Instructions:
 ## Module import
 ################################################################################
 
-import os, time, numpy, math, json, warnings, csv, sys, collections, cv2, psutil, tqdm
+import collections
+import csv
+import cv2
+import json
+import numpy
+import os
+import psutil
+import sys
+import time
+import tqdm
+import warnings
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -39,8 +49,7 @@ from PIL import Image
 from skimage import io
 from natsort import natsorted
 from filters.rollingballfilt import rolling_ball_filter
-from multiprocessing import Pool, cpu_count, Array, Process, Queue, Manager, current_process
-from functools import partial
+from multiprocessing import Manager, Pool, Queue, current_process
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -68,9 +77,7 @@ def get_structure(json_obj, acronym):
     found = (False, None)
     for obj in json_obj:
         if obj['acronym'].lower() == acronym:
-            #print obj['acronym'], obj['id']
             [acr, ids] = get_children(obj['children'], [], [])
-            #print ids
             if ids == []:
                 acr = [obj['acronym']]
                 ids = [obj['id']]
@@ -111,7 +118,6 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                 if np.max(image) != 0.:
                     # Perform rolling ball background subtraction to remove uneven background signal
                     image, background = rolling_ball_filter(np.uint8(image), 24)
-                    background = None
 
                     if np.max(image) != 0.:
                         # Perform circularity threshold
@@ -145,10 +151,6 @@ if __name__ == '__main__':
     # Do you want to perform over sampling correction?
     # Cells within a radius on successive images will be counted as one cell
     over_sample = True
-
-    # The following is redundant and will be included when considering volume and density
-    # xy_res = 10
-    # z_res = 5
 
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
