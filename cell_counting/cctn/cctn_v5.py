@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     # Paths for model
     model_json_path = '../classifier/models/2019_03_29_GoogleInception/model_2019_03_29.json'
-    model_weights_path = '../classifier/models/2019_03_29_GoogleInception/weights_2019_03_29.json'
+    model_weights_path = '../classifier/models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
 
     ################################################################################
     ## Initialisation
