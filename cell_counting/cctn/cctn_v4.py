@@ -15,7 +15,7 @@ This version incorporates parallelisation using a queuing system and adds new
 circularity threshold.
 
 Instructions:
-1) Go to the user defined parameters from roughly line 80
+1) Go to the user defined parameters from roughly line 140
 2) Make changes to those parameters as neccessary
 3) Execute the code in a Python IDE
 ################################################################################
@@ -29,20 +29,14 @@ import collections
 import csv
 import cv2
 import json
-import numpy
 import os
 import psutil
 import sys
 import time
-import tqdm
 import warnings
 import numpy as np
 import nibabel as nib
-import matplotlib.pyplot as plt
-import scipy.misc as sc
-import scipy.ndimage as ndimage
 from filters.gaussmedfilt import gaussmedfilt
-from filters.medfilt import medfilt
 from filters.adaptcircthresh import adaptcircthresh
 from skimage.measure import regionprops, label
 from PIL import Image
