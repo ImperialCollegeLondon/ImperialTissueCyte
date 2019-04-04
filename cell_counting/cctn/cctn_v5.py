@@ -99,7 +99,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
             break
         else:
             qnum, image, row_idx, col_idx = item
-            image_orig = image
+            image_orig = Image.fromarray(image).convert('RGB')
             cells = []
 
             if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
@@ -147,7 +147,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
 
                             for point in centroids:
                                 point = tuple(int(x) for x in point)
-                                img_crop = image_orig.crop((point[1]-40, point[0]-40, point[1]+40, point[0]+40)).convert('RGB')
+                                img_crop = image_orig.crop((point[1]-40, point[0]-40, point[1]+40, point[0]+40))
                                 img_crop = image.img_to_array(img_crop)
                                 img_crop = np.expand_dims(img_crop, axis = 0)
                                 prediction = model.predict(np.asarray(img_crop))
