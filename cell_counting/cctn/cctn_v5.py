@@ -229,7 +229,7 @@ if __name__ == '__main__':
     zvox = 10.
 
     # Number of cpus to use for processing queue
-    ncpu = 12
+    ncpu = 5
 
     # Paths for model
     model_json_path = '../classifier/models/2019_03_29_GoogleInception/model_2019_03_29.json'
