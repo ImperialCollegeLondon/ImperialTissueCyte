@@ -99,7 +99,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
             break
         else:
             qnum, image, row_idx, col_idx = item
-            cells = []
+            centroids = []
 
             if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
                 # Perform gaussian donut median filter
@@ -108,48 +108,30 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                 else:
                     image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
 
-                if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
-                    #image = np.multiply(np.divide(image, np.max(image)), 255.)
+                if np.max(image) != 0.:
                     # Perform rolling ball background subtraction to remove uneven background signal
                     image, background = rolling_ball_filter(np.uint8(image), 24)
-                    #Image.fromarray(image).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
+                    background = None
 
                     if np.max(image) != 0.:
                         # Perform circularity threshold
                         image = adaptcircthresh(image,size,int(np.mean(image)),circ_thresh,False)
-                        #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                         # Remove objects smaller than chosen size
-                        image_label = label(image, connectivity=image.ndim)
+                        image = label(image, connectivity=image.ndim)
 
-                        # circfunc = lambda r: (4 * math.pi * r.area) / ((r.perimeter * r.perimeter) + 0.00000001)
-                        #
-                        # # Centroids returns (row, col) so switch over
-                        # circ = [circfunc(region) for region in regionprops(image_label)]
-                        # areas = [region.area for region in regionprops(image_label)]
-                        # labels = [region.label for region in regionprops(image_label)]
-                        centroids = [region.centroid for region in regionprops(image_label)]
+                        # Get centroids list as (row, col) or (y, x)
+                        centroids = [region.centroid for region in regionprops(image)]
 
                         # Convert coordinate of centroid to coordinate of whole image if mask was used
                         coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                        # centroids is (row, col) or (y, x)
-                        # flip order now so (x, y)
-                        cells = [coordfunc(int(c[1]), int(c[0])) for c in centroids]
-                        #image = np.full(image.shape, False)
-
-                        # Threshold the objects based on size and circularity and store centroids
-                        # for i, _ in enumerate(areas):
-                        #     if areas[i] > size and areas[i] < size*10 and circ[i] > 0.65:
-                        #         # (row, col) centroid
-                        #         # So flip the order for (col, row) as (x, y)
-                        #         cells.append(centroids[i][::-1])
-                        #         #image += image_label==labels[i]
-
-                        # cells = centroids[::-1]
+                        # Centroids are currently (row, col) or (y, x)
+                        # Flip order so (x, y)
+                        centroids = [coordfunc(int(c[1]), int(c[0])) for c in centroids]
 
             # Append centroid information to shared dictionary
-            res[qnum] = cells
+            res[qnum] = centroids
             print 'Finished processing queue position '+str(qnum)+' on worker '+str(current_process())
 
 if __name__ == '__main__':
@@ -191,7 +173,6 @@ if __name__ == '__main__':
 
     # For the circularity threshold, what minimum background threshold should be set and what circularity value needs to be achieved
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
-    bg_thresh = 4.
     circ_thresh = 0.8
 
     # Voxel size for volume calculation
@@ -250,10 +231,6 @@ if __name__ == '__main__':
 
     tstart = time.time()
 
-    temp = Image.open(count_path+'/'+count_files[0])
-    temp_size = temp.size
-    temp = None
-
     structure_index = 0
 
     for name, structure in zip(acr,ids):
@@ -303,49 +280,39 @@ if __name__ == '__main__':
             imagequeue = Queue()
 
             # Start processing images
-            print 'Starting processing of Queue items'
-            # imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
-            # imageprocess.start()
+            print 'Creating threads to process Queue items'
             imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
 
             print 'Loading all images and storing into parallel array'
             for slice_number in range(zmin,zmax):
                 # Load image and convert to dtype=float and scale to full 255 range
-                tstart1 = time.time()
                 image = Image.open(count_path+'/'+count_files[slice_number])
+                temp_size = image.size
                 image = np.array(image).astype(float)
                 image = np.multiply(np.divide(image,np.max(image)), 255.)
 
                 # Apply mask if required
                 if mask:
                     # Resize mask
-                    tstart1 = time.time()
                     mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
                     mask_image[mask_image!=structure] = 0
-                    # print 'Extracted and resized mask image: '+str((time.time()-tstart1))
 
-                    # Get crop idx
-                    tstart1 = time.time()
-                    # mask_image = image>0
+                    # Use mask to get global coordinates
                     idx = np.ix_(mask_image.any(1),mask_image.any(0))
                     row_idx = idx[0].flatten()
                     col_idx = idx[1].flatten()
-                    # print 'Extracted crop coordinates: '+str((time.time()-tstart1))
 
                     # Apply crop to image and mask then apply mask
-                    tstart1 = time.time()
                     image = image[idx]
                     mask_image = mask_image[idx]
-                    # print 'Cropped image and mask: '+str((time.time()-tstart1))
-                    tstart1 = time.time()
-                    mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
-                    pxvolume += mask_image.any(axis=-1).sum()
 
-                    # print 'Apply median blur: '+str((time.time()-tstart1))
-                    tstart1 = time.time()
+                    mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
+
                     image[mask_image==0] = 0
                     mask_image = None
-                    # print 'Applied mask to image: '+str((time.time()-tstart1))
+
+                    # Keep track of pixel volume
+                    pxvolume += mask_image.any(axis=-1).sum()
 
                 # Add queue number, image, row and col idx to queue
                 imagequeue.put((slice_number-zmin, image, row_idx, col_idx))
