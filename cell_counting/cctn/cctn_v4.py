@@ -182,7 +182,7 @@ if __name__ == '__main__':
     zvox = 10.
 
     # Number of cpus to use for processing queue
-    ncpu = 3
+    ncpu = 6
 
     ################################################################################
     ## Initialisation
