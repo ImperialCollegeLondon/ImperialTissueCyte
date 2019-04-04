@@ -39,7 +39,7 @@ from PIL import Image
 from skimage import io
 from natsort import natsorted
 from filters.rollingballfilt import rolling_ball_filter
-from multiprocessing import Pool, cpu_count, Array, Process, Queue, Manager
+from multiprocessing import Pool, cpu_count, Array, Process, Queue, Manager, current_process
 from functools import partial
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -116,7 +116,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
 
                     if np.max(image) != 0.:
                         # Perform circularity threshold
-                        image = adaptcircthresh(image,size,int(np.max(image)),circ_thresh,False)
+                        image = adaptcircthresh(image,size,int(np.mean(image)),circ_thresh,False)
                         #Image.fromarray(np.uint8(image)*255).save('/home/gm515/Documents/Temp3/Z_'+str(slice_number+1)+'.tif')
 
                         # Remove objects smaller than chosen size
@@ -133,8 +133,9 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         # Convert coordinate of centroid to coordinate of whole image if mask was used
                         coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                        # (row, col) or (y, x)
-                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
+                        # centroids is (row, col) or (y, x)
+                        # flip order now so (x, y)
+                        cells = [coordfunc(int(c[1]), int(c[0])) for c in centroids]
                         #image = np.full(image.shape, False)
 
                         # Threshold the objects based on size and circularity and store centroids
@@ -145,11 +146,11 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         #         cells.append(centroids[i][::-1])
                         #         #image += image_label==labels[i]
 
-                        cells = centroids[::-1]
+                        # cells = centroids[::-1]
 
             # Append centroid information to shared dictionary
             res[qnum] = cells
-            print 'Finished processing queue position '+str(qnum)
+            print 'Finished processing queue position '+str(qnum)+' on worker '+str(current_process())
 
 if __name__ == '__main__':
     ################################################################################
@@ -196,6 +197,9 @@ if __name__ == '__main__':
     # Voxel size for volume calculation
     xyvox = 0.54
     zvox = 10.
+
+    # Number of cpus to use for processing queue
+    ncpu = 3
 
     ################################################################################
     ## Initialisation
@@ -300,8 +304,9 @@ if __name__ == '__main__':
 
             # Start processing images
             print 'Starting processing of Queue items'
-            imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
-            imageprocess.start()
+            # imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
+            # imageprocess.start()
+            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
 
             print 'Loading all images and storing into parallel array'
             for slice_number in range(zmin,zmax):
@@ -348,7 +353,11 @@ if __name__ == '__main__':
 
                 #progressBar(slice_number, slice_number-zmin, zmax-zmin)
 
-            imagequeue.put(None)
+            # Tell all pools to no longer wait
+            for close in range(ncpu):
+                imagequeue.put(None)
+
+            imageprocess.close()
             imageprocess.join()
 
             print 'Finished queue processing'
