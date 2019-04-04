@@ -92,7 +92,7 @@ def progressBar(sliceno, value, endvalue, bar_length=50):
         sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
-def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res):
+def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res, model_json_path, model_weights_path):
     while True:
         item = imagequeue.get()
         if item is None:
@@ -132,6 +132,9 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         centroids = [region.centroid for region in regionprops(image_label)]
 
                         if len(centroids) > 0:
+                            from keras.preprocessing import image
+                            from keras.models import load_model, model_from_json
+
                             # Load keras model
                             json_file = open(model_json_path, 'r')
                             loaded_model_json = json_file.read()
@@ -139,7 +142,6 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                             model = model_from_json(loaded_model_json)
                             model.load_weights(model_weights_path)
 
-                            all_img = np.empty((0,1,80,80,3))
                             cell_markers = []
                             nocell_markers = []
 
@@ -158,11 +160,11 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                             cell_markers = np.array(cell_markers)
                             nocell_markers = np.array(nocell_markers)
 
-                        # Convert coordinate of centroid to coordinate of whole image if mask was used
-                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+                            # Convert coordinate of centroid to coordinate of whole image if mask was used
+                            coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
 
-                        # (row, col) or (y, x)
-                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in cell_markers]
+                            # (row, col) or (y, x)
+                            centroids = [coordfunc(int(c[0]), int(c[1])) for c in cell_markers]
 
                         #image = np.full(image.shape, False)
 
@@ -174,7 +176,7 @@ def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res
                         #         cells.append(centroids[i][::-1])
                         #         #image += image_label==labels[i]
 
-                        cells = centroids[::-1]
+                            cells = centroids[::-1]
 
             # Append centroid information to shared dictionary
             res[qnum] = cells
@@ -228,6 +230,10 @@ if __name__ == '__main__':
 
     # Number of cpus to use for processing queue
     ncpu = 12
+
+    # Paths for model
+    model_json_path = '../classifier/models/2019_03_29_GoogleInception/model_2019_03_29.json'
+    model_weights_path = '../classifier/models/2019_03_29_GoogleInception/weights_2019_03_29.json'
 
     ################################################################################
     ## Initialisation
@@ -334,7 +340,7 @@ if __name__ == '__main__':
             print 'Starting processing of Queue items'
             # imageprocess = Process(target=cellcount, args=(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
             # imageprocess.start()
-            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
+            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res, model_json_path, model_weights_path))
 
             print 'Loading all images and storing into parallel array'
             for slice_number in range(zmin,zmax):
