@@ -124,11 +124,12 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt, res):
                         centroids = [region.centroid for region in regionprops(image)]
 
                         # Convert coordinate of centroid to coordinate of whole image if mask was used
-                        coordfunc = lambda celly, cellx : (row_idx[celly], col_idx[cellx])
+                        # And return as (x, y)
+                        coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly])
 
                         # Centroids are currently (row, col) or (y, x)
-                        # Flip order so (x, y)
-                        centroids = [coordfunc(int(c[1]), int(c[0])) for c in centroids]
+                        # Flip order so (x, y) using coordfunc
+                        centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
             # Append centroid information to shared dictionary
             res[qnum] = centroids
@@ -149,7 +150,7 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/het181218_segres_10um.tif'
+        mask_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/het181218_segres_10um.tif'
         structure_list = 'LGd'
 
     # Input details for the cell morphology
@@ -158,7 +159,7 @@ if __name__ == '__main__':
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
