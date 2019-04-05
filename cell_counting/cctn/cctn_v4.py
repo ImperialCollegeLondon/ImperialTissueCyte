@@ -93,7 +93,7 @@ def progressBar(sliceno, value, endvalue, bar_length=50):
         sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
-def cellcount(imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res):
+def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt, res):
     while True:
         item = imagequeue.get()
         if item is None:
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 
             # Start processing images
             print 'Creating threads to process Queue items'
-            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, bg_thresh, circ_thresh, use_medfilt, res))
+            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, circ_thresh, use_medfilt, res))
 
             print 'Loading all images and storing into parallel array'
             for slice_number in range(zmin,zmax):
