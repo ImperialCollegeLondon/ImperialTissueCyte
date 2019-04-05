@@ -305,10 +305,11 @@ if __name__ == '__main__':
                     mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 
                     image[mask_image==0] = 0
-                    mask_image = None
 
                     # Keep track of pixel volume
                     pxvolume += mask_image.any(axis=-1).sum()
+
+                    mask_image = None
 
                 # Add queue number, image, row and col idx to queue
                 imagequeue.put((slice_number-zmin, image, row_idx, col_idx))
