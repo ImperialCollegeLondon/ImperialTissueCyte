@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # If you are using a mask, input the mask path and the structures you want to count within
     # E.g. 'LGd, LGv, IGL, RT'
     if mask:
-        mask_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/het181218_segres_10um.tif'
+        mask_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/het181218_segres_10um.tif'
         structure_list = 'LGd'
 
     # Input details for the cell morphology
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     radius = 12.
 
     # Input the directory path of the TIFF images for counting
-    count_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
+    count_path = '/mnt/TissueCyte80TB/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections'
 
     # Of the images in the above directory, how many will be counted?
     # Number of files [None,None] for all, or [start,end] for specific range
