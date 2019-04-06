@@ -21,72 +21,35 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from xml.dom import minidom
-from multiprocessing import Pool, cpu_count, Array, Manager
-from contextlib import closing
-from functools import partial
-import tqdm
-import csv
 from natsort import natsorted
-import keras
 from keras.preprocessing import image
-from keras.models import load_model
-from keras import backend as K
 import glob
+from keras.preprocessing import image
+from keras.models import model_from_json
+from keras.optimizers import SGD
 
-# Warning supression and allowing large images to be laoded
+
+# Warning supression and allowing large images to be loaded
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 
-#=============================================================================================
-# Define function for predictions
-#=============================================================================================
+def progressBar(value, endvalue, bar_length=50):
+        percent = float(value) / endvalue
+        arrow = '-' * int(round(percent * bar_length)-1) + '/'
+        spaces = ' ' * (bar_length - len(arrow))
 
-# # Appends cell coordinates to manager list - manager allows access from a thread
-# def append_cell(coord):
-#     cell_markers.append(coord)
-#
-# # Appends no-cell coordinates to manager list - manager allows access from a thread
-# def append_nocell(coord):
-#     nocell_markers.append(coord)
-
-# Function to predict/classify object as cell or no-cell
-def cellpredict(cell, img, cell_markers, nocell_markers):
-
-    # Predict [1,0] for cell or [0,1] for no cell
-    prediction = model.predict(np.asarray(img))
-
-    if np.argmax(prediction[0]) == 0: # Cell
-        cell_value = 1
-        cell_markers.append(cell)
-        # image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/cell_par/'+str(cell)+'.tif')
-    else: # No cell
-        cell_value = 0
-        nocell_markers.append(cell)
-        # image.array_to_img(img[0,:,:,:]).save('/Users/gm515/Desktop/nocell_par/'+str(cell)+'.tif')
-
-    result[cell] = cell_value
-
-    return
-
+        sys.stdout.write("\r[{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+        sys.stdout.flush()
 
 # Main function
 if __name__ == '__main__':
-    # Import modules - required for each independant thread
-    import keras
-    from keras.preprocessing import image
-    from keras.models import load_model, model_from_json
-
-    #=============================================================================================
-    # User definied parameters
-    #=============================================================================================
-
     # CNN model paths
     model_weights_path = 'models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
     model_json_path = 'models/2019_03_29_GoogleInception/model_2019_03_29.json'
 
-    count_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections/counts'
-    image_path = '/Volumes/TissueCyte/181218_Gerald_HET_2_Pt2/het2-Mosaic/Ch2_Stitched_Sections/'
+    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
+    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/'
 
     if len(sys.argv) == 2:
         try:
@@ -118,15 +81,17 @@ if __name__ == '__main__':
     print image_path
 
     # Load the classifier model
-    json_file = open(model_json_path, 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    model = model_from_json(loaded_model_json)
+    with open(model_json_path, 'r') as f:
+        model = model_from_json(f.read())
     model.load_weights(model_weights_path)
 
-    #=============================================================================================
-    # Loop through the coordinate files and predict cells
-    #=============================================================================================
+    initial_lrate = 0.01
+    sgd = SGD(lr=initial_lrate, momentum=0.9, nesterov=False)
+
+    model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'categorical_crossentropy'],
+        loss_weights=[1, 0.3, 0.3],
+        optimizer=sgd,
+        metrics=['accuracy'])
 
     # Create directory to hold the counts in same folder as the images
     if not os.path.exists(count_path+'_cnn'):
@@ -170,7 +135,8 @@ if __name__ == '__main__':
 
             print 'Loading all images to RAM...'
 
-            all_img = np.empty((0,1,80,80,3))
+            all_img = []
+            i = 0
 
             if marker.ndim == 1:
                 for slice in np.unique(marker[2]):
@@ -179,8 +145,7 @@ if __name__ == '__main__':
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
-                        all_img = np.append(all_img, img_crop, axis = 0)
+                        all_img.append(img_crop)
             else:
                 for slice in np.unique(marker[:,2]):
                     img = Image.open(os.path.join(image_path, filename[slice-1])).convert(mode='RGB') # RGB as 3 channel for Google Inception
@@ -188,38 +153,30 @@ if __name__ == '__main__':
                         img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
                         img_crop = image.img_to_array(img_crop)
                         img_crop = np.expand_dims(img_crop, axis = 0)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
-                        all_img = np.append(all_img, img_crop, axis = 0)
-                    print slice
+                        all_img.append(img_crop)
+                    i += 1
+                    progressBar(i, len(np.unique(marker[:,2])))
 
+            all_img = np.vstack(all_img)
+            print ''
             print 'Done!'
 
-            manager = Manager()
-            result = Array('i', marker.shape[0])
-            cell_markers = manager.list()
-            nocell_markers = manager.list()
-
-            print 'Classifiying '+marker_filename
-
-            cell_index = range(marker.shape[0])
+            print 'Classifiying: '+marker_filename
 
             tstart = time.time()
 
             #=============================================================================================
             # Classify images
             #=============================================================================================
-
-
-            pbar = tqdm.tqdm(total=len(all_img))
-            for cell, img in zip(range(len(all_img)), all_img):
-                cellpredict(cell, img, cell_markers, nocell_markers)
-                pbar.update(1)
-            pbar.close()
+            classes = model.predict(all_img)
+            cells = np.count_nonzero(np.argmax(classes[0], axis=1)==0)
+            nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
 
             # Append to Pandas dataframe
-            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': result[:].count(1)+result[:].count(0), 'True': result[:].count(1), 'False': result[:].count(0)}, ignore_index=True)
+            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'False': nocells}, ignore_index=True)
 
-            correct_markers = marker[cell_markers[:],:]
+            correct_markers = marker[np.flatnonzero(np.argmin(classes[0], axis=1)),:]
+
             pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
 
         # Create directory to hold the counts in same folder as the images

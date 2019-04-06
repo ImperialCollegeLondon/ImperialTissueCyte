@@ -107,7 +107,8 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt, res):
                 if use_medfilt:
                     image = gaussmedfilt(image, 3, 1.5)
                 else:
-                    image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
+                    # image = cv2.GaussianBlur(image, ksize=(0,0), sigmaX=3)
+                    image = cv2.medianBlur(np.uint8(image), 7)
 
                 if np.max(image) != 0.:
                     # Perform rolling ball background subtraction to remove uneven background signal
@@ -170,7 +171,7 @@ if __name__ == '__main__':
 
     # For the circularity threshold, what minimum background threshold should be set and what circularity value needs to be achieved
     # You can estimate this by loading an image in ImageJ, perform a gaussian filter radius 3, then perform a rolling ball background subtraction radius 8, and choose a threshold which limits remaining background signal
-    circ_thresh = 0.8
+    circ_thresh = 0.7
 
     # Voxel size for volume calculation
     xyvox = 0.54
