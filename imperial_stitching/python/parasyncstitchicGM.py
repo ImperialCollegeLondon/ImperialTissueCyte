@@ -288,7 +288,8 @@ if __name__ == '__main__':
                 else:
                     ztoken = str(zcount)
 
-                Image.fromarray(tile_img.astype(np.uint16)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+                tile_img = np.multiply(np.divide(tile_img, 65535.), 255.)
+                Image.fromarray(tile_img.astype(np.uint8)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
             print 'Stitching Z'+ztoken+'...'
 

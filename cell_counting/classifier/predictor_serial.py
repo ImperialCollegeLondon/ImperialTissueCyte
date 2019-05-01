@@ -48,8 +48,8 @@ if __name__ == '__main__':
     model_weights_path = 'models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
     model_json_path = 'models/2019_03_29_GoogleInception/model_2019_03_29.json'
 
-    count_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/counts'
-    image_path = '/Volumes/TissueCyte/181024_Gerald_HET/het-Mosaic/Ch2_Stitched_Sections_New/'
+    count_path = '/Users/gm515/Desktop/PFC/counts'
+    image_path = '/Users/gm515/Desktop/PFC/'
 
     if len(sys.argv) == 2:
         try:
@@ -171,9 +171,13 @@ if __name__ == '__main__':
             classes = model.predict(all_img)
             cells = np.count_nonzero(np.argmax(classes[0], axis=1)==0)
             nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
+            cell_markers = marker[np.where(np.argmax(classes[0], axis=1)==0)]
+            nocell_markers = marker[np.where(np.argmax(classes[0], axis=1))]
+            leftcells = np.nan#len(cell_markers[cell_markers[:,0]<10500])
+            rightcells = np.nan#len(cell_markers)-leftcells
 
             # Append to Pandas dataframe
-            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'False': nocells}, ignore_index=True)
+            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'L':leftcells, 'R':rightcells, 'False': nocells}, ignore_index=True)
 
             correct_markers = marker[np.flatnonzero(np.argmin(classes[0], axis=1)),:]
 

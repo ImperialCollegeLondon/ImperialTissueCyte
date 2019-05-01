@@ -8,8 +8,8 @@
 import numpy as np
 import math
 import scipy.stats
-from im2col import im2col
-from col2im import col2im
+from filters.im2col import im2col
+from filters.col2im import col2im
 
 def gausskern(SHAPE,SIGMA):
     m,n = [(ss-1.)/2. for ss in SHAPE]
