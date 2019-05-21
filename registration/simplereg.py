@@ -82,8 +82,8 @@ try:
     hemSeg = sitk.Transformix(hemData, transformMap)
 
     # Write average transform and segmented results
-    sitk.WriteImage(resultSeg, args.outpath+'/segres_10um.tif')
-    sitk.WriteImage(hemSeg, args.outpath+'/hemres_10um.tif')
+    sitk.WriteImage(resultSeg, args.outpath+'segres_10um.tif')
+    sitk.WriteImage(hemSeg, args.outpath+'hemres_10um.tif')
 
 except (RuntimeError, TypeError, NameError, ImportError, SyntaxError):
     slack_message('SimpleElastix segmentation ERROR', '#segmentation', 'Segmentation')
