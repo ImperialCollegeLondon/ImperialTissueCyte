@@ -24,6 +24,8 @@ Updates:
 06.03.19 - Updated the overlap and crop parameters to improve the image average result and
 tiling artefacts.
 11.03.19 - Included default values and parameter search from Mosaic file.
+02.05.19 - Python 3 compatible
+14.05.19 - Added slack integration
 '''
 
 import os, sys, warnings, time, glob, errno, subprocess, shutil, math, readline, re, tempfile
@@ -36,6 +38,28 @@ from tabCompleter import tabCompleter
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
+
+#=============================================================================================
+# Slack notification
+#=============================================================================================
+
+def slack_message(text, channel, username):
+    from urllib import request, parse
+    import json
+
+    post = {"text": "{0}".format(text),
+        "channel": "{0}".format(channel),
+        "username": "{0}".format(username),
+        "icon_emoji": ":octopus:"}
+
+    try:
+        json_data = json.dumps(post)
+        req = request.Request('https://hooks.slack.com/services/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',
+            data=json_data.encode('ascii'),
+            headers={'Content-Type': 'application/json'})
+        resp = request.urlopen(req)
+    except Exception as em:
+        print("EXCEPTION: " + str(em))
 
 #=============================================================================================
 # Function to load images in parallel
@@ -85,30 +109,30 @@ if __name__ == '__main__':
     readline.set_completer_delims('\t')
     readline.parse_and_bind("tab: complete")
 
-    print ''
-    print '------------------------------------------'
-    print '             Parameter Input              '
-    print '------------------------------------------'
-    print ''
-    print 'Fill in the following variables. To accept default value, leave response blank.'
-    print 'Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.'
-    acknowledge = raw_input('Press Enter to continue: ')
-    tcpath = raw_input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
-    startsec = raw_input('Start section (default start): ')
-    endsec = raw_input('End section (default end): ')
-    xoverlap = raw_input('X overlap % (default 1): ')
-    yoverlap = raw_input('Y overlap % (default 1): ')
-    channel = raw_input('Channel to stitch: ')
+    print ('')
+    print ('------------------------------------------')
+    print ('             Parameter Input              ')
+    print ('------------------------------------------')
+    print ('')
+    print ('Fill in the following variables. To accept default value, leave response blank.')
+    print ('Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.')
+    acknowledge = input('Press Enter to continue: ')
+    tcpath = input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
+    startsec = input('Start section (default start): ')
+    endsec = input('End section (default end): ')
+    xoverlap = input('X overlap % (default 1): ')
+    yoverlap = input('Y overlap % (default 1): ')
+    channel = input('Channel to stitch: ')
     while not channel:
-        channel = raw_input('Channel to stitch: ')
-    avgcorr = raw_input('Perform average correction? (y/n): ')
+        channel = input('Channel to stitch: ')
+    avgcorr = input('Perform average correction? (y/n): ')
     while avgcorr not in ('y', 'n'):
-        avgcorr = raw_input('Perform average correction? (y/n): ')
-    convert = raw_input('Perform additional downsize? (y/n): ')
+        avgcorr = input('Perform average correction? (y/n): ')
+    convert = input('Perform additional downsize? (y/n): ')
     while convert not in ('y', 'n'):
-        convert = raw_input('Perform additional downsize? (y/n): ')
+        convert = input('Perform additional downsize? (y/n): ')
     if convert == 'y':
-        downsize = raw_input('Downsize amount (default 0.054 for 10 um/pixel): ')
+        downsize = input('Downsize amount (default 0.054 for 10 um/pixel): ')
 
     # Handle default values
     if not startsec:
@@ -149,16 +173,17 @@ if __name__ == '__main__':
                 zlayers = int(re.split(':', line.rstrip())[-1])
 
     # Create stitch output folders
-    os.umask(0000)
+    os.umask(0o000)
+
     try:
-        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections', 0777)
+        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections', 0o777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
     if convert == 'y':
         try:
-            os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_Downsized', 0777)
+            os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_Downsized', 0o777)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
@@ -178,11 +203,11 @@ if __name__ == '__main__':
     #=============================================================================================
     # Stitching
     #=============================================================================================
-    print ''
-    print '------------------------------------------'
-    print '          Asynchronous Stitching          '
-    print '------------------------------------------'
-    print ''
+    print ('')
+    print ('---------------------------------------------')
+    print ('          Parasynchronous Stitching          ')
+    print ('---------------------------------------------')
+    print ('')
 
     tstart = time.time()
 
@@ -239,7 +264,7 @@ if __name__ == '__main__':
             # Compute average tile and divide if required
             if avgcorr == 'y':
                 avgimage = (np.mean(img_arr, axis=0)/2)+5
-                print 'Computed average tile.'
+                print ('Computed average tile.')
                 img_arr = np.multiply(np.divide(img_arr, avgimage[np.newaxis, :], out=np.zeros_like(img_arr), where=avgimage[np.newaxis, :]!=0), 100)
 
             # Save each tile with corresponding name
@@ -291,7 +316,7 @@ if __name__ == '__main__':
                 tile_img = np.multiply(np.divide(tile_img, 65535.), 255.)
                 Image.fromarray(tile_img.astype(np.uint8)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
-            print 'Stitching Z'+ztoken+'...'
+            print ('Stitching Z'+ztoken+'...')
 
             tilepath = temppath+'/'
             stitchpath = tcpath+'/'+scanid+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections'
@@ -301,7 +326,7 @@ if __name__ == '__main__':
             subprocess.call([imagejpath, '--headless', '-eval', 'runMacro('+overlapypath+');', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Fuse and display]");', '-eval', 'saveAs("Tiff",'+outname+');'], stdout=open(os.devnull, 'wb'))
 
             shutil.rmtree(temppath)
-            os.makedirs(temppath, 0777)
+            os.makedirs(temppath, 0o777)
 
             if convert == 'y':
                 stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif'))
@@ -309,7 +334,7 @@ if __name__ == '__main__':
                 stitched_img = stitched_img.resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])), Image.ANTIALIAS)
                 stitched_img.save(stitchpath+'_Downsized/Stitched_Z'+ztoken+'.tif')
 
-            print 'Complete!'
+            print ('Complete!')
 
             zcount+=1
             y = ytiles
@@ -325,6 +350,8 @@ if __name__ == '__main__':
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
+    test = 'Stitching completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
 
-    print ''
-    print 'Stitching completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
+    print ('')
+    print (text)
+    slack_message(text, '#stitching', 'Stitching')

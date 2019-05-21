@@ -55,6 +55,24 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ## Function definitions
 ################################################################################
 
+def slack_message(text, channel, username):
+    from urllib import request, parse
+    import json
+
+    post = {"text": "{0}".format(text),
+        "channel": "{0}".format(channel),
+        "username": "{0}".format(username),
+        "icon_url": "https://github.com/gm515/gm515.github.io/blob/master/Images/imperialstplogo.png?raw=true"}
+
+    try:
+        json_data = json.dumps(post)
+        req = request.Request('https://hooks.slack.com/services/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',
+            data=json_data.encode('ascii'),
+            headers={'Content-Type': 'application/json'})
+        resp = request.urlopen(req)
+    except Exception as em:
+        print("EXCEPTION: " + str(em))
+
 def distance(a, b):
     return (a[0] - b[0])**2  + (a[1] - b[1])**2
 
@@ -202,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('-oversample', action='store_false', default=True, dest='oversample', help='Oversample correction')
     parser.add_argument('-start', default=None, type=int, dest='start', help='Start image number if required')
     parser.add_argument('-end', default=None, type=int, dest='end', help='End image number if required')
-    parser.add_argument('-medfilt', default=False, action='store_true', dest='medfilt', help='Use median filter')
+    parser.add_argument('-medfilt', default=False, action='store_true', dest='medfilt', help='Use custom median donut filter')
     parser.add_argument('-circthresh', default=0.7, type=float, dest='circthresh', help='Circularity threshold value')
     parser.add_argument('-xyvox', default=0.54, type=float, dest='xyvox', help='XY voxel size')
     parser.add_argument('-zvox', default=10., type=float, dest='zvox', help='Z voxel size')
@@ -238,7 +256,7 @@ if __name__ == '__main__':
         hem = False
 
     print ('User defined parameters')
-    print( "Image path: {} \nAnnotation path: {} \nHemisphere path: {} \nStructure list: {} \nOversample: {} \nStart: {} \nEnd: {} \nUse median filter: {} \nCircularity threshold: {} \nXYvox: {} \nZvox: {} \nncpu: {} \nSize: {} \nRadius: {}".format(
+    print( "Image path: {} \nAnnotation path: {} \nHemisphere path: {} \nStructure list: {} \nOversample: {} \nStart: {} \nEnd: {} \nCustom median donut filter: {} \nCircularity threshold: {} \nXYvox: {} \nZvox: {} \nncpu: {} \nSize: {} \nRadius: {}".format(
             count_path,
             mask_path,
             hem_path,
@@ -282,7 +300,7 @@ if __name__ == '__main__':
             seg = nib.load(mask_path).get_data()
         else:
             seg = io.imread(mask_path)
-        print ('Loaded segmentation data')
+        print ('Loaded segmentation atlas')
 
     if hem:
         file, extension = os.path.splitext(hem_path)
@@ -290,17 +308,23 @@ if __name__ == '__main__':
             hemseg = nib.load(hem_path).get_data()
         else:
             hemseg = io.imread(hem_path)
-        print ('Loaded hemisphere data')
+        print ('Loaded hemisphere atlas')
 
     ids = []
     acr = []
+    index = np.array([[],[],[]])
     if mask:
         anno_file = json.load(open('2017_annotation_structure_info.json'))
         structure_list = [x.strip() for x in structure_list.lower().split(",")]
         for elem in structure_list:
             a, i = get_structure(anno_file['children'], elem)[1:]
-            ids.extend(i)
-            acr.extend(a)
+            for name, structure in zip(a, i):
+                if structure in seg:
+                        index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
+                        ids.append(structure)
+                        acr.append(name)
+                else:
+                    print (name+' not found -> Removed')
     else:
         ids.extend(['None'])
         acr.extend(['None'])
@@ -312,30 +336,6 @@ if __name__ == '__main__':
     tstart = time.time()
 
     structure_index = 0
-
-    index = np.array([[],[],[]])
-
-    ################################################################################
-    ## Check and remove any structures which do not 'exist'
-    ################################################################################
-    print ('Removing any structures which do not exist in segmentation data')
-    if mask:
-        for name, structure in zip(acr,ids):
-            print ('Checking '+str(name))
-            proceed = True
-
-            # Dictionary to store centroids - each key is a new slice number
-            total_cells = dict()
-
-            if structure in seg:
-                index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
-            else:
-                acr.remove(name)
-                ids.remove(structure)
-                print (name+' not found -> Removed')
-
-    print ('Counting in structures: '+str(acr))
-    print ('')
 
     ################################################################################
     ## Loop through each slice and count in chosen structure
@@ -353,10 +353,7 @@ if __name__ == '__main__':
         ################################################################################
         if mask:
             index = np.array([[],[],[]])
-            if structure in seg:
-                index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
-            else:
-                proceed = False
+            index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
 
             if index.size > 0:
                 zmin = int(index[0].min())
@@ -366,6 +363,8 @@ if __name__ == '__main__':
         else:
             zmin = 0
             zmax = len(count_files)
+
+        end
 
         ################################################################################
         ## Check whether to proceed with the count
@@ -487,5 +486,7 @@ if __name__ == '__main__':
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
+    text = 'Counting completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
 
-    print ('Counting completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds))
+    print (text)
+    slack_message(text, '#cctn', 'CCTN')
