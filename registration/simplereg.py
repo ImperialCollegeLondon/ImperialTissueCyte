@@ -7,32 +7,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('autoflpath', default=[], type=str, help='File path for autofluorescence atlas')
+    parser.add_argument('outpath', default=[], type=str, help='Directory path to save output files')
     parser.add_argument('-avgpath', default='average_10um.tif', type=str, help='File path for average atlas')
     parser.add_argument('-annopath', default='annotation_10um.tif', type=str, help='File path for annotation atlas')
     parser.add_argument('-hempath', default='hemisphere_10um.tif', type=str, help='File path for hemisphere atlas')
-    parser.add_argument('outpath', default=[], type=str, help='Directory path to save output files')
-    parser.add_argument('-first', default=[], type=int, dest='first', help='First slice in average atlas')
-    parser.add_argument('-last', default=[], type=int, dest='last', help='Last slice in average atlas')
+    parser.add_argument('-first', default=1, type=int, dest='first', help='First slice in average atlas')
+    parser.add_argument('-last', default=1140, type=int, dest='last', help='Last slice in average atlas')
 
     args = parser.parse_args()
 
     print ('Loading all atlases...')
     fixedData = sitk.ReadImage(args.autoflpath)
     print ('Autofluorescence atlas loaded')
-    if args.first:
-        movingData = sitk.GetImageFromArray(io.imread(args.avgpath)[:,:,first:last+1])
-        print ('Average atlas loaded')
-        annoData = sitk.GetImageFromArray(io.imread(args.annopath)[:,:,first:last+1])
-        print ('Annotation atlas loaded')
-        hemData = sitk.GetImageFromArray(io.imread(args.hempath)[:,:,first:last+1])
-        print ('Hemisphere atlas loaded')
-    else:
-        movingData = sitk.GetImageFromArray(movingData)
-        print ('Average atlas loaded')
-        annoData = sitk.ReadImage(args.annopath)
-        print ('Annotation atlas loaded')
-        hemData = sitk.ReadImage(args.hempath)
-        print ('Hemisphere atlas loaded')
+    movingData = sitk.GetImageFromArray(io.imread(args.avgpath)[:,:,first:last+1])
+    print ('Average atlas loaded')
+    annoData = sitk.GetImageFromArray(io.imread(args.annopath)[:,:,first:last+1])
+    print ('Annotation atlas loaded')
+    hemData = sitk.GetImageFromArray(io.imread(args.hempath)[:,:,first:last+1])
+    print ('Hemisphere atlas loaded')
 
     tstart = time.time()
 
