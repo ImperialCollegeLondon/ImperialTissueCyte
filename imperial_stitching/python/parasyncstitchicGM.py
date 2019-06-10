@@ -50,7 +50,7 @@ def slack_message(text, channel, username):
     post = {"text": "{0}".format(text),
         "channel": "{0}".format(channel),
         "username": "{0}".format(username),
-        "icon_emoji": ":octopus:"}
+        "icon_url": "https://github.com/gm515/gm515.github.io/blob/master/Images/imperialstplogo.png?raw=true"}
 
     try:
         json_data = json.dumps(post)
@@ -314,7 +314,17 @@ if __name__ == '__main__':
                     ztoken = str(zcount)
 
                 tile_img = np.multiply(np.divide(tile_img, 65535.), 255.)
-                Image.fromarray(tile_img.astype(np.uint8)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+                # Image.fromarray(tile_img.astype(np.uint8)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+                tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)).convert('RGB'))
+
+                if switch == 1:
+                    tile_img[:,:,1] *= 0
+                    tile_img[:,:,2] *= 0
+                else:
+                    tile_img[:,:,0] *= 0
+                    tile_img[:,:,1] *= 0
+
+                Image.fromarray(tile_img).save('/Users/gm515/Desktop/Tiles/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
             print ('Stitching Z'+ztoken+'...')
 
@@ -346,11 +356,12 @@ if __name__ == '__main__':
     #=============================================================================================
     # Finish
     #=============================================================================================
-
+    shutil.rmtree(temppath)
+    
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    test = 'Stitching completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
+    text = 'Stitching completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
 
     print ('')
     print (text)

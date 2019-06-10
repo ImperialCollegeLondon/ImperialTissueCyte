@@ -1,4 +1,5 @@
-//Bspline Transformation
+// Bspline Transformation
+// https://github.com/SainsburyWellcomeCentre/ara_tools/tree/master/elastix_params
 
 //ImageTypes
 (FixedInternalImagePixelType "float")
@@ -9,20 +10,20 @@
 (UseDirectionCosines "true")
 
 //Components
-(Registration "MultiResolutionRegistration") //default MultiMetricMultiResolutionRegistration
+(Registration "MultiResolutionRegistration")  // bspline-default MultiMetricMultiResolutionRegistration
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
-(Interpolator "BSplineInterpolator") // default LinearInterpolator
-(Metric "AdvancedMattesMutualInformation") // default AdvancedMattesMutualInformation TransformBendingEnergyPenalty
-(Optimizer "StandardGradientDescent") // default AdaptiveStochasticGradientDescent
-(ResampleInterpolator "FinalNearestNeighborInterpolator") // default FinalBSplineInterpolator
+(Interpolator "BSplineInterpolator") // bspline-default LinearInterpolator
+(Metric "AdvancedMattesMutualInformation") // bspline-default AdvancedMattesMutualInformation TransformBendingEnergyPenalty
+(Optimizer "StandardGradientDescent") // bspline-default StandardGradientDescent
+(ResampleInterpolator "FinalNearestNeighborInterpolator") // bspline-default FinalBSplineInterpolator
 (Resampler "DefaultResampler")
-(Transform "BSplineTransform")
+(Transform "BSplineTransform") // bspline-default BSplineTransform
 
 (ErodeMask "false" )
 
-(NumberOfResolutions 4) // default 4
-(FinalGridSpacingInVoxels 10.000000 10.000000 10.000000)
+(NumberOfResolutions 3)
+(FinalGridSpacingInVoxels 10.00000 10.00000 10.00000) // default 25
 
 (HowToCombineTransforms "Compose")
 
@@ -33,31 +34,32 @@
 (ShowExactMetricValue "false")
 (WriteDiffusionFiles "false")
 
-// Option supported in Elastix-4.1:
+// Option supported in elastix 4.1:
 (UseFastAndLowMemoryVersion "true")
 
-//Maximum number of iterations in each resolution level: 5000
-(MaximumNumberOfIterations 10000 ) // default 500
+//Maximum number of iterations in each resolution level:
+(MaximumNumberOfIterations 1000 ) // change this to 500-2000
+(NumberOfJacobianMeasurements 1000)
 
 //Number of grey level bins in each resolution level:
-(NumberOfHistogramBins 32)
+(NumberOfHistogramBins 32 )
 (FixedLimitRangeRatio 0.0)
 (MovingLimitRangeRatio 0.0)
 (FixedKernelBSplineOrder 3)
 (MovingKernelBSplineOrder 3)
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "RandomCoordinate") // default Random
-(FixedImageBSplineInterpolationOrder 1)
+(ImageSampler "RandomCoordinate") // bspline-default Random
+(FixedImageBSplineInterpolationOrder 1 )
 (UseRandomSampleRegion "true")
-(SampleRegionSize 50.0 50.0 50.0) // default 50.0
-(NumberOfSpatialSamples 10000) // default 2048
+(SampleRegionSize 50.0 50.0 50.0)
+(NumberOfSpatialSamples 2000 ) // change this to 2000-5000
 (NewSamplesEveryIteration "true")
 (CheckNumberOfSamples "true")
-(MaximumNumberOfSamplingAttempts 10) // default 8
+(MaximumNumberOfSamplingAttempts 10)
 
 //Order of B-Spline interpolation used in each resolution level:
-(BSplineInterpolationOrder 3) // default 1
+(BSplineInterpolationOrder 3)
 
 //Order of B-Spline interpolation used for applying the final deformation:
 (FinalBSplineInterpolationOrder 3)
@@ -66,10 +68,10 @@
 (DefaultPixelValue 0)
 
 //SP: Param_a in each resolution level. a_k = a/(A+k+1)^alpha
-(SP_a 10000.0)
+(SP_a 10000.0 )
 
 //SP: Param_A in each resolution level. a_k = a/(A+k+1)^alpha
-(SP_A 100.0)
+(SP_A 100.0 )
 
 //SP: Param_alpha in each resolution level. a_k = a/(A+k+1)^alpha
-(SP_alpha 0.6)
+(SP_alpha 0.6 )

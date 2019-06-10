@@ -1,6 +1,7 @@
 import SimpleITK as sitk
 import time
 import argparse
+import numpy as np
 from skimage import io
 
 def slack_message(text, channel, username):
@@ -25,25 +26,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('autoflpath', default=[], type=str, help='File path for autofluorescence atlas')
-    parser.add_argument('outpath', default=[], type=str, help='Directory path to save output files')
     parser.add_argument('-avgpath', default='atlases/average_10um.tif', type=str, help='File path for average atlas')
     parser.add_argument('-annopath', default='atlases/annotation_10um.tif', type=str, help='File path for annotation atlas')
     parser.add_argument('-hempath', default='atlases/hemisphere_10um.tif', type=str, help='File path for hemisphere atlas')
     parser.add_argument('-first', default=1, type=int, dest='first', help='First slice in average atlas')
-    parser.add_argument('-last', default=1140, type=int, dest='last', help='Last slice in average atlas')
+    parser.add_argument('-last', default=1320, type=int, dest='last', help='Last slice in average atlas')
 
     args = parser.parse_args()
 
 try:
-
     print ('Loading all atlases...')
     fixedData = sitk.ReadImage(args.autoflpath)
     print ('Autofluorescence atlas loaded')
-    movingData = sitk.GetImageFromArray(io.imread(args.avgpath)[:,:,args.first:args.last+1])
+    movingData = sitk.GetImageFromArray(io.imread(args.avgpath)[args.first:args.last+1,:,:])
     print ('Average atlas loaded')
-    annoData = sitk.GetImageFromArray(io.imread(args.annopath)[:,:,args.first:args.last+1])
+    annoData = sitk.GetImageFromArray(io.imread(args.annopath)[args.first:args.last+1,:,:])
     print ('Annotation atlas loaded')
-    hemData = sitk.GetImageFromArray(io.imread(args.hempath)[:,:,args.first:args.last+1])
+    hemData = np.zeros(movingData.GetSize())
+    hemData[570::,:,:] = 1
+    hemData = sitk.GetImageFromArray(np.uint8(np.swapaxes(hemData,0,2)))
     print ('Hemisphere atlas loaded')
 
     tstart = time.time()
@@ -51,6 +52,7 @@ try:
     # Initiate SimpleElastix
     SimpleElastix = sitk.ElastixImageFilter()
     SimpleElastix.LogToFileOn()
+    SimpleElastix.SetOutputDirectory('output/')
     SimpleElastix.SetFixedImage(fixedData)
     SimpleElastix.SetMovingImage(movingData)
 
@@ -58,11 +60,11 @@ try:
     parameterMapVector = sitk.VectorOfParameterMap()
 
     # Start with Affine using fixed points to aid registration
-    affineParameterMap = sitk.GetDefaultParameterMap('affine')
+    affineParameterMap = sitk.ReadParameterFile('02_ARA_affine.txt')
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
-    bsplineParameterMap = sitk.ReadParameterFile('ARA_bspline_params_10um.txt')
+    bsplineParameterMap = sitk.ReadParameterFile('02_ARA_bspline.txt')
     parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
@@ -82,18 +84,18 @@ try:
     hemSeg = sitk.Transformix(hemData, transformMap)
 
     # Write average transform and segmented results
-    sitk.WriteImage(resultSeg, args.outpath+'segres_10um.tif')
-    sitk.WriteImage(hemSeg, args.outpath+'hemres_10um.tif')
+    sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
+    sitk.WriteImage(hemSeg, args.authoflpath+'HEMRES.tif')
 
-except (RuntimeError, TypeError, NameError, ImportError, SyntaxError):
-    slack_message('SimpleElastix segmentation ERROR', '#segmentation', 'Segmentation')
+    minutes, seconds = divmod(time.time()-tstart, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    text = args.autoflpath+'\n SimpleElastix segmentation completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
 
-minutes, seconds = divmod(time.time()-tstart, 60)
-hours, minutes = divmod(minutes, 60)
-days, hours = divmod(hours, 24)
-text = 'SimpleElastix segmentation completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
+    print ('')
+    print (text)
 
-print ('')
-print (text)
+    slack_message(text, '#segmentation', 'Segmentation')
 
-slack_message(text, '#segmentation', 'Segmentation')
+except (RuntimeError, TypeError, NameError, ImportError, SyntaxError, FileNotFoundError):
+    slack_message('*ERROR*', '#segmentation', 'Segmentation')

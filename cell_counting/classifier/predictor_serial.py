@@ -48,8 +48,8 @@ if __name__ == '__main__':
     model_weights_path = 'models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
     model_json_path = 'models/2019_03_29_GoogleInception/model_2019_03_29.json'
 
-    count_path = '/Users/gm515/Desktop/PFC/counts'
-    image_path = '/Users/gm515/Desktop/PFC/'
+    count_path = ''
+    image_path = ''
 
     if len(sys.argv) == 2:
         try:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             image_path = image_path
         else:
             count_path = str(sys.argv[1])
-            image_path = str(sys.argv[1])[:-7]
+            image_path = os.path.split(sys.argv[1])[0]
     if len(sys.argv) == 3:
         try:
             sys.argv[1]
@@ -173,8 +173,8 @@ if __name__ == '__main__':
             nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
             cell_markers = marker[np.where(np.argmax(classes[0], axis=1)==0)]
             nocell_markers = marker[np.where(np.argmax(classes[0], axis=1))]
-            leftcells = np.nan#len(cell_markers[cell_markers[:,0]<10500])
-            rightcells = np.nan#len(cell_markers)-leftcells
+            leftcells = len(cell_markers[cell_markers[:,3]==0])
+            rightcells = len(cell_markers)-leftcells
 
             # Append to Pandas dataframe
             df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'L':leftcells, 'R':rightcells, 'False': nocells}, ignore_index=True)

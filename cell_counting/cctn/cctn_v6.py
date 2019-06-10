@@ -10,15 +10,18 @@ multiple layers to account for oversampling. The output provides a list of
 coordinates for identified cells. This should then be fed into the image
 predictor to confirm whether objects are cells or not.
 
-Version 5 - v5 (Python 3)
+Version 6 - v6 (Python 3)
 This version incorporates parallelisation using a queuing system and adds new
 circularity threshold from v4. All non-existant structures are removed prior to
 counting. In addition, hemisphere atlas is used to classifier hemispheres.
+Each image file is loaded in sequential order with ALL strucures counted, rather
+than counting in structures in a sequential order (v5). This means the overhead
+of image loading is restricted to once per image rather than individually per
+structure, as before. A file lock and unlock is implemented to allow multiple
+thread writing to the same files.
 
 Instructions:
-1) Go to the user defined parameters from roughly line 140
-2) Make changes to those parameters as neccessary
-3) Execute the code in a Python IDE
+1) Run from command line with input parameters
 ################################################################################
 """
 
@@ -28,9 +31,11 @@ Instructions:
 
 import argparse
 import collections
+import copy
 import csv
 import cv2
 import json
+import fcntl
 import os
 import psutil
 import sys
@@ -110,16 +115,16 @@ def progressBar(sliceno, value, endvalue, bar_length=50):
         arrow = '-' * int(round(percent * bar_length)-1) + '/'
         spaces = ' ' * (bar_length - len(arrow))
 
-        sys.stdout.write("\rSlice {0} [{1}] {2}%".format(sliceno, arrow + spaces, int(round(percent * 100))))
+        sys.stdout.write("\rSlice {0} [{1}] {2}%\n{3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
         sys.stdout.flush()
 
-def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt, res):
+def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
     while True:
         item = imagequeue.get()
         if item is None:
             break
         else:
-            qnum, image, hemseg_image, row_idx, col_idx = item
+            slice_number, image, hemseg_image, row_idx, col_idx, count_path, name = item
             centroids = []
 
             if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
@@ -146,21 +151,38 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt, res):
 
                         if row_idx is not None:
                             # Convert coordinate of centroid to coordinate of whole image if mask was used
-                            # And return as (x, y)
                             if hemseg_image is not None:
-                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], int(hemseg_image[celly,cellx]))
+                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number, int(hemseg_image[celly,cellx]))
                             else:
-                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly])
+                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number)
                         else:
-                            coordfunc = lambda celly, cellx : (cellx, celly)
+                            coordfunc = lambda celly, cellx : (cellx, celly, slice_number)
 
                         # Centroids are currently (row, col) or (y, x)
                         # Flip order so (x, y) using coordfunc
                         centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
-            # Append centroid information to shared dictionary
-            res[qnum] = centroids
-            print('Finished processing queue position '+str(qnum)+' on worker '+str(current_process()))
+            # Write out results to file
+            csv_file = count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv'
+
+            while True:
+                try:
+                    with open(csv_file, 'a+') as f:
+                        # Lock file during writing
+                        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        csv.writer(f, delimiter=',').writerows(centroids)
+
+                        # Unlock file and clsoe out
+                        fcntl.flock(f, fcntl.LOCK_UN)
+                    break
+                except IOError as e:
+                    # raise on unrelated IOErrors
+                    if e.errno != errno.EAGAIN:
+                        raise
+                    else:
+                        time.sleep(0.1)
+
+            print('Finished - Queue position: '+str(slice_number)+' Worker ID: '+str(current_process())+' Structure: '+str(name))
 
 if __name__ == '__main__':
     ################################################################################
@@ -235,8 +257,8 @@ if __name__ == '__main__':
     ################################################################################
 
     # Create directory to hold the counts in same folder as the images
-    if not os.path.exists(count_path+'/counts'):
-        os.makedirs(count_path+'/counts')
+    if not os.path.exists(count_path+'/counts_v6'):
+        os.makedirs(count_path+'/counts_v6')
 
     # List of files to count
     count_files = []
@@ -288,6 +310,7 @@ if __name__ == '__main__':
     ################################################################################
     ## Counting
     ################################################################################
+    print ('')
 
     tstart = time.time()
 
@@ -296,143 +319,137 @@ if __name__ == '__main__':
     ################################################################################
     ## Loop through each slice and count in chosen structure
     ################################################################################
+    proceed = True
 
-    for name, structure in zip(acr,ids):
-        print ('Counting in '+str(name))
-        proceed = True
+    if mask:
+        index = np.array([[],[],[]])
+        index = np.concatenate((index, np.where(np.isin(seg,ids))), axis=1)
 
-        # Dictionary to store centroids - each key is a new slice number
-        total_cells = dict()
-
-        ################################################################################
-        ## Obtain crop information for structure if mask required
-        ################################################################################
-        if mask:
-            index = np.array([[],[],[]])
-            index = np.concatenate((index, np.array(np.nonzero(structure == seg))), axis=1)
-
-            if index.size > 0:
-                zmin = int(index[0].min())
-                zmax = int(index[0].max())
-            else:
-                proceed = False
+        if index.size > 0:
+            zmin = int(index[0].min())
+            zmax = int(index[0].max())
         else:
-            zmin = 0
-            zmax = len(count_files)
+            proceed = False
+    else:
+        zmin = 0
+        zmax = len(count_files)
 
-        ################################################################################
-        ## Check whether to proceed with the count
-        ################################################################################
-        if proceed:
+
+    if proceed:
+        # Create a Queue and push images to queue
+        print ('Setting up Queue')
+        imagequeue = Queue()
+
+        # Start processing images
+        print ('Creating threads to process Queue items')
+        imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, circ_thresh, use_medfilt))
+        print ('')
+
+        for slice_number in range(zmin,zmax):
+            # Load image and convert to dtype=float and scale to full 255 range
+            image = Image.open(count_path+'/'+count_files[slice_number])
+            temp_size = image.size
+            image = np.array(image).astype(float)
+            image = np.multiply(np.divide(image,np.max(image)), 255.)
+
+            if mask:
+                # Get annotation image for slice
+                mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
+
+            # Initiate empty lists
+            row_idx = []
+            col_idx = []
+
             ################################################################################
             ## Loop through slices based on cropped boundaries and store into one array
             ################################################################################
-            image_array = []
             row_idx_array = None
             col_idx_array = None
-            pxvolume = 0
+            # pxvolume = 0
 
-            # Create shared dictionary
-            manager = Manager()
-            res = manager.dict()
+            # Loop through structures available in each slice
+            for name, structure in zip(acr,ids):
+                # If masking is not required, submit to queue with redundat variables
+                if not mask:
+                    imagequeue.put((slice_number, image, [None], [None], [None], count_path, name))
+                    print (count_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
+                else:
+                    if structure in mask_image:
+                        # Resize mask
+                        mask_image_per_structure = copy.deepcopy(mask_image)
+                        mask_image_per_structure[mask_image_per_structure!=structure] = 0
 
-            # Create a Queue and push images to queue
-            print ('Setting up Queue')
-            imagequeue = Queue()
+                        # Use mask to get global coordinates
+                        idx = np.ix_(mask_image_per_structure.any(1),mask_image_per_structure.any(0))
+                        row_idx = idx[0].flatten()
+                        col_idx = idx[1].flatten()
 
-            # Start processing images
-            print ('Creating threads to process Queue items')
-            imageprocess = Pool(ncpu, cellcount, (imagequeue, radius, size, circ_thresh, use_medfilt, res))
+                        # Apply crop to image and mask then apply mask
+                        image_per_structure = copy.deepcopy(image)
+                        image_per_structure = image_per_structure[idx]
+                        mask_image_per_structure = mask_image_per_structure[idx]
 
-            print ('Loading all images and storing into parallel array')
-            for slice_number in range(zmin,zmax):
-                # Load image and convert to dtype=float and scale to full 255 range
-                image = Image.open(count_path+'/'+count_files[slice_number])
-                temp_size = image.size
-                image = np.array(image).astype(float)
-                image = np.multiply(np.divide(image,np.max(image)), 255.)
+                        mask_image_per_structure = cv2.medianBlur(np.array(mask_image_per_structure).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 
-                # Apply mask if required
-                row_idx = []
-                col_idx = []
-                if mask:
-                    # Resize mask
-                    mask_image = np.array(Image.fromarray(seg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
-                    mask_image[mask_image!=structure] = 0
+                        image_per_structure[mask_image_per_structure==0] = 0
 
-                    # Use mask to get global coordinates
-                    idx = np.ix_(mask_image.any(1),mask_image.any(0))
-                    row_idx = idx[0].flatten()
-                    col_idx = idx[1].flatten()
+                        # Keep track of pixel volume
+                        # pxvolume += mask_image_per_structure.any(axis=-1).sum()
 
-                    # Apply crop to image and mask then apply mask
-                    image = image[idx]
-                    mask_image = mask_image[idx]
+                        mask_image_per_structure = None
 
-                    mask_image = cv2.medianBlur(np.array(mask_image).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
-
-                    image[mask_image==0] = 0
-
-                    # Keep track of pixel volume
-                    pxvolume += mask_image.any(axis=-1).sum()
-
-                    hemseg_image = None
-                    if hem:
-                        hemseg_image = np.array(Image.fromarray(hemseg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
-                        hemseg_image = hemseg_image[idx]
-
-                    mask_image = None
-
-                # Add queue number, image, row and col idx to queue
-                imagequeue.put((slice_number-zmin, image, hemseg_image, row_idx, col_idx))
-                print (count_path.split(os.sep)[3]+' Added slice item '+str(slice_number)+' to queue position '+str(slice_number-zmin)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
-
-                #progressBar(slice_number, slice_number-zmin, zmax-zmin)
-
-            # Tell all pools to no longer wait
-            for close in range(ncpu):
-                imagequeue.put(None)
-
-            imageprocess.close()
-            imageprocess.join()
-
-            print ('Finished queue processing')
-
-            for slice_number, cells in zip(range(zmin,zmax+1),res.values()):
-                total_cells.update({slice_number : cells})
-
-            # Sort the dictionary so key are in order
-            total_cells = collections.OrderedDict(sorted(total_cells.items()))
-
-            # Peform correction for overlap
-            if over_sample:
-                print ('\nCorrecting for oversampling')
-                for index, (x, y) in enumerate(zip(list(total_cells.values())[1:], list(total_cells.values())[:-1])):
-                    if len(x) * len(y) > 0:
-                        total_cells[zmin+index] = [ycell for ycell in y if all(distance(xcell,ycell)>radius**2 for xcell in x)]
-
-            # Count number of possible cells
-            num_cells = sum(map(len, total_cells.values()))
-
-            print (str(name)+' '+str(num_cells))
-
-            # Save cell centroids to csv
-            csv_file = count_path+'/counts/'+str(name)+'_v5_count.csv'
-            with open(csv_file, 'w+') as f:
-                for key in sorted(total_cells.keys()):
-                    if len(total_cells[key])>0:
                         if hem:
-                            csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val[0:2]))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1), [[val[2]] for val in total_cells[key]]), axis=1)))
-                        else:
-                            csv.writer(f, delimiter=',').writerows(np.round(np.concatenate(([( (np.array(val))).tolist() for val in total_cells[key]], np.ones((len(total_cells[key]), 1))*(key+1)), axis=1)))
+                            hemseg_image_per_structure = np.array(Image.fromarray(hemseg[slice_number]).resize(tuple([int(x) for x in temp_size]), Image.NEAREST))
+                            hemseg_image_per_structure = hemseg_image_per_structure[idx]
+
+                        # Add queue number, image, row and col idx to queue
+                        imagequeue.put((slice_number, image_per_structure, hemseg_image_per_structure, row_idx, col_idx, count_path, name))
+
+                        image_per_structure = None
+                        hemseg_image_per_structure = None
+
+                        statustext = count_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB'
+
+                        progressBar(slice_number, slice_number-zmin, zmax-zmin, statustext)
+
+        for close in range(ncpu):
+            imagequeue.put(None)
+
+        imageprocess.close()
+        imageprocess.join()
+
+        print ('Finished queue processing')
+        print ('')
+        print ('Performing oversampling correction...')
+
+        for name in acr:
+            with open(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv') as csvDataFile:
+            csvReader = csv.reader(csvDataFile)
+            centroids = []
+            retainedcentroids = []
+
+            for row in csvReader:
+                centroids.append(row)
+
+            centroids = np.array(centroids).astype(int)
+
+            for x, y in zip(np.unique(centroids[:,2])[:-1], np.unique(centroids[:,2])[1:]):
+                # Check if they're in successive slices otherwise they can't be oversampled
+                if y-x == 1:
+                    xcells = centroids[centroids[:,2]==x]
+                    ycells = centroids[centroids[:,2]==y]
+                    retainedcentroids.extend([xcell.tolist() for xcell in xcells if all(distance(xcell,ycell)>radius**2 for ycell in ycells)])
+
+            with open(count_path+'/counts_v6/'+str(name)+'_v6_count.csv', 'w+') as f:
+                csv.writer(f, delimiter=',').writerows(retainedcentroids)
 
             # Save volume
-            vol_file = count_path+'/counts/volumes.csv'
-            with open(vol_file, 'a') as f:
-                csv.writer(f, delimiter=',').writerows(np.array([[str(name), pxvolume*xyvox*zvox]]))
+            # vol_file = count_path+'/counts/volumes.csv'
+            # with open(vol_file, 'a') as f:
+            #     csv.writer(f, delimiter=',').writerows(np.array([[str(name), pxvolume*xyvox*zvox]]))
 
-        structure_index += 1
-        print ('')
+            os.remove(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv')
+            print (name+' oversampling done')
 
     print ('~Fin~')
     print (count_path)
