@@ -424,12 +424,12 @@ if __name__ == '__main__':
 
         for name in acr:
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv') as csvDataFile:
-            csvReader = csv.reader(csvDataFile)
-            centroids = []
-            retainedcentroids = []
+                csvReader = csv.reader(csvDataFile)
+                centroids = []
+                retainedcentroids = []
 
-            for row in csvReader:
-                centroids.append(row)
+                for row in csvReader:
+                    centroids.append(row)
 
             centroids = np.array(centroids).astype(int)
 
