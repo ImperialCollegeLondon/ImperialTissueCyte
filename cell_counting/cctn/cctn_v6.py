@@ -110,9 +110,9 @@ def get_structure(json_obj, acronym):
             if found:
                 return found
 
-def progressBar(sliceno, value, endvalue, bar_length=50):
+def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         percent = float(value) / endvalue
-        arrow = '-' * int(round(percent * bar_length)-1) + '/'
+        arrow = '-' * int(round(percent * bar_length)) + '/'
         spaces = ' ' * (bar_length - len(arrow))
 
         sys.stdout.write("\rSlice {0} [{1}] {2}%\n{3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
@@ -182,7 +182,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                     else:
                         time.sleep(0.1)
 
-            print('Finished - Queue position: '+str(slice_number)+' Worker ID: '+str(current_process())+' Structure: '+str(name))
+            # print('Finished - Queue position: '+str(slice_number)+' Worker ID: '+str(current_process())+' Structure: '+str(name))
 
 if __name__ == '__main__':
     ################################################################################
