@@ -1,5 +1,3 @@
-// Example parameter file for rotation registration
-// C-style comments: //
 // http://elastix.bigr.nl/wiki/index.php/Par0025
 
 // The internal pixel type, used for internal computations
