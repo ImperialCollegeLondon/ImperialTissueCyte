@@ -118,7 +118,7 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         arrow = '-' * int(round(percent * bar_length)) + '/'
         spaces = ' ' * (bar_length - len(arrow))
 
-        sys.stdout.write("\rSlice {0} [{1}] {2}%\n{3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
+        sys.stdout.write("Slice {0} [{1}] {2}%\n{3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
         sys.stdout.flush()
 
 def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
@@ -421,10 +421,12 @@ if __name__ == '__main__':
         imageprocess.close()
         imageprocess.join()
 
+        print ('')
         print ('Finished queue processing')
         print ('')
         print ('Performing oversampling correction...')
 
+        # Oversampling correction
         for name in acr:
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv') as csvDataFile:
                 csvReader = csv.reader(csvDataFile)
@@ -442,6 +444,10 @@ if __name__ == '__main__':
                     xcells = centroids[centroids[:,2]==x]
                     ycells = centroids[centroids[:,2]==y]
                     retainedcentroids.extend([xcell.tolist() for xcell in xcells if all(distance(xcell,ycell)>radius**2 for ycell in ycells)])
+                retainedcentroids.extend(ycells)
+
+            # Add 1 to slice to reflect slice file name not index (zero based in Python)
+            retainedcentroids[:,2] += 1
 
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count.csv', 'w+') as f:
                 csv.writer(f, delimiter=',').writerows(retainedcentroids)
@@ -454,6 +460,7 @@ if __name__ == '__main__':
             os.remove(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv')
             print (name+' oversampling done')
 
+    print ('')
     print ('~Fin~')
     print (count_path)
 
