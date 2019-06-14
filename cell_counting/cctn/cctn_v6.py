@@ -262,7 +262,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    count_path = args.imagepath
+    image_path = args.imagepath
     mask_path = args.maskpath
     hem_path = args.hempath
     structure_list = args.structures
