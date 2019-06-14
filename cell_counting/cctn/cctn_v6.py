@@ -289,7 +289,7 @@ if __name__ == '__main__':
 
     print ('User defined parameters')
     print( "Image path: {} \nAnnotation path: {} \nHemisphere path: {} \nStructure list: {} \nOversample: {} \nStart: {} \nEnd: {} \nCustom median donut filter: {} \nCircularity threshold: {} \nXYvox: {} \nZvox: {} \nncpu: {} \nSize: {} \nRadius: {}".format(
-            count_path,
+            image_path,
             mask_path,
             hem_path,
             structure_list,
@@ -310,13 +310,15 @@ if __name__ == '__main__':
     ## Initialisation
     ################################################################################
 
-    # Create directory to hold the counts in same folder as the images
+    # Create directory to hold the counts in parent folder of images
+    count_path = '/'+os.path.join(*image_path.split(os.sep)[0:5])
+
     if not os.path.exists(count_path+'/counts_v6'):
         os.makedirs(count_path+'/counts_v6')
 
     # List of files to count
     count_files = []
-    count_files += [each for each in os.listdir(count_path) if each.endswith('.tif')]
+    count_files += [each for each in os.listdir(image_path) if each.endswith('.tif')]
     count_files = natsorted(count_files)
     if number_files[0] != None:
         count_files = count_files[number_files[0]-1:number_files[1]]
@@ -401,7 +403,7 @@ if __name__ == '__main__':
 
         for slice_number in range(zmin,zmax):
             # Load image and convert to dtype=float and scale to full 255 range
-            image = Image.open(count_path+'/'+count_files[slice_number], 'r')
+            image = Image.open(image_path+'/'+count_files[slice_number], 'r')
             temp_size = image.size
             start = time.time()
             image = np.frombuffer(image.tobytes(), dtype=np.uint8, count=-1).reshape(image.size[::-1])
@@ -432,7 +434,7 @@ if __name__ == '__main__':
                 # If masking is not required, submit to queue with redundat variables
                 if not mask:
                     imagequeue.put((slice_number, image, [None], [None], [None], count_path, name))
-                    print (count_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
+                    print (image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
                 else:
                     start = time.time()
                     if structure in mask_image:
@@ -479,7 +481,7 @@ if __name__ == '__main__':
                         image_per_structure = None
                         hemseg_image_per_structure = None
 
-                        statustext = count_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB'
+                        statustext = image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB'
 
                         progressBar(slice_number, slice_number-zmin, zmax-zmin, statustext)
 
