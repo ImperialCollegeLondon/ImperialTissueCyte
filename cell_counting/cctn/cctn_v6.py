@@ -23,6 +23,9 @@ of image loading is restricted to once per image rather than individually per
 structure, as before. A file lock and unlock is implemented to allow multiple
 thread writing to the same files.
 
+Also updated, oversampling correction. Of cells which are now oversampled, the
+middle cell slice value is kept rather than the last detected position as before.
+
 Instructions:
 1) Run from command line with input parameters
 ################################################################################
@@ -84,6 +87,53 @@ def slack_message(text, channel, username):
 def distance(a, b):
     return (a[0] - b[0])**2  + (a[1] - b[1])**2
 
+def oversamplecorr(centroids, radius):
+    keepcentroids = {}
+    overlapcentroids = {}
+    i = 0
+
+    # Loop through successive layers and identify overlapping cells
+    for layer1, layer2 in zip(list(centroids.keys())[:-1], list(centroids.keys())[1:]):
+        # Store cell centroids for each layer
+        layer1centroids = centroids[layer1]
+        layer2centroids = centroids[layer2]
+
+        # Loop through each cell in layer 1 and check if overlapping
+        for cell in layer1centroids:
+            # Get a boolean list with True in position of cell in layer 2 if cell in layer 1 overlaps and is the minumum distance
+            distances = np.array([distance(cell, cell2) for cell2 in layer2centroids])
+            mindistance = distances == np.min(distances)
+            withindistance = np.array([distance(cell, cell2)<=radius**2 for cell2 in layer2centroids])
+            overlapping = mindistance&withindistance
+
+            # If there is a True in the overlapping list, then there is a minimum distance oversampled cell detected
+            if True in overlapping:
+                # First check if cell is already within the overlap dictionary, overlapcentroids
+                overlapkey = [key for key, value in overlapcentroids.items() if cell in value]
+                # If so, only add the paired cell
+                if overlapkey:
+                    overlapcentroids.setdefault(overlapkey[0],[]).append(layer2centroids[np.argmax(overlapping)])
+
+                # Else, add both the new cell and pair to it's own unique dictionary key
+                else:
+                    overlapcentroids.setdefault(i,[]).append(cell)
+                    overlapcentroids.setdefault(i,[]).append(layer2centroids[np.argmax(overlapping)])
+
+                # Update counter to keep track of number of overlapped cells in total
+                # Uses this as key
+                i += 1
+            else:
+                # If no overlap is detected, then stick cell into keep dictionary
+                keepcentroids.setdefault(cell[2], []).append(cell)
+
+    # Go through each overlapping cell and take the middle cell
+    # Stick middle cell into the keep dictionary at the relevant slice position
+    for key, overlapcells in overlapcentroids.items():
+        midcell = overlapcells[int(len(overlapcells)/2)]
+        keepcentroids.setdefault(midcell[2], []).append(midcell)
+
+    return keepcentroids
+
 def get_children(json_obj, acr, ids):
     for obj in json_obj:
         if obj['children'] == []:
@@ -118,7 +168,7 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         arrow = '-' * int(round(percent * bar_length)) + '/'
         spaces = ' ' * (bar_length - len(arrow))
 
-        sys.stdout.write("Slice {0} [{1}] {2}%\n{3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
+        sys.stdout.write("\rSlice {0} [{1}] {2}% {3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
         sys.stdout.flush()
 
 def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
@@ -152,14 +202,15 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                         # Get centroids list as (row, col) or (y, x)
                         centroids = [region.centroid for region in regionprops(image)]
 
+                        # Add 1 to slice number to convert slice in index to slice file number
                         if row_idx is not None:
                             # Convert coordinate of centroid to coordinate of whole image if mask was used
                             if hemseg_image is not None:
-                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number, int(hemseg_image[celly,cellx]))
+                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number+1, int(hemseg_image[celly,cellx]))
                             else:
-                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number)
+                                coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number+1)
                         else:
-                            coordfunc = lambda celly, cellx : (cellx, celly, slice_number)
+                            coordfunc = lambda celly, cellx : (cellx, celly, slice_number+1)
 
                         # Centroids are currently (row, col) or (y, x)
                         # Flip order so (x, y) using coordfunc
@@ -350,10 +401,16 @@ if __name__ == '__main__':
 
         for slice_number in range(zmin,zmax):
             # Load image and convert to dtype=float and scale to full 255 range
-            image = Image.open(count_path+'/'+count_files[slice_number])
+            image = Image.open(count_path+'/'+count_files[slice_number], 'r')
             temp_size = image.size
-            image = np.array(image).astype(float)
-            image = np.multiply(np.divide(image,np.max(image)), 255.)
+            start = time.time()
+            image = np.frombuffer(image.tobytes(), dtype=np.uint8, count=-1).reshape(image.size[::-1])
+            image_max = np.max(image)
+            print ("\nImage to array: ", str(time.time() - start))
+            # start = time.time()
+            # image = np.array(image).astype(float)
+            # image = np.multiply(np.divide(image,np.max(image)), 255.)
+            # print ("Image floar and norm: ", str(time.time() - start))
 
             if mask:
                 # Get annotation image for slice
@@ -377,9 +434,15 @@ if __name__ == '__main__':
                     imagequeue.put((slice_number, image, [None], [None], [None], count_path, name))
                     print (count_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
                 else:
+                    start = time.time()
                     if structure in mask_image:
+                        print ("Structure in mask: ", str(time.time() - start))
                         # Resize mask
-                        mask_image_per_structure = copy.deepcopy(mask_image)
+
+                        start = time.time()
+
+                        mask_image_per_structure = np.copy(mask_image)
+                        print ("Image copy: ", str(time.time() - start))
                         mask_image_per_structure[mask_image_per_structure!=structure] = 0
 
                         # Use mask to get global coordinates
@@ -388,9 +451,14 @@ if __name__ == '__main__':
                         col_idx = idx[1].flatten()
 
                         # Apply crop to image and mask then apply mask
-                        image_per_structure = copy.deepcopy(image)
-                        image_per_structure = image_per_structure[idx]
+                        image_per_structure = np.copy(image)[idx]
                         mask_image_per_structure = mask_image_per_structure[idx]
+
+                        start = time.time()
+                        image_per_structure = image_per_structure.astype(float)
+                        # image_per_structure = np.multiply(np.divide(image_per_structure,np.max(image_per_structure)), 255.)
+                        image_per_structure *= 255./image_max
+                        print ("Image float and norm: ", str(time.time() - start))
 
                         mask_image_per_structure = cv2.medianBlur(np.array(mask_image_per_structure).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 
@@ -430,27 +498,16 @@ if __name__ == '__main__':
         for name in acr:
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv') as csvDataFile:
                 csvReader = csv.reader(csvDataFile)
-                centroids = []
-                retainedcentroids = []
-
+                centroids = {}
                 for row in csvReader:
-                    centroids.append(row)
+                    centroids.setdefault(int(line[2]), []).append([int(entry) for entry in line])
 
-            centroids = np.array(centroids).astype(int)
-
-            for x, y in zip(np.unique(centroids[:,2])[:-1], np.unique(centroids[:,2])[1:]):
-                # Check if they're in successive slices otherwise they can't be oversampled
-                if y-x == 1:
-                    xcells = centroids[centroids[:,2]==x]
-                    ycells = centroids[centroids[:,2]==y]
-                    retainedcentroids.extend([xcell.tolist() for xcell in xcells if all(distance(xcell,ycell)>radius**2 for ycell in ycells)])
-                retainedcentroids.extend(ycells)
-
-            # Add 1 to slice to reflect slice file name not index (zero based in Python)
-            retainedcentroids[:,2] += 1
+            keepcentroids = oversamplecorr(centroids,radius)
 
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count.csv', 'w+') as f:
-                csv.writer(f, delimiter=',').writerows(retainedcentroids)
+                for key in sorted(keepcentroids.keys()):
+                    if len(keepcentroids[key]) > 0:
+                        csv.writer(f, delimiter=',').writerows([val for val in keepcentroids[key]])
 
             # Save volume
             # vol_file = count_path+'/counts/volumes.csv'
