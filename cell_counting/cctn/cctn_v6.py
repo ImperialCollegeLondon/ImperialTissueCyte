@@ -94,41 +94,50 @@ def oversamplecorr(centroids, radius):
 
     # Loop through successive layers and identify overlapping cells
     for layer1, layer2 in zip(list(centroids.keys())[:-1], list(centroids.keys())[1:]):
-        # Store cell centroids for each layer
-        layer1centroids = centroids[layer1]
-        layer2centroids = centroids[layer2]
+        # First check if layers are successive otherwise you cannot correct
+        if layer2-layer1 == 1:
+            # Store cell centroids for each layer
+            layer1centroids = centroids[layer1]
+            layer2centroids = centroids[layer2]
 
-        # Loop through each cell in layer 1 and check if overlapping
-        for cell in layer1centroids:
-            # Get a boolean list with True in position of cell in layer 2 if cell in layer 1 overlaps and is the minumum distance
-            distances = np.array([distance(cell, cell2) for cell2 in layer2centroids])
-            mindistance = distances == np.min(distances)
-            withindistance = np.array([distance(cell, cell2)<=radius**2 for cell2 in layer2centroids])
-            overlapping = mindistance&withindistance
+            # Loop through each cell in layer 1 and check if overlapping
+            for cell in layer1centroids:
+                # Get a boolean list with True in position of cell in layer 2 if cell in layer 1 overlaps and is the minumum distance
+                distances = np.array([distance(cell, cell2) for cell2 in layer2centroids])
+                mindistance = distances == np.min(distances)
+                withindistance = np.array([distance(cell, cell2)<=radius**2 for cell2 in layer2centroids])
+                overlapping = mindistance&withindistance
 
-            # If there is a True in the overlapping list, then there is a minimum distance oversampled cell detected
-            if True in overlapping:
-                # First check if cell is already within the overlap dictionary, overlapcentroids
-                overlapkey = [key for key, value in overlapcentroids.items() if cell in value]
-                # If so, only add the paired cell
-                if overlapkey:
-                    overlapcentroids.setdefault(overlapkey[0],[]).append(layer2centroids[np.argmax(overlapping)])
+                # If there is a True in the overlapping list, then there is a minimum distance oversampled cell detected
+                if True in overlapping:
+                    # First check if cell is already within the overlap dictionary, overlapcentroids
+                    overlapkey = [key for key, value in overlapcentroids.items() if cell in value]
+                    # If so, only add the paired cell
+                    if overlapkey:
+                        overlapcentroids.setdefault(overlapkey[0],[]).append(layer2centroids[np.argmax(overlapping)])
 
-                # Else, add both the new cell and pair to it's own unique dictionary key
+                    # Else, add both the new cell and pair to it's own unique dictionary key
+                    else:
+                        overlapcentroids.setdefault(i,[]).append(cell)
+                        overlapcentroids.setdefault(i,[]).append(layer2centroids[np.argmax(overlapping)])
+                        # Update counter to keep track of number of overlapped cells in total
+                        # Uses this as key
+                        i += 1
                 else:
-                    overlapcentroids.setdefault(i,[]).append(cell)
-                    overlapcentroids.setdefault(i,[]).append(layer2centroids[np.argmax(overlapping)])
-
-                # Update counter to keep track of number of overlapped cells in total
-                # Uses this as key
-                i += 1
-            else:
-                # If no overlap is detected, then stick cell into keep dictionary
+                    # If no overlap is detected, then stick cell into keep dictionary
+                    keepcentroids.setdefault(cell[2], []).append(cell)
+        else:
+            layer1centroids = centroids[layer1]
+            for cell in layer1centroids:
                 keepcentroids.setdefault(cell[2], []).append(cell)
+
+    print (str(sum(map(len, keepcentroids.values())))+' Number of single (non-overlapping) cells detected')
+    print (str(len(overlapcentroids.keys()))+' Number of detected overlapping cells')
 
     # Go through each overlapping cell and take the middle cell
     # Stick middle cell into the keep dictionary at the relevant slice position
     for key, overlapcells in overlapcentroids.items():
+        # print (overlapcells)
         midcell = overlapcells[int(len(overlapcells)/2)]
         keepcentroids.setdefault(midcell[2], []).append(midcell)
 
@@ -502,19 +511,16 @@ if __name__ == '__main__':
                 csvReader = csv.reader(csvDataFile)
                 centroids = {}
                 for row in csvReader:
-                    centroids.setdefault(int(line[2]), []).append([int(entry) for entry in line])
+                    centroids.setdefault(int(row[2]), []).append([int(entry) for entry in row])
 
+            print (str(sum(map(len, centroids.values())))+' Original uncorrected count')
             keepcentroids = oversamplecorr(centroids,radius)
+            print (str(sum(map(len, keepcentroids.values())))+' Final corrected count')
 
             with open(count_path+'/counts_v6/'+str(name)+'_v6_count.csv', 'w+') as f:
                 for key in sorted(keepcentroids.keys()):
                     if len(keepcentroids[key]) > 0:
                         csv.writer(f, delimiter=',').writerows([val for val in keepcentroids[key]])
-
-            # Save volume
-            # vol_file = count_path+'/counts/volumes.csv'
-            # with open(vol_file, 'a') as f:
-            #     csv.writer(f, delimiter=',').writerows(np.array([[str(name), pxvolume*xyvox*zvox]]))
 
             os.remove(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv')
             print (name+' oversampling done')
