@@ -36,8 +36,6 @@ Instructions:
 ################################################################################
 
 import argparse
-import collections
-import copy
 import csv
 import cv2
 import json
@@ -56,7 +54,7 @@ from PIL import Image
 from skimage import io
 from natsort import natsorted
 from filters.rollingballfilt import rolling_ball_filter
-from multiprocessing import Manager, Pool, Queue, current_process
+from multiprocessing import Pool, Queue
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -67,7 +65,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ################################################################################
 
 def slack_message(text, channel, username):
-    from urllib import request, parse
+    from urllib import request
     import json
 
     post = {"text": "{0}".format(text),
@@ -80,7 +78,7 @@ def slack_message(text, channel, username):
         req = request.Request('https://hooks.slack.com/services/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',
             data=json_data.encode('ascii'),
             headers={'Content-Type': 'application/json'})
-        resp = request.urlopen(req)
+        request.urlopen(req)
     except Exception as em:
         print("EXCEPTION: " + str(em))
 
@@ -422,14 +420,8 @@ if __name__ == '__main__':
             # Load image and convert to dtype=float and scale to full 255 range
             image = Image.open(image_path+'/'+count_files[slice_number], 'r')
             temp_size = image.size
-            start = time.time()
             image = np.frombuffer(image.tobytes(), dtype=np.uint8, count=-1).reshape(image.size[::-1])
             image_max = np.max(image)
-            print ("\nImage to array: ", str(time.time() - start))
-            # start = time.time()
-            # image = np.array(image).astype(float)
-            # image = np.multiply(np.divide(image,np.max(image)), 255.)
-            # print ("Image floar and norm: ", str(time.time() - start))
 
             if mask:
                 # Get annotation image for slice
@@ -455,13 +447,11 @@ if __name__ == '__main__':
                 else:
                     start = time.time()
                     if structure in mask_image:
-                        print ("Structure in mask: ", str(time.time() - start))
                         # Resize mask
 
                         start = time.time()
 
                         mask_image_per_structure = np.copy(mask_image)
-                        print ("Image copy: ", str(time.time() - start))
                         mask_image_per_structure[mask_image_per_structure!=structure] = 0
 
                         # Use mask to get global coordinates
@@ -477,7 +467,6 @@ if __name__ == '__main__':
                         image_per_structure = image_per_structure.astype(float)
                         # image_per_structure = np.multiply(np.divide(image_per_structure,np.max(image_per_structure)), 255.)
                         image_per_structure *= 255./image_max
-                        print ("Image float and norm: ", str(time.time() - start))
 
                         mask_image_per_structure = cv2.medianBlur(np.array(mask_image_per_structure).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 

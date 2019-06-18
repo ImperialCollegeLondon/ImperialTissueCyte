@@ -1,7 +1,8 @@
-'''
+"""
+################################################################################
 Cell Counting Predictor - Serial version
 Author: Gerald M
-#
+
 This script uses a convolution neural network classifier, trained on manually identified
 cells, to confirm whether a potential cell/neuron is correctly identified.
 
@@ -13,7 +14,8 @@ Installation:
 Instructions:
 1) Pass in directory containing count files as first argument. Optionally pass in image
 directory as second argument if count directory is not nested into the image directory
-'''
+################################################################################
+"""
 
 from __future__ import division
 import os, sys, warnings, time
@@ -27,12 +29,15 @@ import glob
 from keras.preprocessing import image
 from keras.models import model_from_json
 from keras.optimizers import SGD
-
+from keras.backend import learning_phase
 
 # Warning supression and allowing large images to be loaded
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
+
+# Set learning phase to 0
+learning_phase(0)
 
 def progressBar(value, endvalue, bar_length=50):
         percent = float(value) / endvalue
