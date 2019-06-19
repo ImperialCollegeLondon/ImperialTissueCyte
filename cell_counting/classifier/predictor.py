@@ -18,26 +18,22 @@ directory as second argument if count directory is not nested into the image dir
 """
 
 from __future__ import division
+import argparse
 import os, sys, warnings, time
 import numpy as np
 import pandas as pd
 from PIL import Image
-from xml.dom import minidom
 from natsort import natsorted
 from keras.preprocessing import image
 import glob
 from keras.preprocessing import image
 from keras.models import model_from_json
 from keras.optimizers import SGD
-from keras.backend import learning_phase
 
 # Warning supression and allowing large images to be loaded
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
-
-# Set learning phase to 0
-learning_phase(0)
 
 def progressBar(value, endvalue, bar_length=50):
         percent = float(value) / endvalue
@@ -47,52 +43,35 @@ def progressBar(value, endvalue, bar_length=50):
         sys.stdout.write("\r[{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
-# Main function
 if __name__ == '__main__':
-    # CNN model paths
-    model_weights_path = 'models/2019_03_29_GoogleInception/weights_2019_03_29.h5'
-    model_json_path = 'models/2019_03_29_GoogleInception/model_2019_03_29.json'
+    ################################################################################
+    ## User defined parameters via command line arguments
+    ################################################################################
 
-    count_path = ''
-    image_path = ''
+    parser = argparse.ArgumentParser()
 
-    if len(sys.argv) == 2:
-        try:
-            sys.argv[1]
-        except NameError:
-            count_path = count_path
-            image_path = image_path
-        else:
-            count_path = str(sys.argv[1])
-            image_path = os.path.split(sys.argv[1])[0]
-    if len(sys.argv) == 3:
-        try:
-            sys.argv[1]
-        except NameError:
-            count_path = count_path
-            image_path = image_path
-        else:
-            count_path = sys.argv[1]
+    parser.add_argument('imagepath', default=[], type=str, help='Image directory')
+    parser.add_argument('-countpath', default=[], type=str, dest='countpath', help='Count path if not in parent directory of imagepath')
+    parser.add_argument('-modelpath', default='models/2019_03_29_GoogleInception/model_2019_03_29.json', type=str, dest='modelpath', help='Model path')
+    parser.add_argument('-weightspath', default='models/2019_03_29_GoogleInception/weights_2019_03_29.h5', type=str, dest='weightspath', help='Weights path')
 
-        try:
-            sys.argv[2]
-        except NameError:
-            count_path = count_path
-            image_path = image_path
-        else:
-            image_path = sys.argv[2]
+    args = parser.parse_args()
 
-    print count_path
-    print image_path
+    image_path = args.imagepath
+    count_path = args.countpath
+    model_path = args.modelpath
+    weights_path = args.weightspath
 
-    # Load the classifier model
-    with open(model_json_path, 'r') as f:
+    if not count_path:
+        count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts*')[0]
+
+    # Load the classifier model, initialise and compile
+    with open(model_path, 'r') as f:
         model = model_from_json(f.read())
-    model.load_weights(model_weights_path)
+    model.load_weights(weights_path)
 
     initial_lrate = 0.01
     sgd = SGD(lr=initial_lrate, momentum=0.9, nesterov=False)
-
     model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'categorical_crossentropy'],
         loss_weights=[1, 0.3, 0.3],
         optimizer=sgd,
@@ -102,35 +81,29 @@ if __name__ == '__main__':
     if not os.path.exists(count_path+'_cnn'):
         os.makedirs(count_path+'_cnn')
 
+    print ('')
+    print ('User defined parameters')
+    print ('Image path: {} \nCount path: {} \nModel path: {} \nWeights path: {}'.format(
+        image_path,
+        count_path,
+        model_path,
+        weights_path))
+
     # Get list of files containing the coordinates in x, y, z
-    #image_path = raw_input('Counting file path (drag-and-drop): ').strip('\'').rstrip()
     filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
 
-    if os.path.isdir(count_path):
-        all_marker_path = glob.glob(count_path+'/*_count.csv')
-    else:
-        all_marker_path = count_path
+    # Get list of all count csv files
+    all_marker_path = glob.glob(count_path+'/*_count.csv')
 
     # Create empty pands dataframe to store data
     df = pd.DataFrame(columns = ['ROI', 'Original', 'True', 'False'])
 
+    # Loop through each csv count file
     for marker_path in all_marker_path:
 
         marker_filename, marker_file_extension = os.path.splitext(marker_path)
 
-        if marker_file_extension == '.xml':
-            xml_doc = minidom.parse(marker_path)
-
-            marker_x = xml_doc.getElementsByTagName('MarkerX')
-            marker_y = xml_doc.getElementsByTagName('MarkerY')
-            marker_z = xml_doc.getElementsByTagName('MarkerZ')
-
-            marker = np.empty((0,3), int)
-
-            for elem in range (0, marker_x.length):
-                marker = np.vstack((marker, [int(marker_x[elem].firstChild.data), int(marker_y[elem].firstChild.data), int(marker_z[elem].firstChild.data)]))
-        if marker_file_extension == '.csv':
-            marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
+        marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
 
         #=============================================================================================
         # Load images into RAM
@@ -138,35 +111,41 @@ if __name__ == '__main__':
 
         if marker.shape[0] > 0:
 
-            print 'Loading all images to RAM...'
+            print ('Loading all images to RAM...')
 
             all_img = []
             i = 0
 
             if marker.ndim == 1:
                 for slice in np.unique(marker[2]):
-                    img = Image.open(os.path.join(image_path, filename[slice-1])).convert(mode='RGB') # RGB as 3 channel for Google Inception
+                    img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
+                    img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
                     for cell in marker[marker[2] == slice]:
-                        img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
-                        img_crop = image.img_to_array(img_crop)
+                        img_crop = img[cell[0]-40:cell[1]-40, cell[0]+40:cell[1]+40]
+                        img_crop = np.stack((img_crop,)*3, axis=-1)
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img.append(img_crop)
             else:
                 for slice in np.unique(marker[:,2]):
-                    img = Image.open(os.path.join(image_path, filename[slice-1])).convert(mode='RGB') # RGB as 3 channel for Google Inception
+                    start = time.time()
+                    img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
+                    img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
+                    print ('Image load '+str(time.time()-start))
                     for cell in marker[marker[:,2] == slice]:
-                        img_crop = img.crop((cell[0]-40, cell[1]-40, cell[0]+40, cell[1]+40))
-                        img_crop = image.img_to_array(img_crop)
+                        start = time.time()
+                        img_crop = img[cell[0]-40:cell[1]-40, cell[0]+40:cell[1]+40]
+                        img_crop = np.stack((img_crop,)*3, axis=-1)
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img.append(img_crop)
+                        print ('Crop append '+str(time.time()-start))
                     i += 1
                     progressBar(i, len(np.unique(marker[:,2])))
 
             all_img = np.vstack(all_img)
-            print ''
-            print 'Done!'
+            print ('')
+            print ('Done!')
 
-            print 'Classifiying: '+marker_filename
+            print ('Classifiying: '+marker_filename)
 
             tstart = time.time()
 
@@ -188,14 +167,10 @@ if __name__ == '__main__':
 
             pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
 
-        # Create directory to hold the counts in same folder as the images
-        if not os.path.exists(count_path+'_cnn'):
-            os.makedirs(count_path+'_cnn')
-
         # Write dataframe to csv
         df.to_csv(count_path+'_cnn/counts_table.csv', index=False)
 
-        print 'Done!'
+        print ('Done!')
 
-print df
-print '{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60))
+print (df)
+print ('{0:.0f}:{1:.0f} (MM:SS)'.format(*divmod(time.time()-tstart,60)))
