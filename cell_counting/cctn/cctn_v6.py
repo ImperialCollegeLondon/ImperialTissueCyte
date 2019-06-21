@@ -43,6 +43,7 @@ import fcntl
 import os
 import psutil
 import sys
+import tifffile
 import time
 import warnings
 import numpy as np
@@ -418,9 +419,11 @@ if __name__ == '__main__':
 
         for slice_number in range(zmin,zmax):
             # Load image and convert to dtype=float and scale to full 255 range
-            image = Image.open(image_path+'/'+count_files[slice_number], 'r')
-            temp_size = image.size
-            image = np.frombuffer(image.tobytes(), dtype=np.uint8, count=-1).reshape(image.size[::-1])
+            # image = Image.open(image_path+'/'+count_files[slice_number], 'r')
+            # temp_size = image.size
+            # image = np.frombuffer(image.tobytes(), dtype=np.uint8, count=-1).reshape(image.size[::-1])
+            image = tifffile.imread(image_path+'/'+count_files[slice_number], key=0).astype(np.float32)
+            temp_size = image.shape[::-1]
             image_max = np.max(image)
 
             if mask:

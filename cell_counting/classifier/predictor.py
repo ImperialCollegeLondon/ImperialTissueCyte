@@ -9,7 +9,7 @@ cells, to confirm whether a potential cell/neuron is correctly identified.
 This version uses serial computation.
 
 Installation:
-1) Navigate to the folder containing cc_predictor_par.py
+1) Navigate to the folder containing predictor.py
 
 Instructions:
 1) Pass in directory containing count files as first argument. Optionally pass in image
@@ -19,14 +19,16 @@ directory as second argument if count directory is not nested into the image dir
 
 from __future__ import division
 import argparse
-import os, sys, warnings, time
+import glob
+import os
+import sys
+import tifffile
+import time
+import warnings
 import numpy as np
 import pandas as pd
 from PIL import Image
 from natsort import natsorted
-from keras.preprocessing import image
-import glob
-from keras.preprocessing import image
 from keras.models import model_from_json
 from keras.optimizers import SGD
 
@@ -118,26 +120,27 @@ if __name__ == '__main__':
 
             if marker.ndim == 1:
                 for slice in np.unique(marker[2]):
-                    img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
-                    img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
+                    # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
+                    # img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
+
+                    img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
+
                     for cell in marker[marker[2] == slice]:
-                        img_crop = img[cell[0]-40:cell[1]-40, cell[0]+40:cell[1]+40]
+                        img_crop = img[cell[1]-40:cell[1]+40, cell[0]-40:cell[0]+40]
                         img_crop = np.stack((img_crop,)*3, axis=-1)
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img.append(img_crop)
             else:
                 for slice in np.unique(marker[:,2]):
-                    start = time.time()
-                    img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
-                    img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
-                    print ('Image load '+str(time.time()-start))
+                    # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
+                    # img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
+                    img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
                     for cell in marker[marker[:,2] == slice]:
-                        start = time.time()
-                        img_crop = img[cell[0]-40:cell[1]-40, cell[0]+40:cell[1]+40]
+                        img_crop = img[cell[1]-40:cell[1]+40, cell[0]-40:cell[0]+40]
                         img_crop = np.stack((img_crop,)*3, axis=-1)
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img.append(img_crop)
-                        print ('Crop append '+str(time.time()-start))
+                        print (img_crop.shape)
                     i += 1
                     progressBar(i, len(np.unique(marker[:,2])))
 
