@@ -77,8 +77,8 @@ def load_tile(file, cropstart, cropend):
 # This check is to determine which file paths to use if run on the local Mac or Linux supercomputer
 def get_platform():
     platforms = {
-        'linux1' : 'linux',
-        'linux2' : 'linux',
+        'linux1' : 'Linux',
+        'linux2' : 'Linux',
         'darwin' : 'Mac',
         'win32' : 'Windows'
     }
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     if get_platform() == 'Mac':
         imagejpath = '/Applications/Fiji.app/Contents/MacOS/ImageJ-macosx'
         overlapypath = '"/Applications/Fiji.app/plugins/OverlapY.ijm"'
-    if get_platform() == 'Linux':
+    if get_platform() == 'linux':
         imagejpath = '/opt/fiji/Fiji.app/ImageJ-linux64'
         overlapypath = '"/opt/fiji/Fiji.app/plugins/OverlapY.ijm"'
     if get_platform() == 'Windows':
