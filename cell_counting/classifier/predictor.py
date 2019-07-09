@@ -140,7 +140,6 @@ if __name__ == '__main__':
                         img_crop = np.stack((img_crop,)*3, axis=-1)
                         img_crop = np.expand_dims(img_crop, axis = 0)
                         all_img.append(img_crop)
-                        print (img_crop.shape)
                     i += 1
                     progressBar(i, len(np.unique(marker[:,2])))
 
@@ -160,15 +159,20 @@ if __name__ == '__main__':
             nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
             cell_markers = marker[np.where(np.argmax(classes[0], axis=1)==0)]
             nocell_markers = marker[np.where(np.argmax(classes[0], axis=1))]
-            leftcells = len(cell_markers[cell_markers[:,3]==0])
-            rightcells = len(cell_markers)-leftcells
+            if len(cell_markers) > 0:
+                leftcells = len(cell_markers[cell_markers[:,3]==0])
+                rightcells = len(cell_markers)-leftcells
+            else:
+                leftcells = 0
+                rightcells = 0
 
             # Append to Pandas dataframe
             df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'L':leftcells, 'R':rightcells, 'False': nocells}, ignore_index=True)
 
-            correct_markers = marker[np.flatnonzero(np.argmin(classes[0], axis=1)),:]
+            if len(cell_markers) > 0:
+                correct_markers = marker[np.flatnonzero(np.argmin(classes[0], axis=1)),:]
 
-            pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
+                pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
 
         # Write dataframe to csv
         df.to_csv(count_path+'_cnn/counts_table.csv', index=False)

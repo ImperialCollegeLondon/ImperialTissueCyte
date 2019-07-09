@@ -54,7 +54,7 @@ def slack_message(text, channel, username):
 
     try:
         json_data = json.dumps(post)
-        req = request.Request('https://hooks.slack.com/services/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',
+        req = request.Request('https://hooks.slack.com/services/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',
             data=json_data.encode('ascii'),
             headers={'Content-Type': 'application/json'})
         resp = request.urlopen(req)
@@ -245,6 +245,7 @@ if __name__ == '__main__':
                     sys.stdout.write('\rLast tile not generated yet. Waiting...')
                     sys.stdout.flush()
 
+            time.sleep(3)
             # Get file name structure and remove last 8 characters to leave behind filename template
             filenamestruct = glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0'+str(channel)+'.tif')[0].rpartition('-')[0]+'-'
             filenames = [filenamestruct+str(tile)+'_0'+str(channel)+'.tif' for tile in range(firsttile, lasttile+1, 1)]
@@ -314,9 +315,8 @@ if __name__ == '__main__':
                 else:
                     ztoken = str(zcount)
 
-                tile_img = np.multiply(np.divide(tile_img, 65535.), 255.)
-                # Image.fromarray(tile_img.astype(np.uint8)).save(temppath+'/Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
-                tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)).convert('RGB'))
+                tile_img = np.multiply(np.divide(tile_img, 65535./2), 255.)
+                tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)))
 
                 Image.fromarray(tile_img).save(tilepath+'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
 
