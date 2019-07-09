@@ -77,8 +77,8 @@ def load_tile(file, cropstart, cropend):
 # This check is to determine which file paths to use if run on the local Mac or Linux supercomputer
 def get_platform():
     platforms = {
-        'linux1' : 'Linux',
-        'linux2' : 'Linux',
+        'linux1' : 'linux',
+        'linux2' : 'linux',
         'darwin' : 'Mac',
         'win32' : 'Windows'
     }
