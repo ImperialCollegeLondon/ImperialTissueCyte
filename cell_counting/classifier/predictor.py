@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
         marker_filename, marker_file_extension = os.path.splitext(marker_path)
 
-        marker = np.genfromtxt(marker_path, delimiter=',', dtype=np.float).astype(int)
+        marker = pd.read_csv(marker_path, delimiter=',', dtype=np.float, names=['X', 'Y', 'Z', 'Hemisphere']).astype(int)
 
         #=============================================================================================
         # Load images into RAM
@@ -118,30 +118,20 @@ if __name__ == '__main__':
             all_img = []
             i = 0
 
-            if marker.ndim == 1:
-                for slice in np.unique(marker[2]):
-                    # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
-                    # img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
+            for slice in np.unique(marker['Z']):
+                # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
+                # img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
 
-                    img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
+                img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
 
-                    for cell in marker[marker[2] == slice]:
-                        img_crop = img[cell[1]-40:cell[1]+40, cell[0]-40:cell[0]+40]
-                        img_crop = np.stack((img_crop,)*3, axis=-1)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
-                        all_img.append(img_crop)
-            else:
-                for slice in np.unique(marker[:,2]):
-                    # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
-                    # img = np.frombuffer(img.tobytes(), dtype=np.uint8, count=-1).reshape(img.size[::-1]) # RGB as 3 channel for Google Inception
-                    img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
-                    for cell in marker[marker[:,2] == slice]:
-                        img_crop = img[cell[1]-40:cell[1]+40, cell[0]-40:cell[0]+40]
-                        img_crop = np.stack((img_crop,)*3, axis=-1)
-                        img_crop = np.expand_dims(img_crop, axis = 0)
-                        all_img.append(img_crop)
+                for cell in marker.loc[marker['Z'] == slice].iterrows():
+                    img_crop = img[cell['Y']-40:cell[1]+40, cell['X']-40:cell[0]+40]
+                    img_crop = np.stack((img_crop,)*3, axis=-1)
+                    img_crop = np.expand_dims(img_crop, axis = 0)
+                    all_img.append(img_crop)
+
                     i += 1
-                    progressBar(i, len(np.unique(marker[:,2])))
+                    progressBar(i, len(marker.shape[0]))
 
             all_img = np.vstack(all_img)
             print ('')
