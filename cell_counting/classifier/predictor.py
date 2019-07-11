@@ -147,22 +147,16 @@ if __name__ == '__main__':
             classes = model.predict(all_img)
             cells = np.count_nonzero(np.argmax(classes[0], axis=1)==0)
             nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
-            cell_markers = marker[np.where(np.argmax(classes[0], axis=1)==0)]
-            nocell_markers = marker[np.where(np.argmax(classes[0], axis=1))]
-            if len(cell_markers) > 0:
-                leftcells = len(cell_markers[cell_markers[:,3]==0])
-                rightcells = len(cell_markers)-leftcells
-            else:
-                leftcells = 0
-                rightcells = 0
+            cell_markers = marker.iloc[np.where(np.argmax(classes[0], axis=1)==0)]
+            nocell_markers = marker.iloc[np.where(np.argmax(classes[0], axis=1))]
+            leftcells = len(cell_markers.loc[cell_markers['Hemisphere']==0])
+            rightcells = len(cell_markers.loc[cell_markers['Hemisphere']==1])
 
             # Append to Pandas dataframe
             df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'L':leftcells, 'R':rightcells, 'False': nocells}, ignore_index=True)
 
             if len(cell_markers) > 0:
-                correct_markers = marker[np.flatnonzero(np.argmin(classes[0], axis=1)),:]
-
-                pd.DataFrame(correct_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
+                pd.DataFrame(cell_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
 
         # Write dataframe to csv
         df.to_csv(count_path+'_cnn/counts_table.csv', index=False)
