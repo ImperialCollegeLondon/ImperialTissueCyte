@@ -131,7 +131,7 @@ if __name__ == '__main__':
                     all_img.append(img_crop)
 
                     i += 1
-                    progressBar(i, len(marker.shape[0]))
+                    progressBar(i, marker.shape[0])
 
             all_img = np.vstack(all_img)
             print ('')
