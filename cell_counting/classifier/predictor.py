@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
                 img = tifffile.imread(os.path.join(image_path, filename[slice-1]), key=0)
 
-                for cell in marker.loc[marker['Z'] == slice].iterrows():
+                for index, cell in marker.loc[marker['Z'] == slice].iterrows():
                     img_crop = img[cell['Y']-40:cell[1]+40, cell['X']-40:cell[0]+40]
                     img_crop = np.stack((img_crop,)*3, axis=-1)
                     img_crop = np.expand_dims(img_crop, axis = 0)
