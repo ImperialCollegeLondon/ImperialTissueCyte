@@ -253,7 +253,7 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         arrow = '-' * int(round(percent * bar_length)) + '/'
         spaces = ' ' * (bar_length - len(arrow))
 
-        sys.stdout.write("Slice {0} [{1}] {2}% {3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
+        sys.stdout.write("\nSlice {0} [{1}] {2}% {3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
         sys.stdout.flush()
 
 def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):

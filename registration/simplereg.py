@@ -15,7 +15,7 @@ def slack_message(text, channel, username):
 
     try:
         json_data = json.dumps(post)
-        req = request.Request('https://hooks.slack.com/services/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',
+        req = request.Request('https://hooks.slack.com/services/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',
             data=json_data.encode('ascii'),
             headers={'Content-Type': 'application/json'})
         resp = request.urlopen(req)
@@ -85,7 +85,7 @@ try:
 
     # Write average transform and segmented results
     sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
-    sitk.WriteImage(hemSeg, args.authoflpath+'HEMRES.tif')
+    sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
