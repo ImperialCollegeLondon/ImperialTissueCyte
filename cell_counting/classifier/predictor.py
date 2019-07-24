@@ -98,7 +98,7 @@ if __name__ == '__main__':
     all_marker_path = glob.glob(count_path+'/*_count.csv')
 
     # Create empty pands dataframe to store data
-    df = pd.DataFrame(columns = ['ROI', 'Original', 'True', 'False'])
+    df = pd.DataFrame(columns = ['ROI', 'Original', 'True', 'False', 'L', 'R'])
 
     # Loop through each csv count file
     for marker_path in all_marker_path:
@@ -110,13 +110,18 @@ if __name__ == '__main__':
         #=============================================================================================
         # Load images into RAM
         #=============================================================================================
+        all_img = []
+        i = 0
 
+        cells = 0
+        nocells = 0
+        leftcells = 0
+        rightcells = 0
+
+        # If there are detection to classify
         if marker.shape[0] > 0:
 
             print ('Loading all images to RAM...')
-
-            all_img = []
-            i = 0
 
             for slice in np.unique(marker['Z']):
                 # img = Image.open(os.path.join(image_path, filename[slice-1]), 'r')
@@ -139,8 +144,6 @@ if __name__ == '__main__':
 
             print ('Classifiying: '+marker_filename)
 
-            tstart = time.time()
-
             #=============================================================================================
             # Classify images
             #=============================================================================================
@@ -152,11 +155,12 @@ if __name__ == '__main__':
             leftcells = len(cell_markers.loc[cell_markers['Hemisphere']==0])
             rightcells = len(cell_markers.loc[cell_markers['Hemisphere']==1])
 
-            # Append to Pandas dataframe
-            df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells, 'L':leftcells, 'R':rightcells, 'False': nocells}, ignore_index=True)
-
+            # Check if there are cells detected and save their markers if so
             if len(cell_markers) > 0:
                 pd.DataFrame(cell_markers).to_csv(count_path+'_cnn/'+marker_filename.split('/')[-1][:-9]+'_corrected_markers.csv', header=None, index=None)
+
+        # Append to Pandas dataframe
+        df = df.append({'ROI':marker_filename.split('/')[-1][:-9], 'Original': cells+nocells, 'True': cells,  'False': nocells, 'L':leftcells, 'R':rightcells}, ignore_index=True)
 
         # Write dataframe to csv
         df.to_csv(count_path+'_cnn/counts_table.csv', index=False)
