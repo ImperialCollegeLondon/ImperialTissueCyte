@@ -100,6 +100,8 @@ if __name__ == '__main__':
     # Create empty pands dataframe to store data
     df = pd.DataFrame(columns = ['ROI', 'Original', 'True', 'False', 'L', 'R'])
 
+    tstart = time.time()
+
     # Loop through each csv count file
     for marker_path in all_marker_path:
 
