@@ -88,9 +88,6 @@ try:
     # ROUND 2!
 
     # Initiate SimpleElastix
-    SimpleElastix = sitk.ElastixImageFilter()
-    SimpleElastix.LogToFileOn()
-    SimpleElastix.SetOutputDirectory('output/')
     SimpleElastix.SetFixedImage(fixedData)
     SimpleElastix.SetMovingImage(avgSeg)
 
