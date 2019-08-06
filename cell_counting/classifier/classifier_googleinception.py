@@ -25,11 +25,11 @@ from keras.callbacks import LearningRateScheduler
 def cleanup():
     print ('Moving files back to training data directory...')
 
-    for f in os.listdir('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/cell/'):
-        shutil.move('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/cell/'+f,'/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/training_data/cell/'+f)
+    for f in os.listdir('8-bit/test_data/cell/'):
+        shutil.move('8-bit/test_data/cell/'+f,'8-bit/training_data/cell/'+f)
 
-    for f in os.listdir('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/nocell/'):
-        shutil.move('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/nocell/'+f,'/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/training_data/nocell/'+f)
+    for f in os.listdir('8-bit/test_data/nocell/'):
+        shutil.move('8-bit/test_data/nocell/'+f,'8-bit/training_data/nocell/'+f)
 
 def inception_module(x,
                      filters_1x1,
@@ -184,8 +184,8 @@ model.summary()
 import os, glob, random, shutil
 import numpy as np
 
-training_data_dir = '/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/training_data'
-test_data_dir = '/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data'
+training_data_dir = '8-bit/training_data'
+test_data_dir = '8-bit/test_data'
 
 if os.listdir(test_data_dir+'/cell/'):
     print ('Warning! Files detected in test data directory!')
