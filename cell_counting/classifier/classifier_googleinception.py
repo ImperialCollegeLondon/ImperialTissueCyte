@@ -23,7 +23,7 @@ from keras.optimizers import SGD
 from keras.callbacks import LearningRateScheduler
 
 def cleanup():
-    print 'Moving files back to training data directory...'
+    print ('Moving files back to training data directory...')
 
     for f in os.listdir('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/cell/'):
         shutil.move('/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data/cell/'+f,'/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/training_data/cell/'+f)
@@ -188,10 +188,10 @@ training_data_dir = '/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit
 test_data_dir = '/home/gm515/Documents/GitHub/cell_counting/classifier/8-bit/test_data'
 
 if os.listdir(test_data_dir+'/cell/'):
-    print 'Warning! Files detected in test data directory!'
+    print ('Warning! Files detected in test data directory!')
     cleanup()
 
-print "Splitting all training data into 70% training and 30% test data directories..."
+print ("Splitting all training data into 70% training and 30% test data directories...")
 
 test_cell_data = random.sample(os.listdir(training_data_dir+'/cell/'), int(0.3*len(os.listdir(training_data_dir+'/cell/'))))
 test_nocell_data = random.sample(os.listdir(training_data_dir+'/nocell/'), int(0.3*len(os.listdir(training_data_dir+'/nocell/'))))
@@ -318,5 +318,8 @@ history = model.fit(
     batch_size=256,
     epochs=epochs,
     callbacks=[lr_sc, callbacks_list])
+
+with open('models/'+strdate+'/TrainingHistoryDict', 'wb') as file_pi:
+    pickle.dump(history.history, file_pi)
 
 cleanup()
