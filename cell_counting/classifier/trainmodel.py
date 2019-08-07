@@ -16,6 +16,7 @@ import datetime
 import googleinceptionmodel
 import math
 import os
+import pickle
 import preprocessing
 from keras import backend as K
 from keras.optimizers import SGD
@@ -77,10 +78,6 @@ if __name__ == '__main__':
         # Pass the file handle in as a lambda function to make it callable
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-    filepath = 'models/'+strdate+'/inception_model_'+strdate+'.h5'
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = checkpoint
-
     epochs = 25
     initial_lrate = 0.01
 
@@ -96,6 +93,10 @@ if __name__ == '__main__':
     lr_sc = LearningRateScheduler(decay, verbose=1)
 
     model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'categorical_crossentropy'], loss_weights=[1, 0.3, 0.3], optimizer=sgd, metrics=['accuracy'])
+
+    filepath = 'models/'+strdate+'/inception_model_'+strdate+'.h5'
+    checkpoint = ModelCheckpoint(filepath, monitor='val_output_acc', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = checkpoint
 
     print ('################################################################################')
     print ('4. Training model...')
