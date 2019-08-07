@@ -25,7 +25,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
-                        inter_op_parallelism_threads = 2,
+                        inter_op_parallelism_threads = cpu_count(),
                         allow_soft_placement = True,
                         device_count = {'CPU': cpu_count() })
 
