@@ -68,7 +68,7 @@ if __name__ == '__main__':
     norm_path = args.normpath
 
     if not count_path:
-        count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts_v.')[0]
+        count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts_v?')[0]
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
