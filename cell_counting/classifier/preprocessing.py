@@ -24,6 +24,7 @@ import random
 import shutil
 import cleanup
 import augmentation
+import pickle
 from PIL import Image
 from tifffile import imsave
 import numpy as np
@@ -124,11 +125,16 @@ def preprocess(standardise=True, normalise=False):
 
     print ('Done!')
 
+    strdate = datetime.datetime.today().strftime('%Y_%m_%d')
+
     if standardise:
         print ('Running featurewise (sample) standardisation...')
 
         feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0))
         feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0))
+
+        with open('models/'+strdate+'_Inception/feature_standardisation.pickle', 'wb') as f:
+            pickle.dump(np.array(feature_mean, feature_std), f)
 
         training_data_all = (training_data_all-feature_mean)/feature_std
         test_data_all = (test_data_all-feature_mean)/feature_std
@@ -139,6 +145,9 @@ def preprocess(standardise=True, normalise=False):
         print ('Running featurewise (sample) normalisation...')
 
         feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0))
+
+        with open('models/'+strdate+'_Inception/feature_normalisation.pickle', 'wb') as f:
+            pickle.dump(np.array(feature_max), f)
 
         training_data_all = training_data_all/feature_max
         test_data_all = test_data_all/feature_max
