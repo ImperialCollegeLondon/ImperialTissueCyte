@@ -21,6 +21,7 @@ from __future__ import division
 import argparse
 import glob
 import os
+import pickle
 import sys
 import tifffile
 import time
@@ -56,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('-countpath', default=[], type=str, dest='countpath', help='Count path if not in parent directory of imagepath')
     parser.add_argument('-modelpath', default='models/2019_08_08_Inception/inception_model.json', type=str, dest='modelpath', help='Model path')
     parser.add_argument('-weightspath', default='models/2019_08_08_Inception/inception_weights_e39_va1.00.h5', type=str, dest='weightspath', help='Weights path')
+    parser.add_argument('-normpath', default='models/2019_08_08_Inception/feature_standardisation.pickle', type=str, dest='normpath', help='Normlisation variable path')
 
     args = parser.parse_args()
 
@@ -63,6 +65,7 @@ if __name__ == '__main__':
     count_path = args.countpath
     model_path = args.modelpath
     weights_path = args.weightspath
+    norm_path = args.normpath
 
     if not count_path:
         count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts*')[0]
@@ -144,11 +147,18 @@ if __name__ == '__main__':
             print ('')
             print ('Done!')
 
-            print ('Classifiying: '+marker_filename)
+            print ('Normalising according to training data')
+
+            # Normlisation
+            with open(norm_path, 'rb') as f:
+                feature_mean, feature_std = pickle.load(f)
+            all_img = (all_img-feature_mean)/feature_std
 
             #=============================================================================================
             # Classify images
             #=============================================================================================
+            print ('Classifiying: '+marker_filename)
+
             classes = model.predict(all_img)
             cells = np.count_nonzero(np.argmax(classes[0], axis=1)==0)
             nocells = np.count_nonzero(np.argmax(classes[0], axis=1))
