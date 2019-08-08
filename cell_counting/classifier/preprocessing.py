@@ -134,7 +134,7 @@ def preprocess(standardise=True, normalise=False):
         feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0))
         feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0))
 
-        np.save('models/'+strdate+'_Inception/feature_standardisation.pickle', np.array(feature_mean, feature_std))
+        np.save('models/'+strdate+'_Inception/feature_standardisation', np.array(feature_mean, feature_std))
 
         training_data_all = (training_data_all-feature_mean)/feature_std
         test_data_all = (test_data_all-feature_mean)/feature_std
@@ -146,7 +146,7 @@ def preprocess(standardise=True, normalise=False):
 
         feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0))
 
-        np.save('models/'+strdate+'_Inception/feature_normalisation.pickle', np.array(feature_max))
+        np.save('models/'+strdate+'_Inception/feature_normalisation', np.array(feature_max))
 
         training_data_all = training_data_all/feature_max
         test_data_all = test_data_all/feature_max

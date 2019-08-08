@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('-countpath', default=[], type=str, dest='countpath', help='Count path if not in parent directory of imagepath')
     parser.add_argument('-modelpath', default='models/2019_08_08_Inception/inception_model.json', type=str, dest='modelpath', help='Model path')
     parser.add_argument('-weightspath', default='models/2019_08_08_Inception/inception_weights_e39_va1.00.h5', type=str, dest='weightspath', help='Weights path')
-    parser.add_argument('-normpath', default='models/2019_08_08_Inception/feature_standardisation.pickle', type=str, dest='normpath', help='Normlisation variable path')
+    parser.add_argument('-normpath', default='models/2019_08_08_Inception/feature_standardisation.npy', type=str, dest='normpath', help='Normlisation variable path')
 
     args = parser.parse_args()
 
@@ -150,8 +150,7 @@ if __name__ == '__main__':
             print ('Normalising according to training data')
 
             # Normlisation
-            with open(norm_path, 'rb') as f:
-                feature_mean, feature_std = pickle.load(f)
+            feature_mean, feature_std = np.load(norm_path)
             all_img = (all_img-feature_mean)/feature_std
 
             #=============================================================================================
