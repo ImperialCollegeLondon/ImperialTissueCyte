@@ -55,7 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('imagepath', default=[], type=str, help='Image directory')
     parser.add_argument('-countpath', default=[], type=str, dest='countpath', help='Count path if not in parent directory of imagepath')
     parser.add_argument('-modelpath', default='models/2019_08_08_Inception/inception_model.json', type=str, dest='modelpath', help='Model path')
-    parser.add_argument('-weightspath', default='models/2019_08_08_Inception/inception_weights_e25_va0.99.h5', type=str, dest='weightspath', help='Weights path')
+    parser.add_argument('-weightspath', default='models/2019_08_08_Inception/inception_weights_e39_va1.00.h5', type=str, dest='weightspath', help='Weights path')
 
     args = parser.parse_args()
 
