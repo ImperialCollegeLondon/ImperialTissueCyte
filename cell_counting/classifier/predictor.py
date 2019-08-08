@@ -144,7 +144,7 @@ if __name__ == '__main__':
                     i += 1
                     progressBar(i, marker.shape[0])
 
-            all_img = np.vstack(all_img)
+            all_img = np.vstack(all_img).astype(np.float32)
             print ('')
             print ('Done!')
 
