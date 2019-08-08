@@ -13,14 +13,17 @@ architecture build and then compiles and trains.
 
 import cleanup
 import datetime
+import glob
 import googleinceptionmodel
 import math
 import os
 import pickle
 import preprocessing
+import pandas as pd
 from keras import backend as K
 from keras.optimizers import SGD
 from keras.callbacks import LearningRateScheduler
+from keras.models import load_model
 from multiprocessing import cpu_count
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -52,7 +55,7 @@ if __name__ == '__main__':
     print ('1. Pre-processing data...')
     print ('################################################################################')
 
-    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess()
+    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess(standardise=True)
 
     print ('################################################################################')
     print ('2. Building Inception model...')
@@ -70,11 +73,11 @@ if __name__ == '__main__':
     # Checkpoint to only save the best model, metric = val_acc
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    if not os.path.exists('models/'+strdate):
-        os.makedirs('models/'+strdate)
+    if not os.path.exists('models/'+strdate+'_Inception'):
+        os.makedirs('models/'+strdate+'_Inception')
 
     # Write model summary to file
-    with open('models/'+strdate+'/model_summary.txt','w') as f:
+    with open('models/'+strdate+'_Inception/model_summary.txt','w') as f:
         # Pass the file handle in as a lambda function to make it callable
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
@@ -94,9 +97,11 @@ if __name__ == '__main__':
 
     model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'categorical_crossentropy'], loss_weights=[1, 0.3, 0.3], optimizer=sgd, metrics=['accuracy'])
 
-    filepath = 'models/'+strdate+'/inception_model_'+strdate+'.h5'
+    filepath = 'models/'+strdate+'_Inception/inception_weights_e{epoch:02d}_va{val_output_acc:.2f}.h5'
     checkpoint = ModelCheckpoint(filepath, monitor='val_output_acc', verbose=1, save_best_only=True, mode='max')
     callbacks_list = checkpoint
+
+    print ('Done')
 
     print ('################################################################################')
     print ('4. Training model...')
@@ -110,7 +115,22 @@ if __name__ == '__main__':
         epochs=epochs,
         callbacks=[lr_sc, callbacks_list])
 
-    with open('models/'+strdate+'/TrainingHistoryDict', 'wb') as f:
-        pickle.dump(history.history, f)
+    print ('################################################################################')
+    print ('4. Saving model and clean up...')
+    print ('################################################################################')
+
+    pd.DataFrame(history.history).to_csv('models/'+strdate+'_Inception/TrainingHistoryDict.csv')
+
+    # Serialize model to JSON
+    model_json = model.to_json()
+    with open('models/'+strdate+'_Inception/inception_model.json', 'w') as json_file:
+        json_file.write(model_json)
+
+    # Remove older weights
+    weights_files = glob.glob('models/'+strdate+'_Inception/*.h5')
+    weights_files.sort(key=os.path.getmtime)
+    if len(weights_files) > 1:
+        for file in weights_files[:-1]:
+            os.remove(file)
 
     cleanup.clean()

@@ -28,7 +28,7 @@ from PIL import Image
 from tifffile import imsave
 import numpy as np
 
-def preprocess():
+def preprocess(standardise=True, normalise=False):
     raw_data_dir = '8-bit/raw_data'
     training_data_dir = '8-bit/training_data'
     test_data_dir = '8-bit/test_data'
@@ -124,14 +124,25 @@ def preprocess():
 
     print ('Done!')
 
-    print ('Running featurewise (sample) standardisation...')
+    if standardise:
+        print ('Running featurewise (sample) standardisation...')
 
-    feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0))
-    feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0))
+        feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0))
+        feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0))
 
-    training_data_all = (training_data_all-feature_mean)/feature_std
-    test_data_all = (test_data_all-feature_mean)/feature_std
+        training_data_all = (training_data_all-feature_mean)/feature_std
+        test_data_all = (test_data_all-feature_mean)/feature_std
 
-    print ('Done!')
+        print ('Done!')
+
+    if normalise:
+        print ('Running featurewise (sample) normalisation...')
+
+        feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0))
+
+        training_data_all = training_data_all/feature_max
+        test_data_all = test_data_all/feature_max
+
+        print ('Done!')
 
     return (training_data_all, training_data_all_label, test_data_all, test_data_all_label)
