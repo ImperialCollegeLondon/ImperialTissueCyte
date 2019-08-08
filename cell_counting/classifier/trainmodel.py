@@ -81,7 +81,7 @@ if __name__ == '__main__':
         # Pass the file handle in as a lambda function to make it callable
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-    epochs = 25
+    epochs = 50
     initial_lrate = 0.01
 
     def decay(epoch, steps=100):
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         training_data_all,
         [training_data_all_label, training_data_all_label, training_data_all_label],
         validation_data=(test_data_all, [test_data_all_label, test_data_all_label, test_data_all_label]),
-        batch_size=256,
+        batch_size=128,
         epochs=epochs,
         callbacks=[lr_sc, callbacks_list])
 
