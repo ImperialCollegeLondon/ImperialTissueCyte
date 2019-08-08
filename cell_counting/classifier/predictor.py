@@ -68,7 +68,7 @@ if __name__ == '__main__':
     norm_path = args.normpath
 
     if not count_path:
-        count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts*')[0]
+        count_path = glob.glob('/'+os.path.join(*image_path.split(os.sep)[0:-1])+'/counts_v.')[0]
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -88,11 +88,12 @@ if __name__ == '__main__':
 
     print ('')
     print ('User defined parameters')
-    print ('Image path: {} \nCount path: {} \nModel path: {} \nWeights path: {}'.format(
+    print ('Image path: {} \nCount path: {} \nModel path: {} \nWeights path: {} \nNormalisation path: {}'.format(
         image_path,
         count_path,
         model_path,
-        weights_path))
+        weights_path,
+        norm_path))
 
     # Get list of files containing the coordinates in x, y, z
     filename = natsorted([file for file in os.listdir(image_path) if file.endswith('.tif')])
