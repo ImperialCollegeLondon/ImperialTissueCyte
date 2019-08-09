@@ -131,8 +131,8 @@ def preprocess(standardise=True, normalise=False):
     if standardise:
         print ('Running featurewise (sample) standardisation...')
 
-        feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0))
-        feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0))
+        feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
+        feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
 
         np.save('models/'+strdate+'_Inception/feature_standardisation', np.array([feature_mean, feature_std]))
 
@@ -144,7 +144,7 @@ def preprocess(standardise=True, normalise=False):
     if normalise:
         print ('Running featurewise (sample) normalisation...')
 
-        feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0))
+        feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
 
         np.save('models/'+strdate+'_Inception/feature_normalisation', np.array(feature_max))
 
