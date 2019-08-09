@@ -50,6 +50,12 @@ if __name__ == '__main__':
     training_data_dir = '8-bit/training_data'
     test_data_dir = '8-bit/test_data'
 
+    # Checkpoint to only save the best model, metric = val_acc
+    strdate = datetime.datetime.today().strftime('%Y_%m_%d')
+
+    if not os.path.exists('models/'+strdate+'_Inception'):
+        os.makedirs('models/'+strdate+'_Inception')
+        
     # Preprocess the data and retrieve training and testing data
     print ('################################################################################')
     print ('1. Pre-processing data...')
@@ -69,12 +75,6 @@ if __name__ == '__main__':
 
     steps_epoch = len([filename for filename in os.listdir(training_data_dir+'/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir(training_data_dir+'/nocell') if filename.endswith(".tif")])//32
     steps_valid = len([filename for filename in os.listdir(test_data_dir+'/cell') if filename.endswith(".tif")]) + len([filename for filename in os.listdir(test_data_dir+'/nocell') if filename.endswith(".tif")])//32
-
-    # Checkpoint to only save the best model, metric = val_acc
-    strdate = datetime.datetime.today().strftime('%Y_%m_%d')
-
-    if not os.path.exists('models/'+strdate+'_Inception'):
-        os.makedirs('models/'+strdate+'_Inception')
 
     # Write model summary to file
     with open('models/'+strdate+'_Inception/model_summary.txt','w') as f:
