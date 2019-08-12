@@ -35,6 +35,7 @@ config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
 
 session = tf.Session(config=config)
 
+K.tensorflow_backend._get_available_gpus()
 K.set_session(session)
 
 os.environ["OMP_NUM_THREADS"] = str(cpu_count())
@@ -55,7 +56,7 @@ if __name__ == '__main__':
 
     if not os.path.exists('models/'+strdate+'_Inception'):
         os.makedirs('models/'+strdate+'_Inception')
-        
+
     # Preprocess the data and retrieve training and testing data
     print ('################################################################################')
     print ('1. Pre-processing data...')
