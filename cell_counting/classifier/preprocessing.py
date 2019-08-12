@@ -73,7 +73,7 @@ def preprocess(standardise=True, normalise=False):
 
     print ('Performing augmentation on training data...')
 
-    n=1000
+    n=2000
     augmentation.augment(n)
 
     print ('Augmented and saved with n='+str(n)+' samples!')
@@ -90,22 +90,22 @@ def preprocess(standardise=True, normalise=False):
     test_label_nocell = []
 
     for imagepath in glob.glob(training_data_dir+'/cell/*.tif'):
-        image = Image.open(imagepath).convert(mode='RGB')
+        image = Image.open(imagepath).resize((80, 80)).convert(mode='RGB')
         training_data_cell.append(np.array(image))
         training_label_cell.append([1, 0])
 
     for imagepath in glob.glob(training_data_dir+'/nocell/*.tif'):
-        image = Image.open(imagepath).convert(mode='RGB')
+        image = Image.open(imagepath).resize((80, 80)).convert(mode='RGB')
         training_data_nocell.append(np.array(image))
         training_label_nocell.append([0, 1])
 
     for imagepath in glob.glob(test_data_dir+'/cell/*.tif'):
-        image = Image.open(imagepath).convert(mode='RGB')
+        image = Image.open(imagepath).resize((80, 80)).convert(mode='RGB')
         test_data_cell.append(np.array(image))
         test_label_cell.append([1, 0])
 
     for imagepath in glob.glob(test_data_dir+'/nocell/*.tif'):
-        image = Image.open(imagepath).convert(mode='RGB')
+        image = Image.open(imagepath).resize((80, 80)).convert(mode='RGB')
         test_data_nocell.append(np.array(image))
         test_label_nocell.append([0, 1])
 

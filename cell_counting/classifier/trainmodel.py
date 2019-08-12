@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'categorical_crossentropy'], loss_weights=[1, 0.3, 0.3], optimizer=sgd, metrics=['accuracy'])
 
-    filepath = 'models/'+strdate+'_Inception/inception_weights_e{epoch:02d}_va{val_output_acc:.2f}.h5'
+    filepath = 'models/'+strdate+'_Inception/inception_weights_e{epoch:02d}_va{val_output_acc:.4f}.h5'
     checkpoint = ModelCheckpoint(filepath, monitor='val_output_acc', verbose=1, save_best_only=True, mode='max')
     callbacks_list = checkpoint
 
