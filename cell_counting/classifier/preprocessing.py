@@ -73,7 +73,7 @@ def preprocess(standardise=True, normalise=False):
 
     print ('Performing augmentation on training data...')
 
-    n=2000
+    n=1000
     augmentation.augment(n)
 
     print ('Augmented and saved with n='+str(n)+' samples!')
