@@ -36,6 +36,16 @@ from keras.models import model_from_json
 from keras.optimizers import SGD
 from keras import backend as K
 
+os.environ["OMP_NUM_THREADS"] = str(cpu_count())
+os.environ["KMP_BLOCKTIME"] = "30"
+os.environ["KMP_SETTINGS"] = "1"
+os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+# Warning supression and allowing large images to be loaded
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+
 config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
                         inter_op_parallelism_threads = cpu_count(),
                         allow_soft_placement = True,
@@ -45,16 +55,6 @@ session = tf.Session(config=config)
 
 K.set_session(session)
 
-os.environ["OMP_NUM_THREADS"] = str(cpu_count())
-os.environ["KMP_BLOCKTIME"] = "30"
-os.environ["KMP_SETTINGS"] = "1"
-os.environ["KMP_AFFINITY"]= "granularity=fine,verbose,compact,1,0"
-
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
-
-
-# Warning supression and allowing large images to be loaded
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 

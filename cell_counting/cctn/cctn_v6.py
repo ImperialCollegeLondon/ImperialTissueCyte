@@ -215,7 +215,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
 
                     if np.max(image) != 0.:
                         # Perform circularity threshold
-                        image = adaptcircthresh(image,size,int(np.mean(image)),circ_thresh,False)
+                        image = adaptcircthresh(image,size,int(1.5*np.mean(image)),circ_thresh,False)
 
                         # Remove objects smaller than chosen size
                         image = label(image, connectivity=image.ndim)
