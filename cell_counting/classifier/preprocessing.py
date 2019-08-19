@@ -30,7 +30,7 @@ from PIL import Image
 from tifffile import imsave
 import numpy as np
 
-def preprocess(standardise=True, normalise=False):
+def preprocess(normalise):
     raw_data_dir = '8-bit/raw_data'
     training_data_dir = '8-bit/training_data'
     test_data_dir = '8-bit/test_data'
@@ -128,8 +128,8 @@ def preprocess(standardise=True, normalise=False):
 
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    if standardise:
-        print ('Running featurewise (sample) standardisation...')
+    if normalise == 0:
+        print ('Running featurewise standardisation...')
 
         feature_mean = np.mean(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
         feature_std = np.std(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
@@ -141,8 +141,8 @@ def preprocess(standardise=True, normalise=False):
 
         print ('Done!')
 
-    if normalise:
-        print ('Running featurewise (sample) normalisation...')
+    if normalise == 1:
+        print ('Running featurewise normalisation...')
 
         feature_max = np.max(np.concatenate((training_data_all, test_data_all), axis=0), axis=0)
 
@@ -150,6 +150,16 @@ def preprocess(standardise=True, normalise=False):
 
         training_data_all = training_data_all/feature_max
         test_data_all = test_data_all/feature_max
+
+        print ('Done!')
+
+    if normalise == 2:
+        print ('Running samplewise normalisation...')
+
+        for idx, img in enumerate(training_data_all):
+            training_data_all[idx] = img/np.max(img)
+        for idx, img in enumerate(training_data_all):
+            test_data_all[idx] = img/np.max(img)
 
         print ('Done!')
 

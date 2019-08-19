@@ -62,7 +62,7 @@ if __name__ == '__main__':
     print ('1. Pre-processing data...')
     print ('################################################################################')
 
-    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess(standardise=True)
+    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess(normalise=0)
 
     print ('################################################################################')
     print ('2. Building Inception model...')
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         callbacks=[lr_sc, callbacks_list])
 
     print ('################################################################################')
-    print ('4. Saving model and clean up...')
+    print ('5. Saving model and clean up...')
     print ('################################################################################')
 
     pd.DataFrame(history.history).to_csv('models/'+strdate+'_Inception/TrainingHistoryDict.csv')
