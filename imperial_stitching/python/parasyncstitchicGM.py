@@ -315,7 +315,7 @@ if __name__ == '__main__':
                 else:
                     ztoken = str(zcount)
 
-                tile_img = np.multiply(np.divide(tile_img, 65535./2), 255.)
+                tile_img = np.multiply(np.divide(tile_img, 65535./4), 255.)
                 tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)))
 
                 Image.fromarray(tile_img).save(tilepath+'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
