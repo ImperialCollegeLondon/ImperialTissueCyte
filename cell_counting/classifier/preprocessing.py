@@ -126,28 +126,6 @@ def preprocess(normalise):
 
     print ('Done!')
 
-    print ('Removing any data with nan...')
-
-    training_idx = []
-    for idx, img in enumerate(training_data_all):
-        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-            training_idx.append(idx)
-
-    test_idx = []
-    for idx, img in enumerate(test_data_all):
-        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-            test_idx.append(idx)
-
-    if len(training_idx) > 0:
-        training_data_all = np.delete(training_data_all, np.array(training_idx))
-        training_data_all_label = np.delete(training_data_all_label, np.array(training_idx))
-
-    if len(test_idx) > 0:
-        test_data_all = np.delete(test_data_all, np.array(test_idx))
-        test_data_all_label = np.delete(test_data_all_label, np.array(test_idx))
-
-    print ('Done!')
-
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
     if normalise == 0:
@@ -179,14 +157,38 @@ def preprocess(normalise):
         print ('Running samplewise normalisation...')
 
         for idx, img in enumerate(training_data_all):
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(training_data_all[idx]), np.max(training_data_all[idx])))
+            if (np.max(img)-np.min(img)) == 0:
+                print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(max)))
             training_data_all[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
             # print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(training_data_all[idx]), np.max(training_data_all[idx])))
         for idx, img in enumerate(test_data_all):
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(test_data_all[idx]), np.max(test_data_all[idx])))
+            if (np.max(img)-np.min(img)) == 0:
+                print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(max)))
             test_data_all[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
             # print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(test_data_all[idx]), np.max(test_data_all[idx])))
 
         print ('Done!')
+
+    print ('Removing any data with nan...')
+
+    training_idx = []
+    for idx, img in enumerate(training_data_all):
+        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
+            training_idx.append(idx)
+
+    test_idx = []
+    for idx, img in enumerate(test_data_all):
+        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
+            test_idx.append(idx)
+
+    if len(training_idx) > 0:
+        training_data_all = np.delete(training_data_all, np.array(training_idx))
+        training_data_all_label = np.delete(training_data_all_label, np.array(training_idx))
+
+    if len(test_idx) > 0:
+        test_data_all = np.delete(test_data_all, np.array(test_idx))
+        test_data_all_label = np.delete(test_data_all_label, np.array(test_idx))
+
+    print ('Done!')
 
     return (training_data_all, training_data_all_label, test_data_all, test_data_all_label)
