@@ -62,7 +62,7 @@ if __name__ == '__main__':
     print ('1. Pre-processing data...')
     print ('################################################################################')
 
-    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess(normalise=0)
+    training_data_all, training_data_all_label, test_data_all, test_data_all_label = preprocessing.preprocess(normalise=2)
 
     print ('################################################################################')
     print ('2. Building Inception model...')

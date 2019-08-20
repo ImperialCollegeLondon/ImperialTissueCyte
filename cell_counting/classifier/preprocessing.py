@@ -158,7 +158,7 @@ def preprocess(normalise):
 
         for idx, img in enumerate(training_data_all):
             training_data_all[idx] = img/np.max(img)
-        for idx, img in enumerate(training_data_all):
+        for idx, img in enumerate(test_data_all):
             test_data_all[idx] = img/np.max(img)
 
         print ('Done!')
