@@ -121,9 +121,6 @@ def preprocess(normalise):
     training_data_all = np.concatenate((training_data_cell, training_data_nocell), axis=0)
     test_data_all = np.concatenate((test_data_cell, test_data_nocell), axis=0)
 
-    training_data_all[np.isnan(training_data_all)] = 0
-    test_data_all[np.isnan(test_data_all)] = 0
-
     training_data_all_label = np.concatenate((training_label_cell, training_label_nocell), axis=0)
     test_data_all_label = np.concatenate((test_label_cell, test_label_nocell), axis=0)
 
@@ -167,5 +164,11 @@ def preprocess(normalise):
             # print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(test_data_all[idx]), np.max(test_data_all[idx])))
 
         print ('Done!')
+
+    print ('Removing any data with nan...')
+
+    for idx, img in enumerate(training_data_all):
+        if np.isnan(np.min(img) * np.max(img)):
+            print ('Nan detected')
 
     return (training_data_all, training_data_all_label, test_data_all, test_data_all_label)
