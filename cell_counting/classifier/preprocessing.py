@@ -130,12 +130,12 @@ def preprocess(normalise):
 
     training_idx = []
     for idx, img in enumerate(training_data_all):
-        if np.isnan(np.min(img) * np.max(img)):
+        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
             training_idx.append(idx)
 
     test_idx = []
     for idx, img in enumerate(test_data_all):
-        if np.isnan(np.min(img) * np.max(img)):
+        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
             test_idx.append(idx)
 
     if len(training_idx) > 0:
