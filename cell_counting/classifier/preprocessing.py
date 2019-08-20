@@ -179,9 +179,11 @@ def preprocess(normalise):
         print ('Running samplewise normalisation...')
 
         for idx, img in enumerate(training_data_all):
+            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(training_data_all[idx]), np.max(training_data_all[idx])))
             training_data_all[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
             # print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(training_data_all[idx]), np.max(training_data_all[idx])))
         for idx, img in enumerate(test_data_all):
+            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(test_data_all[idx]), np.max(test_data_all[idx])))
             test_data_all[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
             # print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(test_data_all[idx]), np.max(test_data_all[idx])))
 
