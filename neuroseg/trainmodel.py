@@ -38,15 +38,15 @@ os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 if __name__ == '__main__':
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument("-d", "--dropout", required=False,
-    #                 help="dropout", type=float, default=0.1)
-    # ap.add_argument("-a", "--activation", required=False,
-    #                 help="activation", default="ReLU")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-d", "--dropout", required=False,
+                    help="dropout", type=float, default=0.1)
+    ap.add_argument("-a", "--activation", required=False,
+                    help="activation", default="ReLU")
 
-    # args = vars(ap.parse_args())
+    args = vars(ap.parse_args())
 
-    # activation = globals()[args['activation']]
+    activation = globals()[args['activation']]
 
     # Checkpoint to only save the best model, metric = val_acc
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
