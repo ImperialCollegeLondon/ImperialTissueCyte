@@ -58,8 +58,6 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    end
-
     model = unetmodel.get_unet(do=args['dropout'], activation=activation)
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
