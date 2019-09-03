@@ -57,7 +57,7 @@ if __name__ == '__main__':
     model_name = "focal_unet_"
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
-    end
+
     model = unetmodel.get_unet(do=0.1, activation='ReLU')
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
