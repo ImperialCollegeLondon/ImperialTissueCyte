@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    model = unetmodel.get_unet(do=0.1, activation='ReLU')
+    model = unetmodel.get_unet(do=0.1, activation=args['activation'])
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
