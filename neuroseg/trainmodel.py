@@ -40,7 +40,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--dropout", required=False,
-                    help="dropout", type=float, default=0.01)
+                    help="dropout", type=float, default=0.0001)
     ap.add_argument("-a", "--activation", required=False,
                     help="activation", default="ReLU")
 
