@@ -63,8 +63,8 @@ if __name__ == '__main__':
     # model_path = args.modelpath
     # weights_path = args.weightspath
 
-    model_path = 'models/2019_09_02_UNet/focal_unet_do_0.1_activation_ReLU_model.json'
-    weights_path = 'models/2019_09_02_UNet/focal_unet_do_0.1_activation_ReLU_weights.best.hdf5'
+    model_path = 'models/2019_09_03_UNet/focal_unet_model.json'
+    weights_path = 'models/2019_09_03_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('/Users/gm515/Documents/GitHub/neuroseg/input/raw_data/images/image-00001.tif')).astype(np.float32)[0:512,0:512]
+    img = np.array(Image.open('/Users/gm515/Documents/GitHub/neuroseg/input/raw_data/images/00020.tif')).astype(np.float32)[0:512,0:512]
     img = img/np.max(img)
 
     images_array.append(img)

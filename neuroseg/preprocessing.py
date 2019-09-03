@@ -75,8 +75,14 @@ def preprocess():
     n=100
     augmentation.augment(n)
 
-    for f in glob.glob('input/training_data/images/_groundtruth*'):
-        shutil.move(f, f.replace('/images/', '/masks/').replace('_groundtruth','groundtruth'))
+    aug_images = glob.glob('input/training_data/images/images_original*')
+    aug_masks = glob.glob('input/training_data/images/_groundtruth*')
+    aug_images.sort(key=lambda x:x[-40:])
+    aug_masks.sort(key=lambda x:x[-40:])
+
+    for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
+        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
 
     print ('Augmented and saved with n='+str(n)+' samples!')
 
