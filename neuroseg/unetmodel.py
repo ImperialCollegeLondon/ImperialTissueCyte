@@ -26,12 +26,12 @@ def get_unet(do=0, activation=ReLU):
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
     conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
     conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
-    drop4 = Dropout(0.5)(conv4)
+    drop4 = Dropout(0.1)(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
 
     conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
     conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
-    drop5 = Dropout(0.5)(conv5)
+    drop5 = Dropout(0.1)(conv5)
 
     up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
     merge6 = concatenate([drop4,up6], axis = 3)
@@ -57,7 +57,7 @@ def get_unet(do=0, activation=ReLU):
 
     model = Model(input = inputs, output = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = focal_loss(gamma=2., alpha=.25), metrics = ['accuracy'])
     # inputs = Input(shape = (None, None, 1))
     # conv1 = Dropout(do)(activation()(Conv2D(32, (3, 3), padding='same')(inputs)))
     # conv1 = Dropout(do)(activation()(Conv2D(32, (3, 3), padding='same')(conv1)))
