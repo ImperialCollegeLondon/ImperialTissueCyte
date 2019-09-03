@@ -75,6 +75,9 @@ def preprocess():
     n=100
     augmentation.augment(n)
 
+    for f in glob.glob('input/training_data/images/_groundtruth*'):
+        shutil.move(f, f.replace('/images/', '/masks/').replace('_groundtruth','groundtruth'))
+
     print ('Augmented and saved with n='+str(n)+' samples!')
 
     training_data_images = []
@@ -144,23 +147,19 @@ def preprocess():
     print ('Running normalisation...')
 
     for idx, img in enumerate(training_data_images):
-        if (np.max(img)-np.min(img)) == 0:
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(img)))
         training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(training_data_masks):
-        if (np.max(img)-np.min(img)) == 0:
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(img)))
+        img[img < (np.min(img)+np.max(img))/2] = 0.
+        img[img > (np.min(img)+np.max(img))/2] = 255.
         training_data_masks[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(test_data_images):
-        if (np.max(img)-np.min(img)) == 0:
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(img)))
         test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(test_data_masks):
-        if (np.max(img)-np.min(img)) == 0:
-            print ('Min: {0:.2f} Max: {1:.2f}'.format(np.min(img), np.max(img)))
+        img[img < (np.min(img)+np.max(img))/2] = 0.
+        img[img > (np.min(img)+np.max(img))/2] = 255.
         test_data_masks[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     print ('Done!')
