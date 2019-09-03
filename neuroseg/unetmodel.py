@@ -1,5 +1,5 @@
 from keras.layers import Input, MaxPooling2D
-from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU
+from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D
 from keras.models import Model
 from keras.optimizers import Adam
 import tensorflow as tf
