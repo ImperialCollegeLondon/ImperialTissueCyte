@@ -81,3 +81,17 @@ if __name__ == '__main__':
     images_array = images_array[..., np.newaxis]
 
     pred = model.predict(images_array)
+
+    pred = np.squeeze(pred[0])
+
+    end
+    pred = 255.*(pred - np.min(pred))/(np.max(pred)-np.min(pred))
+    print (np.min(pred), np.max(pred))
+
+    import matplotlib.pyplot as plt
+
+    plt.figure()
+    plt.imshow(np.squeeze(img))
+
+    plt.figure()
+    plt.imshow(pred)
