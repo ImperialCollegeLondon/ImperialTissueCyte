@@ -100,6 +100,6 @@ def get_unet(do=0, activation=ReLU):
     model = Model(inputs=[inputs], outputs=[conv10])
 
     # model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
-    model.compile(optimizer=Adam(lr=1e-3), loss=losses.binary_crossentropy, metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=1e-2), loss=losses.binary_crossentropy, metrics=['accuracy'])
 
     return model
