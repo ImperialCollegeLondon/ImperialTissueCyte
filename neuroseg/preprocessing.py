@@ -28,6 +28,7 @@ import augmentation
 import pickle
 from PIL import Image
 from tifffile import imsave
+from natsort import natsorted
 import numpy as np
 
 def preprocess():
@@ -107,19 +108,19 @@ def preprocess():
     test_data_images = []
     test_data_masks = []
 
-    for imagepath in glob.glob(training_data_dir+'/images/*.tif'):
+    for imagepath in natsorted(glob.glob(training_data_dir+'/images/*.tif')):
         image = Image.open(imagepath).resize((512, 512))
         training_data_images.append(np.array(image))
 
-    for imagepath in glob.glob(training_data_dir+'/masks/*.tif'):
+    for imagepath in natsorted(glob.glob(training_data_dir+'/masks/*.tif')):
         image = Image.open(imagepath).resize((512, 512))
         training_data_masks.append(np.array(image))
 
-    for imagepath in glob.glob(test_data_dir+'/images/*.tif'):
+    for imagepath in natsorted(glob.glob(test_data_dir+'/images/*.tif')):
         image = Image.open(imagepath).resize((512, 512))
         test_data_images.append(np.array(image))
 
-    for imagepath in glob.glob(test_data_dir+'/masks/*.tif'):
+    for imagepath in natsorted(glob.glob(test_data_dir+'/masks/*.tif')):
         image = Image.open(imagepath).resize((512, 512))
         test_data_masks.append(np.array(image))
 
