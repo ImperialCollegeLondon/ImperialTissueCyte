@@ -131,6 +131,26 @@ def preprocess():
 
     print ('Done!')
 
+    print ('Running normalisation...')
+
+    for idx, img in enumerate(training_data_images):
+        training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
+
+    for idx, img in enumerate(training_data_masks):
+        img[img < (np.min(img)+np.max(img))/2] = 0.
+        img[img >= (np.min(img)+np.max(img))/2] = 1.
+        training_data_masks[idx] = img
+
+    for idx, img in enumerate(test_data_images):
+        test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
+
+    for idx, img in enumerate(test_data_masks):
+        img[img < (np.min(img)+np.max(img))/2] = 0.
+        img[img >= (np.min(img)+np.max(img))/2] = 1.
+        test_data_masks[idx] = img
+
+    print ('Done!')
+
     print ('Removing any data with nan...')
 
     training_images_idx = []
@@ -164,26 +184,6 @@ def preprocess():
 
     if len(test_masks_idx) > 0:
         test_data_masks = np.delete(test_data_masks, np.array(test_masks_idx), axis=0)
-
-    print ('Done!')
-
-    print ('Running normalisation...')
-
-    for idx, img in enumerate(training_data_images):
-        training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
-
-    for idx, img in enumerate(training_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
-        training_data_masks[idx] = img
-
-    for idx, img in enumerate(test_data_images):
-        test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
-
-    for idx, img in enumerate(test_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
-        test_data_masks[idx] = img
 
     print ('Done!')
 
