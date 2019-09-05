@@ -40,7 +40,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--dropout", required=False,
-                    help="dropout", type=float, default=0.5)
+                    help="dropout", type=float, default=0.1)
     ap.add_argument("-a", "--activation", required=False,
                     help="activation", default="ReLU")
 
@@ -67,9 +67,10 @@ if __name__ == '__main__':
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
     callbacks_list = [checkpoint, early, redonplat]  # early
 
+    batch = 4
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
-        batch_size=6,
+        batch_size=batch,
         epochs=25,
         callbacks=callbacks_list)
 

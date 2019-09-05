@@ -62,7 +62,7 @@ def get_unet(do=0, activation=ReLU):
     conv1 = Dropout(do)(activation()(Conv2D(32, (3, 3), padding='same')(inputs)))
     conv1 = Dropout(do)(activation()(Conv2D(32, (3, 3), padding='same')(conv1)))
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    
+
     conv2 = Dropout(do)(activation()(Conv2D(64, (3, 3), padding='same')(pool1)))
     conv2 = Dropout(do)(activation()(Conv2D(64, (3, 3), padding='same')(conv2)))
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
@@ -98,7 +98,7 @@ def get_unet(do=0, activation=ReLU):
 
     model = Model(inputs=[inputs], outputs=[conv10])
 
-    model.compile(optimizer=Adam(lr=1e-5), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
 
 
     return model
