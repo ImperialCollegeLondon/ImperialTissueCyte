@@ -4,6 +4,7 @@ from keras.models import Model
 from keras.optimizers import Adam
 import tensorflow as tf
 from keras import backend as K
+from keras import losses
 
 def focal_loss(gamma=2., alpha=.25):
     def focal_loss_fixed(y_true, y_pred):
@@ -98,7 +99,7 @@ def get_unet(do=0, activation=ReLU):
 
     model = Model(inputs=[inputs], outputs=[conv10])
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
-
+    # model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=1e-3), loss=losses.binary_crossentropy, metrics=['accuracy'])
 
     return model
