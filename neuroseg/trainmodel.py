@@ -58,26 +58,6 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    # i = 0
-    # for img in train_x:
-    #     Image.fromarray((np.squeeze(img)*255).astype(np.uint8)).save('/Users/gm515/Desktop/train_x/'+str(i)+'.tif')
-    #     i += 1
-    #
-    # i = 0
-    # for img in train_y:
-    #     Image.fromarray((np.squeeze(img)*255).astype(np.uint8)).save('/Users/gm515/Desktop/train_y/'+str(i)+'.tif')
-    #     i += 1
-    #
-    # i = 0
-    # for img in val_x:
-    #     Image.fromarray((np.squeeze(img)*255).astype(np.uint8)).save('/Users/gm515/Desktop/val_x/'+str(i)+'.tif')
-    #     i += 1
-    #
-    # i = 0
-    # for img in val_y:
-    #     Image.fromarray((np.squeeze(img)*255).astype(np.uint8)).save('/Users/gm515/Desktop/val_y/'+str(i)+'.tif')
-    #     i += 1
-
     model = unetmodel.get_unet(do=args['dropout'], activation=activation)
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
