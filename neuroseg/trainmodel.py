@@ -58,6 +58,16 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
+    import matplotlib.pyplot as plt
+    im = 48
+    plt.figure()
+    plt.imshow(np.squeeze(train_x[im]))
+    plt.figure()
+    plt.imshow(np.squeeze(train_y[im]))
+    plt.show(block=False)
+
+    end
+
     model = unetmodel.get_unet(do=args['dropout'], activation=activation)
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
