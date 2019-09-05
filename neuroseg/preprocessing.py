@@ -81,8 +81,8 @@ def preprocess():
     aug_masks.sort(key=lambda x:x[-40:])
 
     for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
-        print(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
-        print(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
 
     print ('Augmented and saved with n='+str(n)+' samples!')
 
