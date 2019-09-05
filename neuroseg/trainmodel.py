@@ -61,7 +61,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     im = 48
     plt.figure()
-    plt.imshow(np.squeeze(train_x[im]))
+    plt.imshow(np.squeeze(train_y[im]))
     plt.figure()
     plt.imshow(np.squeeze(train_y[im]))
     plt.show(block=False)

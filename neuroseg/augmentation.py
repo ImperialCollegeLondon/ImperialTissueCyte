@@ -16,7 +16,7 @@ import Augmentor
 def augment(dir, n):
     training_datagen = Augmentor.Pipeline(source_directory=os.path.join(dir,'images'), output_directory='.', save_format='tif')
 
-    training_datagen.ground_truth(os.path.join(dir,'images'))
+    training_datagen.ground_truth(os.path.join(dir,'masks'))
 
     training_datagen.rotate_without_crop(probability=0.5, max_left_rotation=25, max_right_rotation=25, expand=False)
     training_datagen.zoom(probability=0.5, min_factor=0.9, max_factor=1.1)

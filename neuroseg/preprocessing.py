@@ -81,8 +81,8 @@ def preprocess():
     aug_masks.sort(key=lambda x:x[-40:])
 
     for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
-        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
-        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+        print(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+        print(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
 
     print ('Augmented and saved with n='+str(n)+' samples!')
 
@@ -171,18 +171,18 @@ def preprocess():
     for idx, img in enumerate(training_data_images):
         training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
-    for idx, img in enumerate(training_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img > (np.min(img)+np.max(img))/2] = 1.
-        training_data_masks[idx] = img
+    # for idx, img in enumerate(training_data_masks):
+    #     img[img < (np.min(img)+np.max(img))/2] = 0.
+    #     img[img > (np.min(img)+np.max(img))/2] = 1.
+    #     training_data_masks[idx] = img
 
     for idx, img in enumerate(test_data_images):
         test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
-    for idx, img in enumerate(test_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img > (np.min(img)+np.max(img))/2] = 1.
-        test_data_masks[idx] = img
+    # for idx, img in enumerate(test_data_masks):
+    #     img[img < (np.min(img)+np.max(img))/2] = 0.
+    #     img[img > (np.min(img)+np.max(img))/2] = 1.
+    #     test_data_masks[idx] = img
 
     print ('Done!')
 
