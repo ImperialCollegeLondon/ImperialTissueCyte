@@ -72,6 +72,7 @@ if __name__ == '__main__':
         validation_data=(val_x, val_y),
         batch_size=batch,
         epochs=25,
+        shuffle=True,
         callbacks=callbacks_list)
 
     # Serialize model to JSON
