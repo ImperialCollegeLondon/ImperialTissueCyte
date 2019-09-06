@@ -1,7 +1,7 @@
 from keras.layers import Input, MaxPooling2D
 from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 import tensorflow as tf
 from keras import backend as K
 from keras import losses
@@ -143,7 +143,10 @@ def get_unet(do=0, activation=ReLU):
 
     model = Model(input = inputs, output = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    opt = SGD(lr=0.01)
+
+    model.compile(optimizer = opt, loss = 'binary_crossentropy', metrics = ['accuracy'])
+    # model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
     # model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
 
     return model
