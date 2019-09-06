@@ -51,9 +51,9 @@ def preprocess():
     raw_images_data = os.listdir(raw_data_dir+'/images/')
     raw_masks_data = os.listdir(raw_data_dir+'/masks/')
     random.shuffle(raw_images_data)
-    training_images_data = raw_images_data[:int(0.7*len(raw_images_data))]
+    training_images_data = raw_images_data[:int(0.5*len(raw_images_data))]
     training_masks_data = [f.replace('image', 'mask') for f in training_images_data]
-    test_images_data  = raw_images_data[int(0.7*len(raw_images_data)):]
+    test_images_data  = raw_images_data[int(0.5*len(raw_images_data)):]
     test_masks_data = [f.replace('image', 'mask') for f in test_images_data]
 
     for f in training_images_data:
@@ -70,25 +70,25 @@ def preprocess():
 
     print ('Done!')
 
-    print ('Performing augmentation on training data...')
-
-    n=210
-    augmentation.augment('input/training_data',n)
-
-    aug_images = glob.glob('input/training_data/images/images_original*')
-    aug_masks = glob.glob('input/training_data/images/_groundtruth*')
-    aug_images.sort(key=lambda x:x[-40:])
-    aug_masks.sort(key=lambda x:x[-40:])
-
-    for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
-        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
-        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
-
-    print ('Augmented and saved with n='+str(n)+' samples!')
+    # print ('Performing augmentation on training data...')
+    #
+    # n=210
+    # augmentation.augment('input/training_data',n)
+    #
+    # aug_images = glob.glob('input/training_data/images/images_original*')
+    # aug_masks = glob.glob('input/training_data/images/_groundtruth*')
+    # aug_images.sort(key=lambda x:x[-40:])
+    # aug_masks.sort(key=lambda x:x[-40:])
+    #
+    # for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
+    #     shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+    #     shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+    #
+    # print ('Augmented and saved with n='+str(n)+' samples!')
 
     print ('Performing augmentation on test data...')
 
-    n=90
+    n=3*len(training_masks_data)
     augmentation.augment('input/test_data',n)
 
     aug_images = glob.glob('input/test_data/images/images_original*')
