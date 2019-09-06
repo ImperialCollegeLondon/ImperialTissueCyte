@@ -146,7 +146,7 @@ def get_unet(do=0, activation=ReLU):
     # opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 
     # model.compile(optimizer = opt, loss = 'binary_crossentropy', metrics = ['accuracy'])
-    model.compile(optimizer = Adam(lr = 1e-2), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
     # model.compile(optimizer=Adam(lr=1e-4), loss=focal_loss(gamma=2., alpha=.25), metrics=['accuracy'])
 
     return model
