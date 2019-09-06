@@ -136,16 +136,16 @@ def preprocess():
         training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(training_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
+        img[img < (np.min(img)+np.max(img))/2] = 1.
+        img[img >= (np.min(img)+np.max(img))/2] = 0.
         training_data_masks[idx] = img
 
     for idx, img in enumerate(test_data_images):
         test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(test_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
+        img[img < (np.min(img)+np.max(img))/2] = 1.
+        img[img >= (np.min(img)+np.max(img))/2] = 0.
         test_data_masks[idx] = img
 
     print ('Done!')
