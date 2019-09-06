@@ -79,4 +79,4 @@ if __name__ == '__main__':
     with open('models/'+strdate+'_UNet/'+model_name+'model.json', 'w') as json_file:
         json_file.write(model_json)
 
-    cleanup.clean()
+    # cleanup.clean()
