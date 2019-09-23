@@ -64,7 +64,7 @@ try:
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
-    bsplineParameterMap = sitk.ReadParameterFile('testbspline.txt')
+    bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map

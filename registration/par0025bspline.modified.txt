@@ -45,10 +45,10 @@
 // and need to be chosen careful for each application. See manual.
 (Optimizer "AdaptiveStochasticGradientDescent") // StandardGradientDescent does not work
 (Transform "BSplineTransform")
-(Metric "AdvancedMattesMutualInformation") // better than normalized correlation
+(Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original
 // (Metric "AdvancedNormalizedCorrelation")
 
-// (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty")
+// (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty") // different to par0025 original
 
 
 // ***************** Transformation **************************
