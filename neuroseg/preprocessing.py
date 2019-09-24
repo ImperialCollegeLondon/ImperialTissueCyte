@@ -32,9 +32,9 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = 'input/raw_data'
-    training_data_dir = 'input/training_data'
-    test_data_dir = 'input/test_data'
+    raw_data_dir = 'input/membrane_test/raw_data'
+    training_data_dir = 'input/membrane_test/training_data'
+    test_data_dir = 'input/membrane_test/test_data'
 
     # Clean up any old directories and create new directories
     if os.path.exists(training_data_dir) and os.path.isdir(training_data_dir): cleanup.clean()
