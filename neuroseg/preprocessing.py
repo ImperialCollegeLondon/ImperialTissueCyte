@@ -32,7 +32,7 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = 'input/membrane_data'
+    raw_data_dir = 'input/raw_data'
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
