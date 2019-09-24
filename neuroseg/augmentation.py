@@ -14,7 +14,7 @@ import os
 import Augmentor
 
 def augment(dir, n):
-    training_datagen = Augmentor.Pipeline(source_directory=os.path.join(dir,'images'), output_directory='.', save_format='png')
+    training_datagen = Augmentor.Pipeline(source_directory=os.path.join(dir,'images'), output_directory='.', save_format='tif')
 
     training_datagen.ground_truth(os.path.join(dir,'masks'))
 
