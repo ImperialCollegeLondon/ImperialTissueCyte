@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('/Users/gm515/Documents/GitHub/neuroseg/input/raw_data/images/00007.tif')).astype(np.float32)
+    img = np.array(Image.open('/Users/gm515/Documents/GitHub/neuroseg/input/raw_data/images/00032.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
 
     images_array.append(img)
@@ -93,4 +93,4 @@ if __name__ == '__main__':
     plt.imshow(np.squeeze(img))
 
     plt.figure()
-    plt.imshow(pred)
+    plt.imshow(pred<128)
