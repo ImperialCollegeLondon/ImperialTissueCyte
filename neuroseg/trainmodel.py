@@ -72,7 +72,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=25,
+        epochs=50,
         shuffle=True,
         callbacks=callbacks_list)
 
