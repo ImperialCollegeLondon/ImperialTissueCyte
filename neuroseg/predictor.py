@@ -63,8 +63,8 @@ if __name__ == '__main__':
     # model_path = args.modelpath
     # weights_path = args.weightspath
 
-    model_path = '/Users/gm515/Desktop/2019_09_24_UNet/focal_unet_model.json'
-    weights_path = '/Users/gm515/Desktop/2019_09_24_UNet/focal_unet_weights.best.hdf5'
+    model_path = '/Users/gm515/Desktop/2019_09_25_UNet/focal_unet_model.json'
+    weights_path = '/Users/gm515/Desktop/2019_09_25_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -93,7 +93,4 @@ if __name__ == '__main__':
     plt.imshow(np.squeeze(img))
 
     plt.figure()
-    plt.imshow(pred)
-
-    plt.figure()
-    plt.imshow(np.squeeze(img)-pred)
+    plt.imshow(pred<20)
