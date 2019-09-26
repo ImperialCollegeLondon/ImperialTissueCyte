@@ -72,7 +72,7 @@ def preprocess():
 
     print ('Performing augmentation on training data...')
 
-    n=3*len(training_images_data)
+    n=4*len(training_images_data)
     augmentation.augment('input/training_data',n)
 
     aug_images = glob.glob('input/training_data/images/images_original*')
