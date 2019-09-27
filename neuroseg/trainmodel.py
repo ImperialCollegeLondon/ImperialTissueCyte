@@ -58,6 +58,10 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
+    # Invert masks
+    train_y = 1-train_y
+    val_y = 1-val_y
+
     # model = unetmodel.get_unet(do=args['dropout'], activation=activation)
     model = unetmodel.get_unet()
 
