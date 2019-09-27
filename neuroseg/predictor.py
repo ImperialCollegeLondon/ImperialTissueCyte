@@ -90,8 +90,8 @@ if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
 
-    plt.figure()
-    plt.imshow(np.squeeze(img))
-
-    plt.figure()
-    plt.imshow(pred)
+    f, axarr = plt.subplots(1,2)
+    axarr[0].imshow(img)
+    axarr[1].imshow(pred)
+    plt.show(block=False)
+    plt.tight_layout()
