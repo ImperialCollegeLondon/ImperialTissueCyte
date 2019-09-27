@@ -18,7 +18,7 @@ def augment(dir, n):
 
     training_datagen.ground_truth(os.path.join(dir,'masks'))
 
-    training_datagen.rotate_without_crop(probability=0.5, max_left_rotation=25, max_right_rotation=25, expand=False, fillcolor=1.0)
+    training_datagen.rotate_without_crop(probability=0.5, max_left_rotation=25, max_right_rotation=25, expand=False, fill=255)
     training_datagen.zoom(probability=0.5, min_factor=0.9, max_factor=1.1)
     training_datagen.flip_left_right(probability=0.5)
     training_datagen.flip_top_bottom(probability=0.5)
