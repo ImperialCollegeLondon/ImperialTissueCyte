@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # TVERSKY LOSS
     estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
-    checkpoint = ModelCheckpoint(file_path, monitor='val_final_dsc',
+    checkpoint = ModelCheckpoint(file_path, monitor='val_dsc',
                                  verbose=1, save_best_only=True,
                                  save_weights_only=True, mode='max')
 
