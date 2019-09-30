@@ -12,7 +12,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.layers import Input, MaxPooling2D
 from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from numpy import random
 import tensorflow as tf
 from multiprocessing import cpu_count
