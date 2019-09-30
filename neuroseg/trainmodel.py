@@ -19,6 +19,8 @@ from multiprocessing import cpu_count
 from random import randint
 import unetmodel
 import preprocessing
+import focal_tversky_unetmodel
+import losses
 
 config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
                         inter_op_parallelism_threads = cpu_count(),
@@ -58,12 +60,10 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    # Invert masks
-    # train_y = 1-train_y
-    # val_y = 1-val_y
-
-    # model = unetmodel.get_unet(do=args['dropout'], activation=activation)
-    model = unetmodel.get_unet()
+    # model = unetmodel.get_unet()
+    sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
+    input_size = (512, 512, 1)
+    model = focal_tversky_unetmodel.attn_reg(sgd, input_size, losses.focal_tversky)
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
