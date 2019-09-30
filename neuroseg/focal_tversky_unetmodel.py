@@ -1,13 +1,12 @@
 from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
 from keras.layers import Activation, add, multiply, Lambda
 from keras.layers import AveragePooling2D, average, UpSampling2D, Dropout
-from keras.layers.normalization import BatchNormalization 
+from keras.layers.normalization import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam, SGD
 import tensorflow as tf
 from keras import backend as K
-from keras import losses
-
+import losses
 # https://github.com/nabsabraham/focal-tversky-unet/blob/master/newmodels.py#L246
 
 kinit = 'glorot_normal'
