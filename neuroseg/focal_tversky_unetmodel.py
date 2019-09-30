@@ -9,6 +9,8 @@ from keras import losses
 
 # https://github.com/nabsabraham/focal-tversky-unet/blob/master/newmodels.py#L246
 
+kinit = 'glorot_normal'
+
 def expend_as(tensor, rep,name):
 	my_repeat = Lambda(lambda x, repnum: K.repeat_elements(x, repnum, axis=3), arguments={'repnum': rep},  name='psi_up'+name)(tensor)
 	return my_repeat
