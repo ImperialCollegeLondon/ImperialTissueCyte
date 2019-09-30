@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     batch = 4
     history = model.fit(train_x, [train_y, train_y, train_y, train_y],
-        validation_data=(val_x, val_y),
+        validation_data=(val_x, [val_y, val_y, val_y, val_y]),
         batch_size=batch,
         epochs=30,
         shuffle=True,
