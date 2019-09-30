@@ -67,12 +67,20 @@ if __name__ == '__main__':
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
-    checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+
+    checkpoint = ModelCheckpoint(file_path, monitor='val_final_dsc', verbose=1, save_best_only=True, mode='max')
+    # checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
     callbacks_list = [checkpoint, early, redonplat]  # early
 
     batch = 4
+    # history = model.fit(train_x, train_y,
+    #     validation_data=(val_x, val_y),
+    #     batch_size=batch,
+    #     epochs=30,
+    #     shuffle=True,
+    #     callbacks=callbacks_list)
     history = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
         validation_data=(val_x, [val_y[:,::8,::8,:], val_y[:,::4,::4,:], val_y[:,::2,::2,:], val_y]),
         batch_size=batch,
