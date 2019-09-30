@@ -7,7 +7,7 @@ from keras import backend as K
 from keras import losses
 
 def get_unet():
-    inputs = Input(shape = (None, None, 1))
+    inputs = Input(shape = (512, 512, 1))
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
