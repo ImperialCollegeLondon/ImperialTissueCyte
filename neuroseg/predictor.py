@@ -25,6 +25,9 @@ from keras.optimizers import SGD
 from keras import backend as K
 import cv2
 
+import focal_tversky_unetmodel
+import losses
+
 os.environ["OMP_NUM_THREADS"] = str(cpu_count())
 os.environ["KMP_BLOCKTIME"] = "30"
 os.environ["KMP_SETTINGS"] = "1"
@@ -64,17 +67,23 @@ if __name__ == '__main__':
     # model_path = args.modelpath
     # weights_path = args.weightspath
 
+
     model_path = '/Users/gm515/Desktop/2019_09_30_UNet/focal_unet_model.json'
     weights_path = '/Users/gm515/Desktop/2019_09_30_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
-    with open(model_path, 'r') as f:
-        model = model_from_json(f.read())
+    # with open(model_path, 'r') as f:
+    #     model = model_from_json(f.read())
+    # model.load_weights(weights_path)
+
+    sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
+    input_size = (512, 512, 1)
+    model = focal_tversky_unetmodel.attn_reg(sgd, input_size, losses.focal_tversky)
     model.load_weights(weights_path)
 
     images_array = []
 
-    img = np.array(Image.open('/Users/gm515/Desktop/unet-test/00005.tif')).astype(np.float32)
+    img = np.array(Image.open('/Users/gm515/Desktop/unet-test/00003.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
 
     images_array.append(img)
