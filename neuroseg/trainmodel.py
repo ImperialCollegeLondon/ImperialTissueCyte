@@ -73,8 +73,8 @@ if __name__ == '__main__':
     callbacks_list = [checkpoint, early, redonplat]  # early
 
     batch = 4
-    history = model.fit(train_x, [train_y, train_y, train_y, train_y],
-        validation_data=(val_x, [val_y, val_y, val_y, val_y]),
+    history = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
+        validation_data=(val_x, [val_y[:,::8,::8,:], val_y[:,::4,::4,:], val_y[:,::2,::2,:], val_y]),
         batch_size=batch,
         epochs=30,
         shuffle=True,
