@@ -60,33 +60,42 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    model = unetmodel.get_unet()
-    # sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
-    # input_size = (512, 512, 1)
-    # model = focal_tversky_unetmodel.attn_reg(sgd, input_size, losses.focal_tversky)
-
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
-
-    # checkpoint = ModelCheckpoint(file_path, monitor='val_final_dsc', verbose=1, save_best_only=True, mode='max')
-    checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-    early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
-    redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
-    callbacks_list = [checkpoint, early, redonplat]  # early
-
     batch = 4
-    history = model.fit(train_x, train_y,
-        validation_data=(val_x, val_y),
-        batch_size=batch,
-        epochs=30,
-        shuffle=True,
-        callbacks=callbacks_list)
-    # history = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
-    #     validation_data=(val_x, [val_y[:,::8,::8,:], val_y[:,::4,::4,:], val_y[:,::2,::2,:], val_y]),
+
+    # ORIG BATCH NORM LOSS
+    # model = unetmodel.get_unet()
+    #
+    # checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    # early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
+    # redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
+    # callbacks_list = [checkpoint, early, redonplat]  # early
+    #
+    # history = model.fit(train_x, train_y,
+    #     validation_data=(val_x, val_y),
     #     batch_size=batch,
     #     epochs=30,
     #     shuffle=True,
     #     callbacks=callbacks_list)
+
+    # TVERSKY LOSS
+    estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_final_dsc',
+                                 verbose=1, save_best_only=True,
+                                 save_weights_only=True, mode='max')
+
+    sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
+    input_size = (None, None, 1)
+    model = focal_tversky_unetmodel.attn_reg(sgd, input_size, losses.focal_tversky)
+
+    hist = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
+                    validation_data=(val_x, [val_y[:,::8,::8,:], val_y[:,::4,::4,:], val_y[:,::2,::2,:], val_y]),
+                    shuffle=True,
+                    epochs=30,
+                    batch_size=batch,
+                    verbose=True,
+                    callbacks=[checkpoint])
 
     # Serialize model to JSON
     model_json = model.to_json()
