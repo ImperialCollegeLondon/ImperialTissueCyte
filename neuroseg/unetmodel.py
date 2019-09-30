@@ -1,5 +1,6 @@
-from keras.layers import Input, MaxPooling2D
-from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D
+from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Conv2DTranspose
+from keras.layers import Activation, add, multiply, Lambda
+from keras.layers import AveragePooling2D, average, UpSampling2D, Dropout
 from keras.models import Model
 from keras.optimizers import Adam, SGD
 import tensorflow as tf
