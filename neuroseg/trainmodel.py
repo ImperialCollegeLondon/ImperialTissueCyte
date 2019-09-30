@@ -89,8 +89,8 @@ if __name__ == '__main__':
     input_size = (512, 512, 1)
     model = focal_tversky_unetmodel.unet(sgd, input_size, losses.focal_tversky)
 
-    hist = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
-                    validation_data=(val_x, [val_y[:,::8,::8,:], val_y[:,::4,::4,:], val_y[:,::2,::2,:], val_y]),
+    hist = model.fit(train_x, train_y,
+                    validation_data=(val_x, val_y),
                     shuffle=True,
                     epochs=30,
                     batch_size=batch,
