@@ -64,8 +64,8 @@ if __name__ == '__main__':
     # model_path = args.modelpath
     # weights_path = args.weightspath
 
-    model_path = '/Users/gm515/Desktop/_works_2019_09_30_UNet/focal_unet_model.json'
-    weights_path = '/Users/gm515/Desktop/_works_2019_09_30_UNet/focal_unet_weights.best.hdf5'
+    model_path = '/Users/gm515/Desktop/2019_09_30_UNet/focal_unet_model.json'
+    weights_path = '/Users/gm515/Desktop/2019_09_30_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
