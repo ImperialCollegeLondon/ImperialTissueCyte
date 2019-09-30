@@ -86,7 +86,7 @@ if __name__ == '__main__':
                                  save_weights_only=True, mode='max')
 
     sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
-    input_size = (None, None, 1)
+    input_size = (512, 512, 1)
     model = focal_tversky_unetmodel.attn_reg(sgd, input_size, losses.focal_tversky)
 
     hist = model.fit(train_x, [train_y[:,::8,::8,:], train_y[:,::4,::4,:], train_y[:,::2,::2,:], train_y],
