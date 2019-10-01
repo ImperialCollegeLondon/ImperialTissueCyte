@@ -256,7 +256,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
             # Write out results to file
-            csv_file = count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv'
+            csv_file = count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE'+str(slice_number)+'.csv'
 
             while True:
                 try:
