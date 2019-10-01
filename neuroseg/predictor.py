@@ -21,31 +21,31 @@ from PIL import Image
 from multiprocessing import cpu_count
 from natsort import natsorted
 from keras.models import model_from_json
-from keras.optimizers import SGD
-from keras import backend as K
+# from keras.optimizers import SGD
+# from keras import backend as K
 import cv2
 
-import focal_tversky_unetmodel
-import losses
+# import focal_tversky_unetmodel
+# import losses
 
-os.environ["OMP_NUM_THREADS"] = str(cpu_count())
-os.environ["KMP_BLOCKTIME"] = "30"
-os.environ["KMP_SETTINGS"] = "1"
-os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
-
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+# os.environ["OMP_NUM_THREADS"] = str(cpu_count())
+# os.environ["KMP_BLOCKTIME"] = "30"
+# os.environ["KMP_SETTINGS"] = "1"
+# os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
+#
+# os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # Warning supression and allowing large images to be loaded
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-
-config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
-                        inter_op_parallelism_threads = cpu_count(),
-                        allow_soft_placement = True,
-                        device_count = {'CPU': cpu_count() })
-
-session = tf.Session(config=config)
-
-K.set_session(session)
+# os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+#
+# config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
+#                         inter_op_parallelism_threads = cpu_count(),
+#                         allow_soft_placement = True,
+#                         device_count = {'CPU': cpu_count() })
+#
+# session = tf.Session(config=config)
+#
+# K.set_session(session)
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     # weights_path = args.weightspath
 
 
-    model_path = '/Users/gm515/Desktop/_works_TVERSKY_2019_09_30_UNet/focal_unet_model.json'
-    weights_path = '/Users/gm515/Desktop/_works_TVERSKY_2019_09_30_UNet/focal_unet_weights.best.hdf5'
+    model_path = '/Users/gm515/Desktop/_works_anysize_2019_09_30_UNet/focal_unet_model.json'
+    weights_path = '/Users/gm515/Desktop/_works_anysize_2019_09_30_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -83,8 +83,9 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('/Users/gm515/Desktop/unet-test/00005.tif')).astype(np.float32)
+    img = np.array(Image.open('/Users/gm515/Desktop/unet-test/00007.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
+    img_copy = np.copy(img)
 
     images_array.append(img)
     images_array = np.array(images_array)
@@ -94,13 +95,13 @@ if __name__ == '__main__':
 
     pred = np.squeeze(pred[0])
 
-    pred = 255.*(pred - np.min(pred))/(np.max(pred)-np.min(pred))
-    print (np.min(pred), np.max(pred))
+    # contours, hierarchy = cv2.findContours(np.uint8(pred>((np.max(pred)-np.min(pred))/2.)), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    # overlay = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
 
     import matplotlib.pyplot as plt
 
     f, axarr = plt.subplots(1,2)
-    axarr[0].imshow(img)
-    axarr[1].imshow(pred)
+    axarr[0].imshow(img_copy)
+    axarr[1].imshow(pred*img_copy)
     plt.show(block=False)
     plt.tight_layout()
