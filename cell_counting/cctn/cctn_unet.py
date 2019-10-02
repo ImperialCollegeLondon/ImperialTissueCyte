@@ -6,22 +6,8 @@
 Cell Counting in Target Nuclei Script
 Author: Gerald M
 
-This script performs automated cell counting in anatomical structures of
-interest, or a stack of TIFFs. It works by first determining an ideal threshold
-based on the circularity of objects. Then by tracking cells/objects over
-multiple layers to account for oversampling. The output provides a list of
-coordinates for identified cells. This should then be fed into the image
-predictor to confirm whether objects are cells or not.
-
-Version 6 - v6 (Python 3)
-This version incorporates parallelisation using a queuing system and adds new
-circularity threshold from v4. All non-existant structures are removed prior to
-counting. In addition, hemisphere atlas is used to classifier hemispheres.
-Each image file is loaded in sequential order with ALL strucures counted, rather
-than counting in structures in a sequential order (v5). This means the overhead
-of image loading is restricted to once per image rather than individually per
-structure, as before. A file lock and unlock is implemented to allow multiple
-thread writing to the same files.
+Version U-net (Python 3)
+This version uses a UNet to perform semantic segmentation of the images.
 
 Also updated, oversampling correction. Of cells which are now oversampled, the
 middle cell slice value is kept rather than the last detected position as before.
@@ -49,6 +35,7 @@ import time
 import warnings
 import numpy as np
 import nibabel as nib
+import pandas as pd
 from filters.gaussmedfilt import gaussmedfilt
 from filters.adaptcircthresh import adaptcircthresh
 from keras.models import model_from_json
@@ -68,7 +55,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ################################################################################
 
 def slack_message(text, channel, username):
-    from urllib import request
+    from urllib3 import request
     import json
 
     post = {"text": "{0}".format(text),
@@ -194,6 +181,30 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         sys.stdout.write("\nSlice {0} [{1}] {2}% {3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
         sys.stdout.flush()
 
+class Network():
+    def __init__(self):
+        import os
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = "" #0 for GPU
+
+        from keras.models import load_model
+        import keras.backend as K
+        import tensorflow as tf
+        K.set_learning_phase(0)
+        K.set_session(tf.Session())
+
+
+        model_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_model.json'
+        weights_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_weights.best.hdf5'
+
+        # Load the classifier model, initialise and compile
+        with open(model_path, 'r') as f:
+            self.model = model_from_json(f.read())
+        self.model.load_weights(weights_path)
+
+    def predict(self, img, **kwargs):
+        return self.model.predict(img)
+
 def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
     while True:
         item = imagequeue.get()
@@ -204,13 +215,8 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
             centroids = []
 
             if image.shape[0]*image.shape[1] > (radius*2)**2 and np.max(image) != 0.:
-                model_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_model.json'
-                weights_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_weights.best.hdf5'
 
-                # Load the classifier model, initialise and compile
-                with open(model_path, 'r') as f:
-                    model = model_from_json(f.read())
-                model.load_weights(weights_path)
+                model = Network()
 
                 images_array = []
 
@@ -239,24 +245,24 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 image = label(image>0.25, connectivity=image.ndim)
 
                 # Get centroids list as (row, col) or (y, x)
-                centroids = [region.centroid for region in regionprops(image) if region.area>size]
+                centroids = [region.centroid for region in regionprops(image) if ((region.area>size) and (region.area<10*size) and (((4 * math.pi * region.area) / (region.perimeter * region.perimeter))>0.7))]
 
                 # Add 1 to slice number to convert slice in index to slice file number
                 if row_idx is not None:
                     # Convert coordinate of centroid to coordinate of whole image if mask was used
                     if hemseg_image is not None:
-                        coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number+1, int(hemseg_image[celly,cellx]))
+                        coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number, int(hemseg_image[celly,cellx]))
                     else:
-                        coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number+1)
+                        coordfunc = lambda celly, cellx : (col_idx[cellx], row_idx[celly], slice_number)
                 else:
-                    coordfunc = lambda celly, cellx : (cellx, celly, slice_number+1)
+                    coordfunc = lambda celly, cellx : (cellx, celly, slice_number)
 
                 # Centroids are currently (row, col) or (y, x)
                 # Flip order so (x, y) using coordfunc
                 centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
             # Write out results to file
-            csv_file = count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE'+str(slice_number)+'.csv'
+            csv_file = count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv'
 
             while True:
                 try:
@@ -275,7 +281,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                     else:
                         time.sleep(0.1)
 
-            # print('Finished - Queue position: '+str(slice_number)+' Worker ID: '+str(current_process())+' Structure: '+str(name))
+            print('Finished - Queue position: '+str(slice_number)+' Structure: '+str(name))
 
 if __name__ == '__main__':
     ################################################################################
@@ -352,8 +358,8 @@ if __name__ == '__main__':
     # Create directory to hold the counts in parent folder of images
     count_path = '/'+os.path.join(*image_path.split(os.sep)[:-1])
 
-    if not os.path.exists(count_path+'/counts_v6'):
-        os.makedirs(count_path+'/counts_v6')
+    if not os.path.exists(count_path+'/counts_unet'):
+        os.makedirs(count_path+'/counts_unet')
 
     # List of files to count
     count_files = []
@@ -469,7 +475,7 @@ if __name__ == '__main__':
                 # If masking is not required, submit to queue with redundat variables
                 if not mask:
                     imagequeue.put((slice_number, image, [None], [None], [None], count_path, name))
-                    print (image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB')
+                    print (image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n')
                 else:
                     start = time.time()
                     if structure in mask_image:
@@ -513,7 +519,7 @@ if __name__ == '__main__':
                         image_per_structure = None
                         hemseg_image_per_structure = None
 
-                        statustext = image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB'
+                        statustext = image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n'
 
                         progressBar(slice_number, slice_number-zmin, zmax-zmin, statustext)
 
@@ -528,9 +534,11 @@ if __name__ == '__main__':
         print ('')
         print ('Performing oversampling correction...')
 
-        # Oversampling correction
+        # Oversampling correction and table write-out
+        df = pd.DataFrame(columns = ['ROI', 'L', 'R'])
+
         for name in acr:
-            with open(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv') as csvDataFile:
+            with open(count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv') as csvDataFile:
                 csvReader = csv.reader(csvDataFile)
                 centroids = {}
                 for row in csvReader:
@@ -540,13 +548,22 @@ if __name__ == '__main__':
             keepcentroids = oversamplecorr(centroids,radius)
             print (str(sum(map(len, keepcentroids.values())))+' Final corrected count')
 
-            with open(count_path+'/counts_v6/'+str(name)+'_v6_count.csv', 'w+') as f:
+            with open(count_path+'/counts_unet/'+str(name)+'_unet_count.csv', 'w+') as f:
                 for key in sorted(keepcentroids.keys()):
                     if len(keepcentroids[key]) > 0:
                         csv.writer(f, delimiter=',').writerows([val for val in keepcentroids[key]])
 
-            os.remove(count_path+'/counts_v6/'+str(name)+'_v6_count_INQUEUE.csv')
+            os.remove(count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv')
             print (name+' oversampling done')
+
+            keepcentroids = pd.read_csv(count_path+'/counts_unet/'+str(name)+'_unet_count.csv', names=['X', 'Y', 'Z', 'Hemisphere'])
+            leftcells = len(keepcentroids.loc[keepcentroids['Hemisphere']==0])
+            rightcells = len(keepcentroids.loc[keepcentroids['Hemisphere']==1])
+
+            df = df.append({'ROI':name, 'L':leftcells, 'R':rightcells}, ignore_index=True)
+
+            # Write dataframe to csv
+            df.to_csv(count_path+'/counts_unet/_counts_table.csv', index=False)
 
     print ('')
     print ('~Fin~')

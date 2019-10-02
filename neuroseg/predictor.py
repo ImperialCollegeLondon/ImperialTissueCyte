@@ -102,6 +102,6 @@ if __name__ == '__main__':
 
     f, axarr = plt.subplots(1,2)
     axarr[0].imshow(img_copy)
-    axarr[1].imshow(pred>0.25)
+    axarr[1].imshow(pred>0.9)
     plt.show(block=False)
     plt.tight_layout()
