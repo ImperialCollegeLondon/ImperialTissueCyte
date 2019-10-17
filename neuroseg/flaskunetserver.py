@@ -7,17 +7,16 @@
 #	python simple_request.py
 
 # import the necessary packages
-from keras.applications import ResNet50
-from keras.preprocessing.image import img_to_array
-from keras.applications import imagenet_utils
 from keras.models import model_from_json
 import tensorflow as tf
 from PIL import Image
 import numpy as np
 import flask
-import io
+import os
 import requests
 import keras.backend as K
+
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 K.set_learning_phase(0)
 K.set_session(tf.Session())

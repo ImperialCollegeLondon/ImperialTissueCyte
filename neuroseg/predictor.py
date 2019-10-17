@@ -13,6 +13,7 @@ import pickle
 import sys
 import tifffile
 import time
+import math
 import warnings
 import numpy as np
 import pandas as pd
@@ -83,9 +84,14 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('00007.tif')).astype(np.float32)
+    img = np.array(Image.open('/Volumes/thefarm2/live/TissueCyte/FILM_Confocal_HET190213/Experiment_002/SOX14HET_121218_TiledIMGLeftThalamus_x20_Slide12/ROI_1.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
     img_copy = np.copy(img)
+
+    orig_shape = img.shape
+
+    newshape = tuple((int( 16 * math.ceil( i / 16. )) for i in orig_shape))
+    img = np.pad(img, ((0,np.subtract(newshape,orig_shape)[0]),(0,np.subtract(newshape,orig_shape)[1])), 'constant')
 
     images_array.append(img)
     images_array = np.array(images_array)
@@ -95,6 +101,8 @@ if __name__ == '__main__':
 
     pred = np.squeeze(pred[0])
 
+    pred = pred[0:orig_shape[0],0:orig_shape[1]]
+
     # contours, hierarchy = cv2.findContours(np.uint8(pred>((np.max(pred)-np.min(pred))/2.)), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     # overlay = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
 
@@ -102,6 +110,6 @@ if __name__ == '__main__':
 
     f, axarr = plt.subplots(1,2)
     axarr[0].imshow(img_copy)
-    axarr[1].imshow(pred>0.9)
+    axarr[1].imshow(pred>0.25)
     plt.show(block=False)
     plt.tight_layout()
