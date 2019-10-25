@@ -7,23 +7,32 @@
 #	python simple_request.py
 
 # import the necessary packages
-from keras.models import model_from_json
+from __future__ import absolute_import, division, print_function, unicode_literals
+from tensorflow.keras.models import model_from_json
+# import tensorflow.compat.v1 as tf
 import tensorflow as tf
 from PIL import Image
+from multiprocessing import cpu_count
 import numpy as np
-import flask
-import os
-import requests
-import keras.backend as K
-
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-K.set_learning_phase(0)
-K.set_session(tf.Session())
+import tensorflow.keras.backend as K
 
 # initialize our Flask application and the Keras model
+import flask
 app = flask.Flask(__name__)
-model = None
+
+K.clear_session()
+K.set_learning_phase(0)
+
+GPU = False
+
+if not GPU:
+    import os
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+    print ('Using CPU.')
+else:
+    print ('Using GPU.')
 
 def load_model():
     # load the pre-trained Keras model (here we are using a model
@@ -32,8 +41,8 @@ def load_model():
     global model
     global graph
 
-    model_path = 'models/2019_09_30_UNet/focal_unet_model.json'
-    weights_path = 'models/2019_09_30_UNet/focal_unet_weights.best.hdf5'
+    model_path = '../models/2019_09_30_UNet/focal_unet_model.json'
+    weights_path = '../models/2019_09_30_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -41,7 +50,7 @@ def load_model():
     model.load_weights(weights_path)
 
     model._make_predict_function()
-    graph = tf.get_default_graph()
+    # graph = tf.get_default_graph()
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -59,8 +68,8 @@ def predict():
             image = image.reshape(shape)
 
             # Predict
-            with graph.as_default():
-                preds = model.predict(image)
+            # with graph.as_default():
+            preds = model.predict(image)
             preds = np.squeeze(preds[0])
 
             # Add prediction to dictionary as a list (array does not work)
@@ -72,13 +81,9 @@ def predict():
     # Return the result
     return flask.jsonify(data)
 
+print("* Loading Keras model and Flask starting server...")
 
-# if this is the main thread of execution first load the model and
-# then start the server
-# This should go into the main function of cctn_unet
+load_model()
+
 if __name__ == "__main__":
-    print("* Loading Keras model and Flask starting server...")
-
-    load_model()
-
-    app.run(threaded=True)
+    app.run(host='0.0.0.0')
