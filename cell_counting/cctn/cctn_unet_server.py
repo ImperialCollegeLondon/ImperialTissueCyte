@@ -233,7 +233,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 # Image.fromarray(np.uint8((image>0.25)*255)).save('/Users/gm515/Desktop/pred/'+str(slice_number)+'.tif')
 
                 # Remove objects smaller than chosen size
-                image = label(image>0.25, connectivity=image.ndim)
+                image = label(image>0.7 connectivity=image.ndim)
 
                 # Get centroids list as (row, col) or (y, x)
                 centroids = [region.centroid for region in regionprops(image) if ((region.area>size) and (region.area<10*size) and (((4 * math.pi * region.area) / (region.perimeter * region.perimeter))>0.7))]
