@@ -1,10 +1,5 @@
-# USAGE
-# Start the server:
-# 	python run_keras_server.py
-# Submit a request via cURL:
-# 	curl -X POST -F image=@dog.jpg 'http://localhost:5000/predict'
-# Submita a request via Python:
-#	python simple_request.py
+# Run with gunicorn using the following:
+#       gunicorn --bind 0.0.0.0:5000 wsgi:app
 
 # import the necessary packages
 from __future__ import absolute_import, division, print_function, unicode_literals
