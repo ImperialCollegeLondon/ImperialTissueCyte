@@ -470,6 +470,13 @@ if __name__ == '__main__':
                 else:
                     start = time.time()
                     if structure in mask_image:
+                        memorycheck = False
+                        while not memorycheck:
+                            if psutil.virtual_memory().percent < 80.0:
+                                memorycheck = True
+                            else:
+                                print ('Warning! Memory too high. Waiting for memory release.')
+                                time.sleep(3)
                         # Resize mask
 
                         start = time.time()
