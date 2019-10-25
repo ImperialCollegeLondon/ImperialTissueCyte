@@ -497,8 +497,8 @@ if __name__ == '__main__':
 
                         mask_image_per_structure = cv2.medianBlur(np.array(mask_image_per_structure).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 
-                        # image_per_structure[mask_image_per_structure==0] = 0
-                        image_per_structure = image_per_structure[mask_image_per_structure>0]
+                        image_per_structure[mask_image_per_structure==0] = 0
+                        # image_per_structure = image_per_structure[mask_image_per_structure>0]
 
                         # Keep track of pixel volume
                         # pxvolume += mask_image_per_structure.any(axis=-1).sum()
