@@ -470,6 +470,7 @@ if __name__ == '__main__':
                 else:
                     start = time.time()
                     if structure in mask_image:
+                        # Check memory use doesn't go above 80%, otherwise wait
                         memorycheck = False
                         while not memorycheck:
                             if psutil.virtual_memory().percent < 80.0:
@@ -477,10 +478,8 @@ if __name__ == '__main__':
                             else:
                                 print ('Warning! Memory too high. Waiting for memory release.')
                                 time.sleep(3)
+
                         # Resize mask
-
-                        start = time.time()
-
                         mask_image_per_structure = np.copy(mask_image)
                         mask_image_per_structure[mask_image_per_structure!=structure] = 0
 
@@ -489,18 +488,17 @@ if __name__ == '__main__':
                         row_idx = idx[0].flatten()
                         col_idx = idx[1].flatten()
 
-                        # Apply crop to image and mask then apply mask
+                        # Apply crop to image and mask, then apply mask
                         image_per_structure = np.copy(image)[idx]
                         mask_image_per_structure = mask_image_per_structure[idx]
 
-                        start = time.time()
-                        image_per_structure = image_per_structure.astype(float)
-                        # image_per_structure = np.multiply(np.divide(image_per_structure,np.max(image_per_structure)), 255.)
+                        #image_per_structure = image_per_structure.astype(float)
                         image_per_structure *= 255./image_max
 
                         mask_image_per_structure = cv2.medianBlur(np.array(mask_image_per_structure).astype(np.uint8), 121) # Apply median filter to massively reduce box like boundary to upsized mask
 
-                        image_per_structure[mask_image_per_structure==0] = 0
+                        # image_per_structure[mask_image_per_structure==0] = 0
+                        image_per_structure = image_per_structure[mask_image_per_structure>0]
 
                         # Keep track of pixel volume
                         # pxvolume += mask_image_per_structure.any(axis=-1).sum()
