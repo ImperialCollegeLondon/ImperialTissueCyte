@@ -29,6 +29,12 @@ if not GPU:
 else:
     print ('Using GPU.')
 
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True
+sess = tf.Session(config=config)
+
+K.set_session(sess)
+
 def load_model():
     # load the pre-trained Keras model (here we are using a model
     # pre-trained on ImageNet and provided by Keras, but you can
