@@ -33,6 +33,7 @@ config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth=True
 sess = tf.compat.v1.Session(config=config)
 
+import keras.backend.tensorflow_backend as K
 K.set_session(sess)
 
 def load_model():
