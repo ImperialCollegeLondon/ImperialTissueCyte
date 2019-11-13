@@ -466,7 +466,7 @@ if __name__ == '__main__':
                 # If masking is not required, submit to queue with redundat variables
                 if not mask:
                     imagequeue.put((slice_number, image, [None], [None], [None], count_path, name))
-                    print (image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n')
+                    print (image_path.split(os.sep)[-3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n')
                 else:
                     start = time.time()
                     if structure in mask_image:
@@ -515,7 +515,7 @@ if __name__ == '__main__':
                         image_per_structure = None
                         hemseg_image_per_structure = None
 
-                        statustext = image_path.split(os.sep)[3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n'
+                        statustext = image_path.split(os.sep)[-3]+' Added slice: '+str(slice_number)+' Queue position: '+str(slice_number-zmin)+' Structure: '+str(name)+' [Memory info] Usage: '+str(psutil.virtual_memory().percent)+'% - '+str(int(psutil.virtual_memory().used*1e-6))+' MB\n'
 
                         progressBar(slice_number, slice_number-zmin, zmax-zmin, statustext)
 
@@ -574,7 +574,7 @@ if __name__ == '__main__':
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    text = 'Counting completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
+    text = 'Counting in %s completed in %02d:%02d:%02d:%02d' %(image_path.split(os.sep)[-3], days, hours, minutes, seconds)
 
     print (text)
     slack_message(text, '#cctn', 'CCTN')

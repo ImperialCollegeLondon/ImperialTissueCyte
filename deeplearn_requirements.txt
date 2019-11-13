@@ -1,0 +1,59 @@
+#############################################################
+
+This is everything required to get a deeplearning environment
+up and running. This should all be installed after a fresh
+anaconda environment is created. Works for flask server
+deployment with gunicorn and requests.
+
+#############################################################
+
+# Keras
+conda install -c anaconda keras-gpu -y
+#conda install -c anaconda keras
+
+# Pandas plus excel libraries
+conda install -c anaconda pandas -y
+conda install -c anaconda xlrd -y
+conda install -c anaconda xlwt -y
+
+# Scikit-learn
+conda install -c anaconda scikit-learn -y
+
+# Pillow-simd (hack version)
+pip install -U --force-reinstall pillow-simd --global-option="build_ext" --global-option="--disable-zlib" --global-option="--disable-jpeg"
+
+# Python
+conda install -c anaconda ipython -y
+
+# Flask
+conda install -c conda-forge flask -y
+
+# Gunicorn
+conda install -c conda-forge gunicorn -y
+
+# OpenCV (cv2)
+conda install -c conda-forge opencv -y
+
+# Glob
+conda install -c conda-forge glob2 -y
+
+# Tifffile
+conda install -c conda-forge tifffile -y
+
+# Natsort
+conda install -c conda-forge natsort -y
+
+# Nibabel
+conda install -c conda-forge nibabel -y
+
+# Skikit
+conda install -c conda-forge scikit-image -y
+
+# Urllib3
+conda install -c conda-forge urllib3 -y
+
+# Psutil
+conda install -c anaconda psutil -y
+
+# Requests
+conda install -c conda-forge requests -y
