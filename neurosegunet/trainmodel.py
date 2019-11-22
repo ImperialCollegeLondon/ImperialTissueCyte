@@ -85,7 +85,7 @@ if __name__ == '__main__':
     class0weights = class0size/combinedsize
     class1weights = 1-class0weights
     classweights = {0:class0weights, 1:class1weights}
-    sampleweights = len(train_x) * [[class0weights, class1weights]]
+    sampleweights = np.array(len(train_x) * [[class0weights, class1weights]])
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
