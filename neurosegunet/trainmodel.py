@@ -95,8 +95,7 @@ if __name__ == '__main__':
         batch_size=batch,
         epochs=30,
         shuffle=True,
-        callbacks=callbacks_list,
-        sample_weight=sampleweights)
+        callbacks=callbacks_list)
 
     # TVERSKY LOSS
     # estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
