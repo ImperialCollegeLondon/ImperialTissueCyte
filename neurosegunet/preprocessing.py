@@ -72,7 +72,7 @@ def preprocess():
 
     print ('Performing augmentation on training data...')
 
-    n=4*len(training_images_data)
+    n=5*len(training_images_data)
     augmentation.augment('data/training-data',n)
 
     aug_images = glob.glob('data/training-data/images/images_original*')
@@ -88,7 +88,7 @@ def preprocess():
 
     print ('Performing augmentation on test data...')
 
-    n=4*len(test_images_data)
+    n=5*len(test_images_data)
     augmentation.augment('data/test-data',n)
 
     aug_images = glob.glob('data/test-data/images/images_original*')

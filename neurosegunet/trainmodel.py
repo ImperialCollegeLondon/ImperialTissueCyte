@@ -78,19 +78,6 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    # Determine weights for classes using training data
-    combinedsize = train_x.shape[0]*train_x.shape[1]*train_x.shape[2]
-    class1size = np.sum(train_x)
-    class0size = combinedsize-np.sum(train_x)
-    class0weights = class0size/combinedsize
-    class1weights = 1-class0weights
-    classweights = {0:class0weights, 1:class1weights}
-    sampleweights = np.array(len(train_x) * [[class0weights, class1weights]])
-
-    sampleweights = np.where(train_y==0, class0weights, train_y)
-    sampleweights = np.where(sampleweights==1, class1weights, sampleweights)
-    sampleweights = sampleweights.reshape((len(train_x),512, 512))
-
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
     batch = 4

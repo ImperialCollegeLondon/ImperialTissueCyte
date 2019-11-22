@@ -46,6 +46,7 @@ def get_unet():
 
     model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'], sample_weight_mode="temporal")
+    # model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = losses.focal_tversky, metrics = ['accuracy'])
 
     return model
