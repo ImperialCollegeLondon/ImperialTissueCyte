@@ -78,6 +78,14 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
+    # Determine weights for classes using training data
+    combinedsize = train_x.shape[0]*train_x.shape[1]*train_x.shape[2]
+    class1size = np.sum(train_x)
+    class0size = combinedsize-np.sum(train_x)
+    class0weights = class0size/combinedsize
+    class1weights = 1-class0weights
+    classweights = {0:class0weights, 1:class1weights}
+
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
     batch = 4
@@ -95,7 +103,8 @@ if __name__ == '__main__':
         batch_size=batch,
         epochs=30,
         shuffle=True,
-        callbacks=callbacks_list)
+        callbacks=callbacks_list,
+        class_weights=classweights)
 
     # TVERSKY LOSS
     # estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
