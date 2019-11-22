@@ -6,13 +6,13 @@ import os
 import datetime
 import numpy as np
 from PIL import Image
-from keras import backend as K
-from keras import losses
-from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from keras.layers import Input, MaxPooling2D
-from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU
-from keras.models import Model
-from keras.optimizers import Adam, SGD
+from tensorflow.keras import backend as K
+from tensorflow.keras import losses
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.layers import Input, MaxPooling2D
+from tensorflow.keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam, SGD
 from numpy import random
 import tensorflow as tf
 from multiprocessing import cpu_count
@@ -22,22 +22,40 @@ import preprocessing
 import focal_tversky_unetmodel
 import losses
 
-config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
-                        inter_op_parallelism_threads = cpu_count(),
-                        allow_soft_placement = True,
-                        device_count = {'CPU': cpu_count() })
+# GPU = False
+#
+# if not GPU:
+#     import os
+#     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#     os.environ["CUDA_VISIBLE_DEVICES"] = ""
+#
+#     print ('Using CPU.')
+# else:
+#     print ('Using GPU.')
+#
+# config = tf.compat.v1.ConfigProto()
+# config.gpu_options.allow_growth=True
+# sess = tf.compat.v1.Session(config=config)
+#
+# import keras.backend.tensorflow_backend as K
+# K.set_session(sess)
 
-session = tf.Session(config=config)
-
-K.tensorflow_backend._get_available_gpus()
-K.set_session(session)
-
-os.environ["OMP_NUM_THREADS"] = str(cpu_count())
-os.environ["KMP_BLOCKTIME"] = "30"
-os.environ["KMP_SETTINGS"] = "1"
-os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
-
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+# config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads = cpu_count(),
+#                         inter_op_parallelism_threads = cpu_count(),
+#                         allow_soft_placement = True,
+#                         device_count = {'CPU': cpu_count() })
+#
+# session = tf.compat.v1.Session(config=config)
+#
+# K.tensorflow_backend._get_available_gpus()
+# K.set_session(session)
+#
+# os.environ["OMP_NUM_THREADS"] = str(cpu_count())
+# os.environ["KMP_BLOCKTIME"] = "30"
+# os.environ["KMP_SETTINGS"] = "1"
+# os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
+#
+# os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -71,11 +89,11 @@ if __name__ == '__main__':
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
     callbacks_list = [checkpoint, early, redonplat]  # early
-    
+
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=30,
+        epochs=10, # 30
         shuffle=True,
         callbacks=callbacks_list)
 

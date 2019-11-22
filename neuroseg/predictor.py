@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('/Volumes/thefarm2/live/TissueCyte/FILM_Confocal_HET190213/Experiment_002/SOX14HET_121218_TiledIMGLeftThalamus_x20_Slide12/ROI_1.tif')).astype(np.float32)
+    img = np.array(Image.open('testprediction/00007.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
     img_copy = np.copy(img)
 
@@ -110,6 +110,6 @@ if __name__ == '__main__':
 
     f, axarr = plt.subplots(1,2)
     axarr[0].imshow(img_copy)
-    axarr[1].imshow(pred>0.25)
+    axarr[1].imshow(pred)
     plt.show(block=False)
     plt.tight_layout()
