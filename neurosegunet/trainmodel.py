@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     sampleweights = np.where(train_y==0, class0weights, train_y)
     sampleweights = np.where(sampleweights==1, class1weights, sampleweights)
-    sampleweights = sampleweights.reshape((len(train_x),-1))
+    sampleweights = sampleweights.reshape((len(train_x),512, 512))
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
