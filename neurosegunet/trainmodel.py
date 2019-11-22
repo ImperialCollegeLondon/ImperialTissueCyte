@@ -104,7 +104,7 @@ if __name__ == '__main__':
         epochs=30,
         shuffle=True,
         callbacks=callbacks_list,
-        class_weight=classweights)
+        sample_weight=classweights)
 
     # TVERSKY LOSS
     # estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
