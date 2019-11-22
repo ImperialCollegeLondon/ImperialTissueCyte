@@ -87,6 +87,9 @@ if __name__ == '__main__':
     classweights = {0:class0weights, 1:class1weights}
     sampleweights = np.array(len(train_x) * [[class0weights, class1weights]])
 
+    sampleweights = np.where(train_y==0, class0weights, train_y)
+    sampleweights = np.where(sampleweights==1, class1weights, sampleweights) 
+
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
     batch = 4
