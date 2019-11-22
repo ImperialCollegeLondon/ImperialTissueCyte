@@ -45,7 +45,6 @@ from skimage import io
 from natsort import natsorted
 from filters.rollingballfilt import rolling_ball_filter
 from multiprocessing import Pool, Queue
-import tensorflow.keras.backend as K
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -66,7 +65,7 @@ def slack_message(text, channel, username):
 
     try:
         json_data = json.dumps(post)
-        req = request.Request('https://hooks.slack.com/services/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',
+        req = request.post('https://hooks.slack.com/services/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',
             data=json_data.encode('ascii'),
             headers={'Content-Type': 'application/json'})
         request.urlopen(req)
@@ -184,13 +183,9 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
 
 class Network():
     def __init__(self):
-        import tensorflow as tf
-        config = tf.compat.v1.ConfigProto()
-        config.gpu_options.allow_growth=True
-        sess = tf.compat.v1.Session(config=config)
-
-        import keras.backend.tensorflow_backend as K
-        K.set_session(sess)
+        import os
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = "" #0 for GPU
 
         from keras.models import load_model
         import keras.backend as K
@@ -198,17 +193,6 @@ class Network():
         K.set_learning_phase(0)
         K.set_session(tf.Session())
 
-        GPU = False
-
-        if not GPU:
-            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-            print ('Using CPU.')
-        else:
-            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-            print ('Using GPU.')
 
         model_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_model.json'
         weights_path = '../../neuroseg/models/2019_09_30_UNet/focal_unet_weights.best.hdf5'
@@ -217,8 +201,6 @@ class Network():
         with open(model_path, 'r') as f:
             self.model = model_from_json(f.read())
         self.model.load_weights(weights_path)
-
-        model._make_predict_function()
 
     def predict(self, img, **kwargs):
         return self.model.predict(img)
@@ -260,7 +242,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 # Image.fromarray(np.uint8((image>0.25)*255)).save('/Users/gm515/Desktop/pred/'+str(slice_number)+'.tif')
 
                 # Remove objects smaller than chosen size
-                image = label(image>0.5, connectivity=image.ndim)
+                image = label(image>0.25, connectivity=image.ndim)
 
                 # Get centroids list as (row, col) or (y, x)
                 centroids = [region.centroid for region in regionprops(image) if ((region.area>size) and (region.area<10*size) and (((4 * math.pi * region.area) / (region.perimeter * region.perimeter))>0.7))]
@@ -497,16 +479,10 @@ if __name__ == '__main__':
                 else:
                     start = time.time()
                     if structure in mask_image:
-                        # Check memory use doesn't go above 80%, otherwise wait
-                        memorycheck = False
-                        while not memorycheck:
-                            if psutil.virtual_memory().percent < 80.0:
-                                memorycheck = True
-                            else:
-                                print ('Warning! Memory too high. Waiting for memory release.')
-                                time.sleep(3)
-
                         # Resize mask
+
+                        start = time.time()
+
                         mask_image_per_structure = np.copy(mask_image)
                         mask_image_per_structure[mask_image_per_structure!=structure] = 0
 
@@ -519,6 +495,8 @@ if __name__ == '__main__':
                         image_per_structure = np.copy(image)[idx]
                         mask_image_per_structure = mask_image_per_structure[idx]
 
+                        start = time.time()
+                        image_per_structure = image_per_structure.astype(float)
                         # image_per_structure = np.multiply(np.divide(image_per_structure,np.max(image_per_structure)), 255.)
                         image_per_structure *= 255./image_max
 
@@ -556,8 +534,10 @@ if __name__ == '__main__':
         print ('')
         print ('Performing oversampling correction...')
 
+        # Oversampling correction and table write-out
+        df = pd.DataFrame(columns = ['ROI', 'L', 'R'])
+
         for name in acr:
-            print (name+' oversampling correction')
             with open(count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv') as csvDataFile:
                 csvReader = csv.reader(csvDataFile)
                 centroids = {}
@@ -566,6 +546,7 @@ if __name__ == '__main__':
 
             print (str(sum(map(len, centroids.values())))+' Original uncorrected count')
             keepcentroids = oversamplecorr(centroids,radius)
+            print (str(sum(map(len, keepcentroids.values())))+' Final corrected count')
 
             with open(count_path+'/counts_unet/'+str(name)+'_unet_count.csv', 'w+') as f:
                 for key in sorted(keepcentroids.keys()):
@@ -573,27 +554,18 @@ if __name__ == '__main__':
                         csv.writer(f, delimiter=',').writerows([val for val in keepcentroids[key]])
 
             os.remove(count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv')
+            print (name+' oversampling done')
 
-        # Oversampling correction and table write-out
-        df = pd.DataFrame(columns = ['ROI', 'L', 'R'])
-
-        for file in glob.glob(count_path+'/counts_unet/*_unet_count.csv'):
-            keepcentroids = pd.read_csv(file, names=['X', 'Y', 'Z', 'Hemisphere'])
+            keepcentroids = pd.read_csv(count_path+'/counts_unet/'+str(name)+'_unet_count.csv', names=['X', 'Y', 'Z', 'Hemisphere'])
             leftcells = len(keepcentroids.loc[keepcentroids['Hemisphere']==0])
             rightcells = len(keepcentroids.loc[keepcentroids['Hemisphere']==1])
 
-            name = os.path.basename(file).replace('_unet_count.csv', '')
-
-            print (name+', '+str(leftcells+rightcells)+' Final corrected count, L: '+str(leftcells)+' R: '+str(rightcells))
-
             df = df.append({'ROI':name, 'L':leftcells, 'R':rightcells}, ignore_index=True)
 
-        # Write dataframe to csv
-        with open(count_path+'/counts_unet/_counts_table.csv', 'w') as f:
-            df.to_csv(f, index=False)
+            # Write dataframe to csv
+            df.to_csv(count_path+'/counts_unet/_counts_table.csv', index=False)
 
-        print ('')
-
+    print ('')
     print ('~Fin~')
     print (count_path)
 
