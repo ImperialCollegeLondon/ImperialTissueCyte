@@ -1,6 +1,7 @@
-from tensorflow.keras import Input, Model, losses
+from tensorflow.keras import Input, Model
 from tensorflow.keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D, MaxPooling2D
 from tensorflow.keras.optimizers import Adam, SGD
+import losses
 
 def get_unet():
     inputs = Input(shape = (None, None, 1))
