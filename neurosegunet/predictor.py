@@ -33,11 +33,6 @@ if __name__ == '__main__':
         model = model_from_json(f.read())
     model.load_weights(weights_path)
 
-    # sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
-    # input_size = (None, None, 1)
-    # model = focal_tversky_unetmodel.unet(sgd, input_size, losses.focal_tversky)
-    # model.load_weights(weights_path)
-
     images_array = []
 
     img = np.array(Image.open('test1.tif')).astype(np.float32)
