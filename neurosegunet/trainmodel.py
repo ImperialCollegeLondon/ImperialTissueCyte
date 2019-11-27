@@ -19,7 +19,6 @@ from multiprocessing import cpu_count
 from random import randint
 import unetmodel
 import preprocessing
-import focal_tversky_unetmodel
 import losses
 
 if __name__ == '__main__':
