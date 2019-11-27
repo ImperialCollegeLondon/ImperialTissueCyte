@@ -136,17 +136,19 @@ def preprocess():
         training_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(training_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
-        training_data_masks[idx] = img
+        if np.max(img) != 0:
+            img[img < (np.min(img)+np.max(img))/2] = 0.
+            img[img >= (np.min(img)+np.max(img))/2] = 1.
+            training_data_masks[idx] = img
 
     for idx, img in enumerate(test_data_images):
         test_data_images[idx] = (img-np.min(img))/(np.max(img)-np.min(img))
 
     for idx, img in enumerate(test_data_masks):
-        img[img < (np.min(img)+np.max(img))/2] = 0.
-        img[img >= (np.min(img)+np.max(img))/2] = 1.
-        test_data_masks[idx] = img
+        if np.max(img) != 0:
+            img[img < (np.min(img)+np.max(img))/2] = 0.
+            img[img >= (np.min(img)+np.max(img))/2] = 1.
+            test_data_masks[idx] = img
 
     print ('Done!')
 
@@ -159,7 +161,7 @@ def preprocess():
 
     training_masks_idx = []
     for idx, img in enumerate(training_data_masks):
-        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
+        if np.isnan(np.min(img) * np.max(img)):
             training_masks_idx.append(idx)
 
     test_images_idx = []
@@ -169,7 +171,7 @@ def preprocess():
 
     test_masks_idx = []
     for idx, img in enumerate(test_data_masks):
-        if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
+        if np.isnan(np.min(img) * np.max(img)):
             test_masks_idx.append(idx)
 
     if len(training_images_idx) > 0:
