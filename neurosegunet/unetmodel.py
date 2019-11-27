@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
 import losses
 
-def get_unet():
+def get_unet(lossfn):
     inputs = Input(shape = (None, None, 1))
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -48,7 +48,6 @@ def get_unet():
 
     model = Model(inputs, conv10)
 
-    # model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['acc', losses.dice_loss])
-    model.compile(optimizer = Adam(lr = 1e-4), loss = [losses.binary_focal_loss(alpha=.25, gamma=2)], metrics = ['acc', losses.dice_loss])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = ['acc', losses.dice_loss])
 
     return model
