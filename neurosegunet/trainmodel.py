@@ -22,41 +22,6 @@ import preprocessing
 import focal_tversky_unetmodel
 import losses
 
-# GPU = False
-#
-# if not GPU:
-#     import os
-#     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-#     os.environ["CUDA_VISIBLE_DEVICES"] = ""
-#
-#     print ('Using CPU.')
-# else:
-#     print ('Using GPU.')
-#
-# config = tf.compat.v1.ConfigProto()
-# config.gpu_options.allow_growth=True
-# sess = tf.compat.v1.Session(config=config)
-#
-# import keras.backend.tensorflow_backend as K
-# K.set_session(sess)
-
-# config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads = cpu_count(),
-#                         inter_op_parallelism_threads = cpu_count(),
-#                         allow_soft_placement = True,
-#                         device_count = {'CPU': cpu_count() })
-#
-# session = tf.compat.v1.Session(config=config)
-#
-# K.tensorflow_backend._get_available_gpus()
-# K.set_session(session)
-#
-# os.environ["OMP_NUM_THREADS"] = str(cpu_count())
-# os.environ["KMP_BLOCKTIME"] = "30"
-# os.environ["KMP_SETTINGS"] = "1"
-# os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
-#
-# os.environ['KMP_DUPLICATE_LIB_OK']='True'
-
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--dropout", required=False,
@@ -96,24 +61,6 @@ if __name__ == '__main__':
         epochs=30,
         shuffle=True,
         callbacks=callbacks_list)
-
-    # TVERSKY LOSS
-    # estop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='auto')
-    # checkpoint = ModelCheckpoint(file_path, monitor='val_dsc',
-    #                              verbose=1, save_best_only=True,
-    #                              save_weights_only=True, mode='max')
-    #
-    # sgd = SGD(lr=0.01, momentum=0.90, decay=1e-6)
-    # input_size = (None, None, 1)
-    # model = focal_tversky_unetmodel.unet(sgd, input_size, losses.focal_tversky)
-    #
-    # hist = model.fit(train_x, train_y,
-    #                 validation_data=(val_x, val_y),
-    #                 shuffle=True,
-    #                 epochs=30,
-    #                 batch_size=batch,
-    #                 verbose=True,
-    #                 callbacks=[checkpoint])
 
     # Serialize model to JSON
     model_json = model.to_json()

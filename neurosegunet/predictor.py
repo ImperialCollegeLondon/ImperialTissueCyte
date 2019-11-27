@@ -25,8 +25,8 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 
 if __name__ == '__main__':
-    model_path = 'models/2019_11_25_UNet/focal_unet_model.json'
-    weights_path = 'models/2019_11_25_UNet/focal_unet_weights.best.hdf5'
+    model_path = 'models/2019_11_26_UNet_bce/focal_unet_model.json'
+    weights_path = 'models/2019_11_26_UNet_bce/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('test1.tif')).astype(np.float32)
+    img = np.array(Image.open('test.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
     img_copy = np.copy(img)
 

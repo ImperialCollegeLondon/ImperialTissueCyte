@@ -1,6 +1,7 @@
 from tensorflow.keras import Input, Model
 from tensorflow.keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D, MaxPooling2D
 from tensorflow.keras.optimizers import Adam, SGD
+import tensorflow.keras.backend as K
 import losses
 
 def get_unet():
@@ -47,7 +48,7 @@ def get_unet():
 
     model = Model(inputs, conv10)
 
-    # model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    model.compile(optimizer = Adam(lr = 1e-4), loss = losses.focal_tversky, metrics = ['accuracy'])
+    # model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['acc', losses.dice_loss])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = losses.focal_tversky, metrics = ['acc', losses.dice_loss])
 
     return model
