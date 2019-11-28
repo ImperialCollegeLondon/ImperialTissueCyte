@@ -1,9 +1,7 @@
 # About Imperial TissueVision Stitching Files
-**Update 30/08/18** There is now a slightly parallelised version of the code `parasyncstiticGM.m` in Python, to help speed up processing. Currently it is only slightly faster due to the way the stitching is performed!
-
 This wiki contains details about the stitching scripts written at Imperial College London to improve upon the original stitching pipeline (see [Original TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Original_TissueVision_Stitching_Files)).
 
-Stitching scripts are written in both MATLAB (deprecated) and Python and both require the Grid/Collection stitching plugin in ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (if using MATLAB) (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the MATLAB stitching can be executed. **The Python scripts require much less set-up and is recommended. The only requirement is to install the required list of packages.**
+Stitching scripts are written in both MATLAB (deprecated) and Python version 3, and both require the Grid/Collection stitching plugin in ImageJ/Fiji. To enable MATLAB to communicate with ImageJ/Fiji, a Java package called MIJ (MATLAB-ImageJ) needs to be installed (if using MATLAB) (see below for installation instructions) and MATLAB also needs to run with a Java version 8 environment. Due to these requirements, there is a sequence of set-up steps that need to be performed before the MATLAB stitching can be executed. **The Python scripts require much less set-up and is recommended. The only requirement is to install the required list of packages.**
 
 Unfortunately, there exists a bug with ImageJ/Fiji Bioformats (an image reading module) which struggles to import images which reside on a network drive. The code therefore has a loophole which saves the pre-processed image data to a local directory. However, this requires at least 1 GB of available space on your local hard drive to avoid storage issues.
 
@@ -13,8 +11,8 @@ The Grid/Collection stitching plugin has a _secret_ parameter which can be added
 
 To set up your workstation to perform the stitching, follow the required installation steps for both MATLAB (deprecated) and Python below, then follow the more specific instructions for your programming language of choice.
 
-# Installation required for both MATLAB and Python Versions
-The following is required for both the MATLAB and Python version of the stitching pipeline.
+# Installation required for both MATLAB (deprecated) and Python 3 Versions
+The following is required for both the MATLAB (deprecated) and Python version of the stitching pipeline.
 
 ## Fiji set-up
 1. Download ImageJ/Fiji if not already installed (get Fiji which is a glorified ImageJ, not just the basic ImageJ version).
@@ -23,8 +21,8 @@ The following is required for both the MATLAB and Python version of the stitchin
 4. Close Fiji for the effect to take place. 
 5. Finally, download the `OverlapY.ijm` file and move it to the `Plugins` folder of your ImageJ/Fiji application. On MacOS this is found by right clicking the application and showing package contents. For Windows, you might need to locate this path another way. Check online if needed.
 
-# Further installation for Python version 3 (tested on MacOS and Linux)
-1. Download a Python distribution package or for MacOS you can use the native iPython in Terminal. I recommend the Anaconda distribution for anything Python related in general ([https://docs.anaconda.com/anaconda/install/]).
+# Further installation for Python 3 version (tested on MacOS and Linux)
+1. Download a Python 3 distribution package or for MacOS you can use the native iPython in Terminal. I recommend the Anaconda distribution for anything Python related in general [https://docs.anaconda.com/anaconda/install/].
 2. Download the Python script `parasyncstitchicGM.py` and `requirements.txt` and put them into a folder of your choice.
 3. If on macOS/Linux, open terminal, navigate (using `cd` unix command) to the folder above and run `pip install -r requirements.txt`. If this doesn't work, then open up the requirements file and manually install the packages listed in the file using `pip install package-name` command. For Windows, the anaconda distribution should come with a command line tool which will allow you to install the required packages in a similar manner. 
 4. Open the file `parasyncstitchicGM.py` in a script editor (Anaconda provides Spyder as a very useful script editor and execution tool for this) and search for the beginning of the main function on line 92 where you should see multiple lines with `get_platform()`. This is used to check which platform you are on as file paths will be different between them. For your operating system choice, change the `imagejpath` and `overlapypath` file paths for your own file paths to those files.
@@ -35,7 +33,6 @@ This pipeline is written to be executed alongside TissueCyte acquisition and can
 1. If on macOS/Linux, start Python from Terminal (`ipython` for example), or use your own Python shell from your chosen distribution. Anaconda/Spyder has a terminal built in which can be used to run files.
 2. Execute the stitching file using for example `exec(open('parasyncstitchicGM.py').read())`.
 3. You should be greeted with a series of lines telling you to fill in the following variables. Press Enter to confirm this, then fill in the requested variables by typing into the terminal command line and pressing Enter. You may drag and drop the folders if possible (not tested on Windows) to make entering the file paths much easier. An example of inputs is shown below. Blank inputs represent choice of the default values. A Parasynchronous Stitching header should be generated after successful completion of the parameter input dialogue. The script will execute by generating the following folder structure residing in the input scan folder `scan-name-Mosaic > channel-number_Stitched_Sections` or additionally `channel-number_Stitched_Sections_Downsized` if downsizing is chosen in the parameter input stage. 
-
 ```
 ------------------------------------------
              Parameter Input
@@ -67,7 +64,6 @@ Complete!
 
 Stitching completed in 00:00:01:39
 ```
-
 # Installation specifically for MATLAB version (deprecated)
 Download MATLAB if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is on your MATLAB path.
 
