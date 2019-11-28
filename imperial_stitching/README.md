@@ -36,6 +36,7 @@ This pipeline is written to be executed alongside TissueCyte acquisition and can
 2. Execute the stitching file using for example `exec(open('parasyncstitchicGM.py').read())`.
 3. You should be greeted with a series of lines telling you to fill in the following variables. Press Enter to confirm this, then fill in the requested variables by typing into the terminal command line and pressing Enter. You may drag and drop the folders if possible (not tested on Windows) to make entering the file paths much easier. An example of inputs is shown below. Blank inputs represent choice of the default values. A Parasynchronous Stitching header should be generated after successful completion of the parameter input dialogue. The script will execute by generating the following folder structure residing in the input scan folder `scan-name-Mosaic > channel-number_Stitched_Sections` or additionally `channel-number_Stitched_Sections_Downsized` if downsizing is chosen in the parameter input stage. 
 
+```
 ------------------------------------------
              Parameter Input
 ------------------------------------------
@@ -65,6 +66,7 @@ Stitching Z002...
 Complete!
 
 Stitching completed in 00:00:01:39
+```
 
 # Installation specifically for MATLAB version (deprecated)
 Download MATLAB if not installed already. It is also worth opening ImageJ/Fiji to start the automatic update procedure. Then download the scripts in the code directory (see [Imperial TissueVision Stitching Files](https://github.com/ImperialCollegeLondon/ImperialTissueCyte/tree/master/Imperial_TissueVision_Stitching_Files))  and place the scripts in a folder which is on your MATLAB path.
