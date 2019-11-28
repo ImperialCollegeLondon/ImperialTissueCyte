@@ -193,4 +193,4 @@ def preprocess():
     test_data_images = test_data_images[..., np.newaxis]
     test_data_masks = test_data_masks[..., np.newaxis]
 
-    return (training_data_images, training_data_masks, test_data_images, test_data_masks)
+    return (training_data_images, 1-training_data_masks, test_data_images, 1-test_data_masks)

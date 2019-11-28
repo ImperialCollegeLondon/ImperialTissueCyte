@@ -15,7 +15,7 @@ def binary_focal_loss(gamma=2., alpha=.25):
     Usage:
      model.compile(loss=[binary_focal_loss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
     """
-    def binary_focal_loss_fixed(y_pred, y_true):
+    def binary_focal_loss_fixed(y_true, y_pred):
         """
         :param y_true: A tensor of the same shape as `y_pred`
         :param y_pred:  A tensor resulting from a sigmoid
