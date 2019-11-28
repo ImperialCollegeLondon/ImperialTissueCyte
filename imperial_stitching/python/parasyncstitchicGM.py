@@ -11,11 +11,11 @@ registered. Otherwise the X overlap will be used for both.
 The pipeline has been sped up in some areas by parallelising some functions.
 
 Installation:
-1) Navigate to the folder containing the AsyncstitchGM.py
+1) Navigate to the folder containing the parasyncstitchGM.py
 2) Run 'pip install -r requirements.txt'
 
 Instructions:
-1) Run the script in a Python IDE
+1) Run the script in a Python IDE (e.g. for Python 3 > exec(open('parasyncstitchicGM.py').read()))
 2) Fill in the parameters that you are asked for
    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
    Note: The temporary directory is required to speed up ImageJ loading of the files
@@ -33,7 +33,6 @@ import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
-from tabCompleter import tabCompleter
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -104,11 +103,6 @@ if __name__ == '__main__':
     #=============================================================================================
     # Input parameters
     #=============================================================================================
-    t = tabCompleter()
-    readline.set_completer(t.pathCompleter)
-    readline.set_completer_delims('\t')
-    readline.parse_and_bind("tab: complete")
-
     print ('')
     print ('------------------------------------------')
     print ('             Parameter Input              ')
@@ -117,7 +111,7 @@ if __name__ == '__main__':
     print ('Fill in the following variables. To accept default value, leave response blank.')
     print ('Please note this creates a temporary folder to hold images. You require at least 1 GB of free space.')
     acknowledge = input('Press Enter to continue: ')
-    tcpath = input('Select TC data directory (drag-and-drop or tab-complete): ').rstrip()
+    tcpath = input('Select TC data directory (drag-and-drop or type manually): ').rstrip()
     startsec = input('Start section (default start): ')
     endsec = input('End section (default end): ')
     xoverlap = input('X overlap % (default 1): ')
@@ -156,7 +150,7 @@ if __name__ == '__main__':
             downsize = float(downsize)
 
     # Search the mosaic file for remaining parameters
-    mosaicfile = glob.glob(tcpath+'/Mosaic*.txt')[0]
+    mosaicfile = glob.glob(os.path.join(tcpath, 'Mosaic*.txt'))[0]
     with open(mosaicfile, 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -176,21 +170,21 @@ if __name__ == '__main__':
     os.umask(0o000)
 
     try:
-        os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections', 0o777)
+        os.makedirs(os.path.join(tcpath, str(scanid)+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'), 0o777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
     if convert == 'y':
         try:
-            os.makedirs(tcpath+'/'+str(scanid)+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections_Downsized', 0o777)
+            os.makedirs(os.path.join(tcpath, str(scanid)+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections_Downsized'), 0o777)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
 
     # create temporary folder in home path
     temppath = tempfile.mkdtemp(dir=os.path.expanduser('~'))
-    tilepath = temppath+'/'
+    tilepath = temppath
 
     crop = 0
     filenamestruct = []
@@ -234,8 +228,8 @@ if __name__ == '__main__':
             lasttile = (xtiles*ytiles*((zlayers*(section-1))+layer))-1
 
             # If last tile doesn't exist yet, wait for it
-            if glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0*.tif') == []:
-                while glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0*.tif') == []:
+            if glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_0*.tif')) == []:
+                while glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_0*.tif')) == []:
                     sys.stdout.write('\rLast tile not generated yet. Waiting.')
                     sys.stdout.flush()
                     time.sleep(3)
@@ -247,7 +241,7 @@ if __name__ == '__main__':
 
             time.sleep(3)
             # Get file name structure and remove last 8 characters to leave behind filename template
-            filenamestruct = glob.glob(tcpath+'/'+folder+'/*-'+str(lasttile)+'_0'+str(channel)+'.tif')[0].rpartition('-')[0]+'-'
+            filenamestruct = glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_0'+str(channel)+'.tif'))[0].rpartition('-')[0]+'-'
             filenames = [filenamestruct+str(tile)+'_0'+str(channel)+'.tif' for tile in range(firsttile, lasttile+1, 1)]
 
             # Get crop value
@@ -318,13 +312,14 @@ if __name__ == '__main__':
                 tile_img = np.multiply(np.divide(tile_img, 65535./4), 255.)
                 tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)))
 
-                Image.fromarray(tile_img).save(tilepath+'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif')
+
+                Image.fromarray(tile_img).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
 
             print ('Stitching Z'+ztoken+'...')
 
-            stitchpath = tcpath+'/'+scanid+'-Mosaic/Ch'+str(channel)+'_Stitched_Sections'
+            stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections')
 
-            outname = "'"+stitchpath+'/Stitched_Z'+ztoken+'.tif'+"'"
+            outname = "'"+os.path.join(stitchpath, 'Stitched_Z'+ztoken+'.tif')+"'"
 
             subprocess.call([imagejpath, '--headless', '-eval', 'runMacro('+overlapypath+');', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Fuse and display]");', '-eval', 'saveAs("Tiff",'+outname+');'], stdout=open(os.devnull, 'wb'))
 
@@ -332,10 +327,10 @@ if __name__ == '__main__':
             os.makedirs(temppath, 0o777)
 
             if convert == 'y':
-                stitched_img = np.array(Image.open(stitchpath+'/Stitched_Z'+ztoken+'.tif'))
+                stitched_img = np.array(Image.open(os.path.join(stitchpath, 'Stitched_Z'+ztoken+'.tif')))
                 stitched_img = Image.fromarray(np.multiply(np.divide(stitched_img.astype(float),np.max(stitched_img.astype(float))), 255.).astype('uint8'), 'L')
                 stitched_img = stitched_img.resize((int(downsize*stitched_img.size[0]), int(downsize*stitched_img.size[1])), Image.ANTIALIAS)
-                stitched_img.save(stitchpath+'_Downsized/Stitched_Z'+ztoken+'.tif')
+                stitched_img.save(os.path.join(stitchpath+'_Downsized', 'Stitched_Z'+ztoken+'.tif'))
 
             print ('Complete!')
 
