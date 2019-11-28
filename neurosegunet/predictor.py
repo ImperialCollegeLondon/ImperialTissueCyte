@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     images_array = []
 
-    img = np.array(Image.open('test.tif')).astype(np.float32)
+    img = np.array(Image.open('test0.tif')).astype(np.float32)
     img = (img-np.min(img))/(np.max(img)-np.min(img))
     img_copy = np.copy(img)
 
