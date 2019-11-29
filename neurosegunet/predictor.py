@@ -25,8 +25,8 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 
 if __name__ == '__main__':
-    model_path = 'models/2019_11_28_UNet/focal_unet_model.json'
-    weights_path = 'models/2019_11_28_UNet/focal_unet_weights.best.hdf5'
+    model_path = 'models/2019_11_29_UNet/focal_unet_model.json'
+    weights_path = 'models/2019_11_29_UNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
