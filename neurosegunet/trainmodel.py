@@ -44,21 +44,21 @@ if __name__ == '__main__':
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
-    batch = 4
+    batch = 1
 
     # ORIG BATCH NORM LOSS
     model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
     # model = unetmodel.get_unet('binary_crossentropy')
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-    early = EarlyStopping(monitor="val_loss", mode="min", patience=100, verbose=1)
+    early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
     callbacks_list = [checkpoint, early, redonplat]  # early
 
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=1000,
+        epochs=50,
         shuffle=True,
         callbacks=callbacks_list)
 
@@ -68,3 +68,12 @@ if __name__ == '__main__':
         json_file.write(model_json)
 
     cleanup.clean()
+
+    import matplotlib.pyplot as plt
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model accuracy')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
