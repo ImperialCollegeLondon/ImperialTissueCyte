@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet('binary_crossentropy')
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-    early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
+    early = EarlyStopping(monitor="val_loss", mode="min", patience=100, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
     callbacks_list = [checkpoint, early, redonplat]  # early
 
