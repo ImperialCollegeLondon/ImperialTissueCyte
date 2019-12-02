@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
-    batch = 2
+    batch = 4
 
     # ORIG BATCH NORM LOSS
     # model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
