@@ -47,8 +47,8 @@ if __name__ == '__main__':
     batch = 4
 
     # ORIG BATCH NORM LOSS
-    # model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
-    model = unetmodel.get_unet('binary_crossentropy')
+    model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
+    # model = unetmodel.get_unet('binary_crossentropy')
     # model = unetmodel.get_unet(losses.focal_loss)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
