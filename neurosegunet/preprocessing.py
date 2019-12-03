@@ -26,6 +26,7 @@ import shutil
 import cleanup
 import augmentation
 import pickle
+from distutils.dir_util import copy_tree
 from PIL import Image
 from tifffile import imsave
 from natsort import natsorted
@@ -36,8 +37,10 @@ def preprocess():
     training_data_dir = 'data/training-data'
     test_data_dir = 'data/test-data'
 
+    raw_data_copy_dir = 'data/raw-data-copy'
+
     # Clean up any old directories and create new directories
-    if os.path.exists(training_data_dir) and os.path.isdir(training_data_dir): cleanup.clean()
+    if os.path.exists(training_data_dir) and os.path.isdir(training_data_dir) and os.path.isdir(raw_data_copy_dir) : cleanup.clean()
 
     if not os.path.exists(training_data_dir):
         os.makedirs(os.path.join(training_data_dir, 'images'))
@@ -47,9 +50,30 @@ def preprocess():
         os.makedirs(os.path.join(test_data_dir, 'images'))
         os.makedirs(os.path.join(test_data_dir, 'masks'))
 
+    if not os.path.exists(raw_data_copy_dir):
+        os.makedirs(os.path.join(raw_data_copy_dir))
+        copy_tree(raw_data_dir, raw_data_copy_dir)
+
+    print ('Performing augmentation on raw data copy...')
+
+    raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
+    n=5*len(raw_images_data)
+    augmentation.augment('data/raw-data-copy',n)
+
+    aug_images = glob.glob('data/raw-data-copy/images/images_original*')
+    aug_masks = glob.glob('data/raw-data-copy/images/_groundtruth*')
+    aug_images.sort(key=lambda x:x[-40:])
+    aug_masks.sort(key=lambda x:x[-40:])
+
+    for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
+        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+
+    print ('Augmented and saved with n='+str(n)+' samples!')
+
     print ('Randomly selecting/moving 70% training and 30% test data...')
-    raw_images_data = os.listdir(raw_data_dir+'/images/')
-    raw_masks_data = os.listdir(raw_data_dir+'/masks/')
+    raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
+    raw_masks_data = os.listdir(raw_data_copy_dir+'/masks/')
     random.shuffle(raw_images_data)
     training_images_data = raw_images_data[:int(0.7*len(raw_images_data))]
     training_masks_data = [f.replace('image', 'mask') for f in training_images_data]
@@ -70,37 +94,37 @@ def preprocess():
 
     print ('Done!')
 
-    print ('Performing augmentation on training data...')
-
-    n=4*len(training_images_data)
-    augmentation.augment('data/training-data',n)
-
-    aug_images = glob.glob('data/training-data/images/images_original*')
-    aug_masks = glob.glob('data/training-data/images/_groundtruth*')
-    aug_images.sort(key=lambda x:x[-40:])
-    aug_masks.sort(key=lambda x:x[-40:])
-
-    for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
-        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
-        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
-
-    print ('Augmented and saved with n='+str(n)+' samples!')
-
-    print ('Performing augmentation on test data...')
-
-    n=4*len(test_images_data)
-    augmentation.augment('data/test-data',n)
-
-    aug_images = glob.glob('data/test-data/images/images_original*')
-    aug_masks = glob.glob('data/test-data/images/_groundtruth*')
-    aug_images.sort(key=lambda x:x[-40:])
-    aug_masks.sort(key=lambda x:x[-40:])
-
-    for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
-        shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
-        shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
-
-    print ('Augmented and saved with n='+str(n)+' samples!')
+    # print ('Performing augmentation on training data...')
+    #
+    # n=4*len(training_images_data)
+    # augmentation.augment('data/training-data',n)
+    #
+    # aug_images = glob.glob('data/training-data/images/images_original*')
+    # aug_masks = glob.glob('data/training-data/images/_groundtruth*')
+    # aug_images.sort(key=lambda x:x[-40:])
+    # aug_masks.sort(key=lambda x:x[-40:])
+    #
+    # for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
+    #     shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+    #     shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+    #
+    # print ('Augmented and saved with n='+str(n)+' samples!')
+    #
+    # print ('Performing augmentation on test data...')
+    #
+    # n=4*len(test_images_data)
+    # augmentation.augment('data/test-data',n)
+    #
+    # aug_images = glob.glob('data/test-data/images/images_original*')
+    # aug_masks = glob.glob('data/test-data/images/_groundtruth*')
+    # aug_images.sort(key=lambda x:x[-40:])
+    # aug_masks.sort(key=lambda x:x[-40:])
+    #
+    # for i, (image_file, mask_file) in enumerate(zip(aug_images, aug_masks)):
+    #     shutil.move(image_file, os.path.dirname(image_file)+'/aug_image_'+str(i)+'.tif')
+    #     shutil.move(mask_file, os.path.dirname(mask_file).replace('/images','/masks')+'/aug_mask_'+str(i)+'.tif')
+    #
+    # print ('Augmented and saved with n='+str(n)+' samples!')
 
     training_data_images = []
     training_data_masks = []
