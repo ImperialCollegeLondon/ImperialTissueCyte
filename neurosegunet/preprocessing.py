@@ -81,16 +81,16 @@ def preprocess():
     test_masks_data = [f.replace('image', 'mask') for f in test_images_data]
 
     for f in training_images_data:
-        shutil.copy(os.path.join(raw_data_dir,'images',f), os.path.join(training_data_dir,'images',f))
+        shutil.copy(os.path.join(raw_data_copy_dir,'images',f), os.path.join(training_data_dir,'images',f))
 
     for f in training_masks_data:
-        shutil.copy(os.path.join(raw_data_dir,'masks',f), os.path.join(training_data_dir,'masks',f))
+        shutil.copy(os.path.join(raw_data_copy_dir,'masks',f), os.path.join(training_data_dir,'masks',f))
 
     for f in test_images_data:
-        shutil.copy(os.path.join(raw_data_dir,'images',f), os.path.join(test_data_dir,'images',f))
+        shutil.copy(os.path.join(raw_data_copy_dir,'images',f), os.path.join(test_data_dir,'images',f))
 
     for f in test_masks_data:
-        shutil.copy(os.path.join(raw_data_dir,'masks',f), os.path.join(test_data_dir,'masks',f))
+        shutil.copy(os.path.join(raw_data_copy_dir,'masks',f), os.path.join(test_data_dir,'masks',f))
 
     print ('Done!')
 
