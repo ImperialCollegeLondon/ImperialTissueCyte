@@ -72,8 +72,8 @@ def preprocess():
     print ('Augmented and saved with n='+str(n)+' samples!')
 
     print ('Randomly selecting/moving 70% training and 30% test data...')
-    raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
-    raw_masks_data = os.listdir(raw_data_copy_dir+'/masks/')
+    raw_images_data = [f for f in os.listdir(raw_data_copy_dir+'/images/') if f.endswith('.tif')]
+    raw_masks_data = [f for f in os.listdir(raw_data_copy_dir+'/masks/') if f.endswith('.tif')]
     random.shuffle(raw_images_data)
     training_images_data = raw_images_data[:int(0.7*len(raw_images_data))]
     training_masks_data = [f.replace('image', 'mask') for f in training_images_data]
