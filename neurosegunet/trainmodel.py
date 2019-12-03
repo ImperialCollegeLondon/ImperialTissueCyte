@@ -42,6 +42,8 @@ if __name__ == '__main__':
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
+    end
+
     file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
     batch = 4
