@@ -61,7 +61,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=50,
+        epochs=100,
         shuffle=True,
         callbacks=callbacks_list)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     with open('models/'+strdate+'_UNet/'+model_name+'model.json', 'w') as json_file:
         json_file.write(model_json)
 
-    with open('/trainHistoryDict', 'wb') as pickle_f:
+    with open('trainHistoryDict', 'wb') as pickle_f:
         pickle.dump(history.history, pickle_f)
 
     cleanup.clean()
