@@ -4,6 +4,7 @@ import cleanup
 from glob import glob
 import os
 import datetime
+import pickle
 import numpy as np
 from PIL import Image
 from tensorflow.keras import backend as K
@@ -49,8 +50,8 @@ if __name__ == '__main__':
     # ORIG BATCH NORM LOSS
     # model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
     # model = unetmodel.get_unet('binary_crossentropy')
-    # model = unetmodel.get_unet(losses.focal_tversky)
-    model = unetmodel.get_unet(losses.bce_dice_loss)
+    model = unetmodel.get_unet(losses.focal_tversky)
+    # model = unetmodel.get_unet(losses.bce_dice_loss)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=100,
+        epochs=50,
         shuffle=True,
         callbacks=callbacks_list)
 
@@ -68,6 +69,9 @@ if __name__ == '__main__':
     model_json = model.to_json()
     with open('models/'+strdate+'_UNet/'+model_name+'model.json', 'w') as json_file:
         json_file.write(model_json)
+
+    with open('/trainHistoryDict', 'wb') as pickle_f:
+        pickle.dump(history.history, pickle_f)
 
     cleanup.clean()
 

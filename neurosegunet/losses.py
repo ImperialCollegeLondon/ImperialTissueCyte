@@ -100,5 +100,5 @@ def tversky_loss(y_true, y_pred):
 
 def focal_tversky(y_true,y_pred):
     pt_1 = tversky(y_true, y_pred)
-    gamma = 4./3#0.75
+    gamma = 0.75
     return K.pow((1-pt_1), gamma)
