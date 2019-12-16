@@ -1,12 +1,10 @@
-from keras.layers import Input, MaxPooling2D
-from keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D
-from keras.models import Model
-from keras.optimizers import Adam, SGD
-import tensorflow as tf
-from keras import backend as K
-from keras import losses
+from tensorflow.keras import Input, Model
+from tensorflow.keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU, UpSampling2D, MaxPooling2D
+from tensorflow.keras.optimizers import Adam, SGD
+import tensorflow.keras.backend as K
+import losses
 
-def get_unet():
+def get_unet(lossfn):
     inputs = Input(shape = (None, None, 1))
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -48,8 +46,8 @@ def get_unet():
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
-    model = Model(input = inputs, output = conv10)
+    model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = ['acc', losses.dice_loss])
 
     return model
