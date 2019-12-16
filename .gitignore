@@ -1,5 +1,5 @@
 # Directories #
 
 registration/atlases
-neuroseg/models
+cell_counting_unet/models
 neurosegunet/models
