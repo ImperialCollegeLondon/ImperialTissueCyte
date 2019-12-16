@@ -5,48 +5,21 @@ Author: Gerald M
 ################################################################################
 """
 
-from __future__ import division
+from __future__ import absolute_import, division, print_function, unicode_literals
 import argparse
 import glob
 import os
-import pickle
 import sys
-import tifffile
-import time
 import math
 import warnings
 import numpy as np
-import pandas as pd
-import tensorflow as tf
 from PIL import Image
-from multiprocessing import cpu_count
-from natsort import natsorted
-from keras.models import model_from_json
-# from keras.optimizers import SGD
-# from keras import backend as K
-import cv2
+import matplotlib.pyplot as plt
 
-# import focal_tversky_unetmodel
-# import losses
+# Modules for deep learning
+from tensorflow.keras.models import model_from_json
 
-# os.environ["OMP_NUM_THREADS"] = str(cpu_count())
-# os.environ["KMP_BLOCKTIME"] = "30"
-# os.environ["KMP_SETTINGS"] = "1"
-# os.environ["KMP_AFFINITY"]= "granularity=fine,noverbose,compact,1,0"
-#
-# os.environ['KMP_DUPLICATE_LIB_OK']='True'
-
-# Warning supression and allowing large images to be loaded
-# os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-#
-# config = tf.ConfigProto(intra_op_parallelism_threads = cpu_count(),
-#                         inter_op_parallelism_threads = cpu_count(),
-#                         allow_soft_placement = True,
-#                         device_count = {'CPU': cpu_count() })
-#
-# session = tf.Session(config=config)
-#
-# K.set_session(session)
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
