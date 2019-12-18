@@ -49,8 +49,8 @@ if __name__ == '__main__':
 
     # ORIG BATCH NORM LOSS
     # model = unetmodel.get_unet(losses.binary_focal_loss(alpha=.25, gamma=2))
-    model = unetmodel.get_unet('binary_crossentropy')
-    # model = unetmodel.get_unet(losses.focal_tversky)
+    # model = unetmodel.get_unet('binary_crossentropy')
+    model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     with open('models/'+strdate+'_UNet/'+model_name+'model.json', 'w') as json_file:
         json_file.write(model_json)
 
-    with open('models/'+strdate+'_UNet/trainHistoryDict.csv', 'wb') as pickle_f:
-        pickle.dump(history.history, pickle_f)
+    import pandas as pd
+    pd.DataFrame(history.history).to_csv('models/'+strdate+'_UNet/trainHistoryDict.csv')
 
     cleanup.clean()
 
