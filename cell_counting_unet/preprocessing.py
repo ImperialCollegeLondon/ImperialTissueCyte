@@ -26,6 +26,7 @@ import shutil
 import cleanup
 import augmentation
 import pickle
+from distutils.dir_util import copy_tree
 from PIL import Image
 from tifffile import imsave
 from natsort import natsorted
