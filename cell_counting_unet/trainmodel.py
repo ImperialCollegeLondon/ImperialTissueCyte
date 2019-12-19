@@ -73,11 +73,7 @@ if __name__ == '__main__':
         json_file.write(model_json)
 
     # Write out the training history to file
-    df = pd.DataFrame(history.history)
-    df.loc['mean'] = df.mean()
-    df.loc['standard err'] = df.sem()
-
-    df.to_csv('models/'+strdate+'_UNet/trainHistoryDict.csv')
+    pd.DataFrame(history.history).to_csv('models/'+strdate+'_UNet/trainHistoryDict.csv')
 
     cleanup.clean()
 
