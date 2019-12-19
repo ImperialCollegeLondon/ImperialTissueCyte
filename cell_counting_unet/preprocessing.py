@@ -37,7 +37,7 @@ def preprocess():
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
-    raw_data_copy_dir = 'input/raw-data-copy'
+    raw_data_copy_dir = 'input/raw_data_copy'
 
     # Clean up any old directories and create new directories
     if os.path.exists(training_data_dir) and os.path.isdir(training_data_dir) and os.path.isdir(raw_data_copy_dir) : cleanup.clean()
@@ -58,10 +58,10 @@ def preprocess():
 
     raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
     n=5*len(raw_images_data)
-    augmentation.augment('input/raw-data-copy',n)
+    augmentation.augment('input/raw_data_copy',n)
 
-    aug_images = glob.glob('input/raw-data-copy/images/images_original*')
-    aug_masks = glob.glob('input/raw-data-copy/images/_groundtruth*')
+    aug_images = glob.glob('input/raw_data_copy/images/images_original*')
+    aug_masks = glob.glob('input/raw_data_copy/images/_groundtruth*')
     aug_images.sort(key=lambda x:x[-40:])
     aug_masks.sort(key=lambda x:x[-40:])
 
