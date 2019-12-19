@@ -16,7 +16,7 @@ import shutil
 def clean():
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
-    raw_data_copy_dir = 'input/raw-data-copy'
+    raw_data_copy_dir = 'input/raw_data_copy'
 
     print ('Cleaning up directories...')
 
