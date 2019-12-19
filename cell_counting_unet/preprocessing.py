@@ -57,7 +57,7 @@ def preprocess():
     print ('Performing augmentation on raw data copy...')
 
     raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
-    n=5*len(raw_images_data)
+    n=4*len(raw_images_data)
     augmentation.augment('input/raw_data_copy',n)
 
     aug_images = glob.glob('input/raw_data_copy/images/images_original*')
@@ -79,7 +79,7 @@ def preprocess():
     training_masks_data = [f.replace('image', 'mask') for f in training_images_data]
     test_images_data  = raw_images_data[int(0.7*len(raw_images_data)):]
     test_masks_data = [f.replace('image', 'mask') for f in test_images_data]
-    
+
     for f in training_images_data:
         shutil.copy(os.path.join(raw_data_copy_dir,'images',f), os.path.join(training_data_dir,'images',f))
 
