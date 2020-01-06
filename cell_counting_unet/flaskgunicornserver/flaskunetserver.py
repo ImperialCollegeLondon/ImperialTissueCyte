@@ -1,5 +1,5 @@
 # Run with gunicorn using the following:
-#       gunicorn --bind 0.0.0.0:5000 wsgi:app
+#       gunicorn --timeout 240 --bind 0.0.0.0:5000 wsgi:app
 
 # import the necessary packages
 from __future__ import absolute_import, division, print_function, unicode_literals
