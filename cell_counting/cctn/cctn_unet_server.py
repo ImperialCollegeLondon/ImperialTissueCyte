@@ -58,7 +58,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ################################################################################
 
 def slack_message(text, channel, username):
-    from urllib3 import request
+    # from urllib3 import request
     import json
 
     post = {"text": "{0}".format(text),
@@ -217,16 +217,20 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 # Make payload for request
                 payload = {"image": image_payload, "shape": shape_payload}
 
-                result = requests.post("http://localhost:5000/predict", files=payload).json()
+                result = None
+                while result is None:
+                    try:
+                        result = requests.post("http://localhost:5000/predict", files=payload).json()
+                    except:
+                        pass
 
                 # ensure the request was sucessful
                 if result["success"]:
-                    print("Request successful")
+                    print(str(slice_number)+" request SUCCESSFUL")
                     # loop over the predictions and display them
                     image = np.array(result["predictions"])
                 else:
-                    print("Request unsuccessful")
-                    end
+                    print(str(slice_number)+" request UNSUCCESSFULL")
 
                 image = image[0:orig_shape[0],0:orig_shape[1]]
 
