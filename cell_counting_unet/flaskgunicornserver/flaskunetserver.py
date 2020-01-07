@@ -10,6 +10,7 @@ from PIL import Image
 from multiprocessing import cpu_count
 import numpy as np
 import tensorflow.keras.backend as K
+import psutil
 
 # initialize our Flask application and the Keras model
 import flask
@@ -80,9 +81,9 @@ def predict():
             # Show the request was successful
             data["success"] = True
 
-    # Clear keras session
-    K.clear_session()
-    
+    print (shape)
+    print ('[Memory info] Usage: '+str(psutil.virtual_memory().percent)+'%')
+
     # Return the result
     return flask.jsonify(data)
 
