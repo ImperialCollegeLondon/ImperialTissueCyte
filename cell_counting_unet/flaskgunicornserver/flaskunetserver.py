@@ -80,6 +80,9 @@ def predict():
             # Show the request was successful
             data["success"] = True
 
+    # Clear keras session
+    K.clear_session()
+    
     # Return the result
     return flask.jsonify(data)
 
