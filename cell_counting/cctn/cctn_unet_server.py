@@ -477,7 +477,7 @@ if __name__ == '__main__':
                         # Check memory use doesn't go above 80%, otherwise wait
                         memorycheck = False
                         while not memorycheck:
-                            if psutil.virtual_memory().percent < 80.0:
+                            if psutil.virtual_memory().percent < 50.0:
                                 memorycheck = True
                             else:
                                 print ('Warning! Memory too high. Waiting for memory release.')
