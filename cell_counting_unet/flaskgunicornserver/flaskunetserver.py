@@ -44,9 +44,12 @@ def load_model():
     global model
     global graph
 
-    model_path = '../models/2019_12_20_UNet_BCE_DICE/focal_unet_model.json'
-    weights_path = '../models/2019_12_20_UNet_BCE_DICE/focal_unet_weights.best.hdf5'
+    # model_path = '../models/2019_12_20_UNet_BCE_DICE/focal_unet_model.json'
+    # weights_path = '../models/2019_12_20_UNet_BCE_DICE/focal_unet_weights.best.hdf5'
 
+    model_path = '../models/2020_01_10_UNet/focal_unet_model.json'
+    weights_path = '../models/2020_01_10_UNet/focal_unet_weights.best.hdf5'
+    # 
     # Load the classifier model, initialise and compile
     with open(model_path, 'r') as f:
         model = model_from_json(f.read())
