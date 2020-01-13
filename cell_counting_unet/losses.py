@@ -122,7 +122,7 @@ def tversky(y_true, y_pred):
     true_pos = K.sum(y_true_pos * y_pred_pos)
     false_neg = K.sum(y_true_pos * (1-y_pred_pos))
     false_pos = K.sum((1-y_true_pos)*y_pred_pos)
-    alpha = 0.2#0.7#0.7
+    alpha = 0.3#0.7#0.7
     return (true_pos + smooth)/(true_pos + alpha*false_neg + (1-alpha)*false_pos + smooth)
 
 def tversky_loss(y_true, y_pred):
@@ -132,3 +132,7 @@ def focal_tversky(y_true,y_pred):
     pt_1 = tversky(y_true, y_pred)
     gamma = 0.75
     return K.pow((1-pt_1), gamma)
+
+def bce_focal_tversky_loss(y_true, y_pred):
+    loss = binary_crossentropy(y_true, y_pred) + focal_tversky(y_true,y_pred)
+    return loss
