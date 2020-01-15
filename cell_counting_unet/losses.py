@@ -168,3 +168,7 @@ def surface_loss(y_true, y_pred):
 def dice_surface_loss(y_true, y_pred):
     loss = dice_loss(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
     return loss
+
+def bce_surface_loss(y_true, y_pred):
+    loss = binary_crossentropy(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
+    return loss
