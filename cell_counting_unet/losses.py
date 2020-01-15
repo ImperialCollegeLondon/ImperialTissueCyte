@@ -166,7 +166,7 @@ def surface_loss(y_true, y_pred):
     return K.mean(multipled)
 
 def dice_surface_loss(y_true, y_pred):
-    loss = dice_loss(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
+    loss = 0.5*dice_loss(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
     return loss
 
 def bce_surface_loss(y_true, y_pred):
