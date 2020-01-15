@@ -57,7 +57,8 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet(losses.weighted_cross_entropy(0.8))
     # model = unetmodel.get_unet(losses.bce_focal_tversky_loss)
     # model = unetmodel.get_unet(losses.surface_loss)
-    model = unetmodel.get_unet(losses.dice_focal_tversky_loss)
+    # model = unetmodel.get_unet(losses.dice_focal_tversky_loss)
+    model = unetmodel.get_unet(losses.dice_surface_loss)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)

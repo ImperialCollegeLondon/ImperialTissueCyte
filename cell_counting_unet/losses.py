@@ -164,3 +164,7 @@ def surface_loss(y_true, y_pred):
                                      Tout=tf.float32)
     multipled = y_pred * y_true_dist_map
     return K.mean(multipled)
+
+def dice_surface_loss(y_true, y_pred):
+    loss = dice_loss(y_true, y_pred) + surface_loss(y_true,y_pred)
+    return loss
