@@ -1,6 +1,8 @@
 from tensorflow.keras.losses import binary_crossentropy
 import tensorflow.keras.backend as K
 import tensorflow as tf
+import numpy as np
+from scipy.ndimage import distance_transform_edt as distance
 
 epsilon = 1e-5
 smooth = 1
@@ -136,8 +138,6 @@ def focal_tversky(y_true,y_pred):
 def bce_focal_tversky_loss(y_true, y_pred):
     loss = binary_crossentropy(y_true, y_pred) + focal_tversky(y_true,y_pred)
     return loss
-
-from scipy.ndimage import distance_transform_edt as distance
 
 def calc_dist_map(seg):
     res = np.zeros_like(seg)

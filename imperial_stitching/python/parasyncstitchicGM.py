@@ -313,7 +313,7 @@ if __name__ == '__main__':
                 tile_img = np.array(Image.fromarray(tile_img.astype(np.uint8)))
 
 
-                Image.fromarray(tile_img).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
+                Image.fromarray(tile_img).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
 
             print ('Stitching Z'+ztoken+'...')
 
@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
             outname = "'"+os.path.join(stitchpath, 'Stitched_Z'+ztoken+'.tif')+"'"
 
-            subprocess.call([imagejpath, '--headless', '-eval', 'runMacro('+overlapypath+');', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Fuse and display]");', '-eval', 'saveAs("Tiff",'+outname+');']), stdout=open(os.devnull, 'wb'))
+            subprocess.call([imagejpath, '--headless', '-eval', 'runMacro('+overlapypath+');', '-eval', 'run("Grid/Collection stitching", "type=[Filename defined position] grid_size_x='+str(xtiles)+' grid_size_y='+str(ytiles)+' tile_overlap_x='+str(xoverlap)+' tile_overlap_y='+str(yoverlap)+' first_file_index_x=1 first_file_index_y=1 directory=['+tilepath+'] file_names=Tile_Z'+ztoken+'_Y{yyy}_X{xxx}.tif output_textfile_name=TileConfiguration_Z'+ztoken+'.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] image_output=[Fuse and display]");', '-eval', 'saveAs("Tiff",'+outname+');'], stdout=open(os.devnull, 'wb'))
 
             shutil.rmtree(temppath)
             os.makedirs(temppath, 0o777)
