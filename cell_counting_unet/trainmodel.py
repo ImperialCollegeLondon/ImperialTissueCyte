@@ -30,7 +30,7 @@ class AlphaScheduler(Callback):
     def on_epoch_end(self, epoch, logs=None):
         updated_alpha = self.update_fn(K.get_value(self.alpha))
 
-alpha = K.variable(0.5, dtype='float32')
+alpha = K.variable(1, dtype='float32')
 
 def update_alpha(value):
     return np.clip(value - 0.01, 0.01, 1)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=500,
+        epochs=1000,
         shuffle=True,
         callbacks=callbacks_list)
 

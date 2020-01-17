@@ -141,7 +141,7 @@ def bce_focal_tversky_loss(y_true, y_pred):
 
 def dice_focal_tversky_loss(alpha):
     def loss(y_true, y_pred):
-        return (alpha)*dice_loss(y_true, y_pred) + (1-alpha)*focal_tversky(y_true,y_pred)
+        return np.mean((alpha*dice_loss(y_true, y_pred)) + ((1-alpha)*focal_tversky(y_true,y_pred)))
 
     return loss
 
