@@ -10,7 +10,7 @@ import pandas as pd
 from PIL import Image
 from tensorflow.keras import backend as K
 from tensorflow.keras import losses
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, Callback
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from tensorflow.keras.layers import Input, MaxPooling2D
 from tensorflow.keras.layers import concatenate, Conv2D, Conv2DTranspose, Dropout, ReLU
 from tensorflow.keras.models import Model
