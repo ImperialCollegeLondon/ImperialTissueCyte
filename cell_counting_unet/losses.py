@@ -139,11 +139,8 @@ def bce_focal_tversky_loss(y_true, y_pred):
     loss = binary_crossentropy(y_true, y_pred) + focal_tversky(y_true,y_pred)
     return loss
 
-def dice_focal_tversky_loss(alpha):
-    def loss(y_true, y_pred):
-        return (alpha)*dice_loss(y_true, y_pred) + (1-alpha)*focal_tversky(y_true,y_pred)
-
-    return loss
+def dice_focal_tversky_loss(y_true, y_pred):
+    return (alpha)*dice_loss(y_true, y_pred) + (1-alpha)*focal_tversky(y_true,y_pred)
 
 def calc_dist_map(seg):
     res = np.zeros_like(seg)
