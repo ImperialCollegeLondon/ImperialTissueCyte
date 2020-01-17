@@ -23,6 +23,18 @@ import unetmodel
 import preprocessing
 import losses
 
+class AlphaScheduler(Callback):
+  def init(self, alpha, update_fn):
+    self.alpha = alpha
+    self.update_fn = update_fn
+  def on_epoch_end(self, epoch, logs=None):
+    updated_alpha = self.update_fn(K.get_value(self.alpha))
+
+alpha = K.variable(1, dtype='float32')
+
+def update_alpha(value):
+  return np.clip(value - 0.01, 0.01, 1)
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--dropout", required=False,
@@ -57,19 +69,19 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet(losses.weighted_cross_entropy(0.8))
     # model = unetmodel.get_unet(losses.bce_focal_tversky_loss)
     # model = unetmodel.get_unet(losses.surface_loss)
-    # model = unetmodel.get_unet(losses.dice_focal_tversky_loss)
-    model = unetmodel.get_unet(losses.dice_surface_loss)
+    model = unetmodel.get_unet(losses.dice_focal_tversky_loss(alpha))
+    # model = unetmodel.get_unet(losses.dice_surface_loss)
     # model = unetmodel.get_unet(losses.bce_surface_loss)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
-    callbacks_list = [checkpoint, early, redonplat]  # early
+    callbacks_list = [checkpoint, early, redonplat, AlphaScheduler(alpha, update_alpha)]  # early
 
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=1500,
+        epochs=500,
         shuffle=True,
         callbacks=callbacks_list)
 

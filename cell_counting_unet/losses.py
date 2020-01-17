@@ -139,8 +139,10 @@ def bce_focal_tversky_loss(y_true, y_pred):
     loss = binary_crossentropy(y_true, y_pred) + focal_tversky(y_true,y_pred)
     return loss
 
-def dice_focal_tversky_loss(y_true, y_pred):
-    loss = dice_loss(y_true, y_pred) + focal_tversky(y_true,y_pred)
+def dice_focal_tversky_loss(alpha):
+    def loss(y_true, y_pred):
+        return (alpha)*dice_loss(y_true, y_pred) + (1-alpha)*focal_tversky(y_true,y_pred)
+
     return loss
 
 def calc_dist_map(seg):
@@ -166,7 +168,7 @@ def surface_loss(y_true, y_pred):
     return K.mean(multipled)
 
 def dice_surface_loss(y_true, y_pred):
-    loss = 0.5*dice_loss(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
+    loss = dice_loss(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
     return loss
 
 def bce_surface_loss(y_true, y_pred):
