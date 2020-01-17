@@ -24,16 +24,16 @@ import preprocessing
 import losses
 
 class AlphaScheduler(Callback):
-  def init(self, alpha, update_fn):
-    self.alpha = alpha
-    self.update_fn = update_fn
-  def on_epoch_end(self, epoch, logs=None):
-    updated_alpha = self.update_fn(K.get_value(self.alpha))
+    def __init__(self, alpha, update_fn):
+        self.alpha = alpha
+        self.update_fn = update_fn
+    def on_epoch_end(self, epoch, logs=None):
+        updated_alpha = self.update_fn(K.get_value(self.alpha))
 
 alpha = K.variable(1, dtype='float32')
 
 def update_alpha(value):
-  return np.clip(value - 0.01, 0.01, 1)
+    return np.clip(value - 0.01, 0.01, 1)
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
