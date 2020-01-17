@@ -57,7 +57,7 @@ def preprocess():
     print ('Performing augmentation on raw data copy...')
 
     raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
-    n=6*len(raw_images_data)
+    n=4*len(raw_images_data)
     augmentation.augment('input/raw_data_copy',n)
 
     aug_images = glob.glob('input/raw_data_copy/images/images_original*')
