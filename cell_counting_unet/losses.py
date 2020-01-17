@@ -174,3 +174,21 @@ def dice_surface_loss(y_true, y_pred):
 def bce_surface_loss(y_true, y_pred):
     loss = binary_crossentropy(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
     return loss
+
+# beta = 0.01 means negative class is 1% of the total samples so it is weighted in the loss accordingly
+def balanced_cross_entropy(beta):
+    def convert_to_logits(y_pred):
+      # see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525
+      y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1 - K.epsilon())
+
+      return tf.log(y_pred / (1 - y_pred))
+
+    def loss(y_true, y_pred):
+        y_pred = convert_to_logits(y_pred)
+        pos_weight = beta / (1 - beta)
+        loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, targets=y_true, pos_weight=pos_weight)
+
+        # or reduce_sum and/or axis=-1
+        return tf.reduce_mean(loss * (1 - beta))
+
+    return loss
