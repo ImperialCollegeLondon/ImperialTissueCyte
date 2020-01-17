@@ -23,17 +23,18 @@ import unetmodel
 import preprocessing
 import losses
 
-class AlphaScheduler(Callback):
-    def __init__(self, alpha, update_fn):
-        self.alpha = alpha
-        self.update_fn = update_fn
-    def on_epoch_end(self, epoch, logs=None):
-        updated_alpha = self.update_fn(K.get_value(self.alpha))
+# class AlphaScheduler(Callback):
+#     def __init__(self, alpha, update_fn):
+#         self.alpha = alpha
+#         self.update_fn = update_fn
+#     def on_epoch_end(self, epoch, logs=None):
+#         updated_alpha = self.update_fn(K.get_value(self.alpha))
 
 alpha = K.variable(1, dtype='float32')
 
-def update_alpha(value):
-    return np.clip(value - 0.01, 0.01, 1)
+def update_alpha(epoch,logs):
+    #maybe use epoch+1, because it starts with 0
+    K.set_value(alpha, np.clip(alpha - 0.01, 0.01, 1))
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -76,7 +77,8 @@ if __name__ == '__main__':
     checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
-    callbacks_list = [checkpoint, early, redonplat, AlphaScheduler(alpha, update_alpha)]
+    newalpha = LambdaCallback(on_epoch_end=update_alpha)
+    callbacks_list = [checkpoint, early, redonplat, newalpha]
 
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
