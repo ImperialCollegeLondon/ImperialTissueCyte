@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet(losses.weighted_cross_entropy(0.8))
     # model = unetmodel.get_unet(losses.bce_focal_tversky_loss)
     # model = unetmodel.get_unet(losses.surface_loss)
-    model = unetmodel.get_unet(losses.dice_focal_tversky_loss)
+    model = unetmodel.get_unet(losses.dice_focal_tversky_loss(alpha))
     # model = unetmodel.get_unet(losses.dice_surface_loss)
     # model = unetmodel.get_unet(losses.bce_surface_loss)
 
