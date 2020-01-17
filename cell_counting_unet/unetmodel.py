@@ -48,6 +48,6 @@ def get_unet(lossfn):
 
     model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
+    model.compile(optimizer = Adam(lr = 1e-3), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
 
     return model
