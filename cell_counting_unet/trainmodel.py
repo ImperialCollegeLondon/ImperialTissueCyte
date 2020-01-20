@@ -29,7 +29,7 @@ class AlphaCallback(Callback):
     def on_epoch_end(self, epoch, logs={}):
         K.set_value(self.alpha, np.clip(self.alpha - 0.01, 0.01, 1))
 
-alpha = K.variable(1., dtype='float32')
+alpha = K.variable(0.5, dtype='float32')
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
