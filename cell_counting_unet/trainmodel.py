@@ -23,7 +23,7 @@ import unetmodel
 import preprocessing
 import losses
 
-alpha = K.variable(1, dtype='float32')
+alpha = K.variable(.5, dtype='float32')
 
 def update_alpha(epoch,logs):
     #maybe use epoch+1, because it starts with 0
