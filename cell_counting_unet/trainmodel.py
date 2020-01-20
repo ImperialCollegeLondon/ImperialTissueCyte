@@ -23,11 +23,13 @@ import unetmodel
 import preprocessing
 import losses
 
-alpha = K.variable(.5, dtype='float32')
+class AlphaCallback(Callback):
+    def __init__(self, alpha):
+        self.alpha = alpha
+    def on_epoch_end(self, epoch, logs={}):
+        K.set_value(self.alpha, np.clip(self.alpha - 0.01, 0.01, 1))
 
-def update_alpha(epoch,logs):
-    #maybe use epoch+1, because it starts with 0
-    K.set_value(alpha, np.clip(alpha - 0.01, 0.01, 1))
+alpha = K.variable(1., dtype='float32')
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=20, verbose=1)
-    newalpha = LambdaCallback(on_epoch_end=update_alpha)
+    newalpha = AlphaCallback(alpha)
     callbacks_list = [checkpoint, early, redonplat, newalpha]
 
     history = model.fit(train_x, train_y,
