@@ -7,21 +7,6 @@ from scipy.ndimage import distance_transform_edt as distance
 epsilon = 1e-5
 smooth = 1
 
-def weighted_cross_entropy(beta):
-  def convert_to_logits(y_pred):
-      y_pred = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
-
-      return tf.math.log(y_pred / (1 - y_pred))
-
-  def loss(y_true, y_pred):
-    y_pred = convert_to_logits(y_pred)
-    loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=beta)
-
-    # or reduce_sum and/or axis=-1
-    return tf.reduce_mean(loss)
-
-  return loss
-
 def binary_focal_loss(y_true, y_pred):
     gamma=2.
     alpha=.25
@@ -146,6 +131,21 @@ def dice_surface_loss(y_true, y_pred):
 def bce_surface_loss(y_true, y_pred):
     loss = binary_crossentropy(y_true, y_pred) + 0.5*surface_loss(y_true,y_pred)
     return loss
+
+def weighted_cross_entropy(beta):
+  def convert_to_logits(y_pred):
+      y_pred = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
+
+      return tf.math.log(y_pred / (1 - y_pred))
+
+  def loss(y_true, y_pred):
+    y_pred = convert_to_logits(y_pred)
+    loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=beta)
+
+    # or reduce_sum and/or axis=-1
+    return tf.reduce_mean(loss)
+
+  return loss
 
 # beta = 0.01 means negative class is 1% of the total samples so it is weighted in the loss accordingly
 def balanced_cross_entropy(beta):
