@@ -92,8 +92,10 @@ def focal_tversky(y_true,y_pred):
     gamma = 0.75
     return K.pow((1-pt_1), gamma)
 
-def bce_focal_tversky_loss(y_true, y_pred):
-    loss = binary_crossentropy(y_true, y_pred) + focal_tversky(y_true,y_pred)
+def bce_focal_tversky_loss(alpha):
+    def loss(y_true, y_pred):
+        return ((alpha*binary_crossentropy(y_true, y_pred)) + ((1-alpha)*focal_tversky(y_true,y_pred)))
+
     return loss
 
 def dice_focal_tversky_loss(alpha):
