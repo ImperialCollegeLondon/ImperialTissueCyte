@@ -186,7 +186,7 @@ def balanced_cross_entropy(beta):
     def loss(y_true, y_pred):
         y_pred = convert_to_logits(y_pred)
         pos_weight = beta / (1 - beta)
-        loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, targets=y_true, pos_weight=pos_weight)
+        loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=pos_weight)
 
         # or reduce_sum and/or axis=-1
         return tf.reduce_mean(loss * (1 - beta))
