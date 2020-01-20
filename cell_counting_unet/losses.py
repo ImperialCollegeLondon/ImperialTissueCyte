@@ -181,7 +181,7 @@ def balanced_cross_entropy(beta):
       # see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525
       y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1 - K.epsilon())
 
-      return tf.log(y_pred / (1 - y_pred))
+      return tf.math.log(y_pred / (1 - y_pred))
 
     def loss(y_true, y_pred):
         y_pred = convert_to_logits(y_pred)
