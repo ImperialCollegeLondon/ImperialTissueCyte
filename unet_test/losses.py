@@ -168,12 +168,12 @@ def iou(y_true, y_pred):
     def f1(y_true, y_pred):
         intersection = K.sum(y_true * y_pred)
         union = K.sum(y_true) + K.sum(y_pred) - intersection
-        return -K.mean( (intersection + epsilon) / (union + epsilon) )
+        return K.mean( (intersection + epsilon) / (union + epsilon) )
     def f2(y_true, y_pred):
         y_true = 1-y_true
         y_pred = 1-y_pred
         intersection = K.sum(y_true * y_pred)
         union = K.sum(y_true) + K.sum(y_pred) - intersection
-        return -K.mean( (intersection + epsilon) / (union + epsilon) )
+        return K.mean( (intersection + epsilon) / (union + epsilon) )
 
     return tf.cond(tf.equal(K.max(y_true), 0), lambda: f1(y_true, y_pred), lambda: f2(y_true, y_pred))
