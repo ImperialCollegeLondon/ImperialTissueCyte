@@ -167,6 +167,6 @@ def balanced_cross_entropy(beta):
 def iou(y_true, y_pred):
     if np.max(y_true) == 0.0:
         return iou(1-y_true, 1-y_pred)
-    intersection = K.sum(y_true * y_pred, axis=[1,2,3])
-    union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3]) - intersection
-    return -K.mean( (intersection + epsilon) / (union + epsilon), axis=0)
+    intersection = K.sum(y_true * y_pred)
+    union = K.sum(y_true) + K.sum(y_pred) - intersection
+    return -K.mean( (intersection + epsilon) / (union + epsilon))
