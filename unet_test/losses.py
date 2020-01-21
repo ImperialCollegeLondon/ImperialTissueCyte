@@ -165,11 +165,11 @@ def balanced_cross_entropy(beta):
     return loss
 
 def iou(y_true, y_pred):
-    def f1(y_true, y_pred):
+    def f1():
         intersection = K.sum(y_true * y_pred)
         union = K.sum(y_true) + K.sum(y_pred) - intersection
         return -K.mean( (intersection + epsilon) / (union + epsilon) )
-    def f2(y_true, y_pred):
+    def f2():
         y_true = 1-y_true
         y_pred = 1-y_pred
         intersection = K.sum(y_true * y_pred)
