@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from scipy.ndimage import distance_transform_edt as distance
 
-epsilon = 1e-5
+epsilon = 1e-6
 smooth = 1
 
 def binary_focal_loss(y_true, y_pred):
@@ -163,3 +163,10 @@ def balanced_cross_entropy(beta):
         return tf.reduce_mean(loss * (1 - beta))
 
     return loss
+
+def iou(y_true, y_pred):
+    if np.max(y_true) == 0.0:
+        return iou(1-y_true, 1-y_pred)
+    intersection = K.sum(y_true * y_pred, axis=[1,2,3])
+    union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3]) - intersection
+    return -K.mean( (intersection + epsilon) / (union + epsilon), axis=0)
