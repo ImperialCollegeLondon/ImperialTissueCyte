@@ -57,7 +57,7 @@ if __name__ == '__main__':
     batch = 4
 
     # ORIG BATCH NORM LOSS
-    # model = unetmodel.get_unet('binary_crossentropy')
+    model = unetmodel.get_unet('binary_crossentropy')
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet(losses.dice_surface_loss)
     # model = unetmodel.get_unet(losses.bce_surface_loss)
     # model = unetmodel.get_unet(losses.balanced_cross_entropy(0.3))
-    model = unetmodel.get_unet(losses.iou)
+    # model = unetmodel.get_unet(losses.iou)
 
     checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
     early = EarlyStopping(monitor="val_loss", mode="min", patience=50, verbose=1)
