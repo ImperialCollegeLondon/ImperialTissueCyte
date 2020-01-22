@@ -57,12 +57,12 @@ if __name__ == '__main__':
     batch = 4
 
     # ORIG BATCH NORM LOSS
-    model = unetmodel.get_unet('binary_crossentropy')
+    # model = unetmodel.get_unet('binary_crossentropy')
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
     # model = unetmodel.get_unet(losses.focal_loss)
-    # model = unetmodel.get_unet(losses.weighted_cross_entropy(0.2))
+    model = unetmodel.get_unet(losses.weighted_cross_entropy(0.75))
     # model = unetmodel.get_unet(losses.bce_focal_tversky_loss(alpha))
     # model = unetmodel.get_unet(losses.surface_loss)
     # model = unetmodel.get_unet(losses.dice_focal_tversky_loss(alpha))
