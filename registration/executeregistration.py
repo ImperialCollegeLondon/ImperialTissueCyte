@@ -59,8 +59,8 @@ try:
     SimpleElastix.SetFixedImage(fixedData)
     SimpleElastix.SetMovingImage(movingData)
 
-    SimpleElastix.SetFixedPointSet(args.fixedpointspath)
-    SimpleElastix.SetMovingPointSet(args.movingpointspath)
+    SimpleElastix.SetFixedPointSetFileName(args.fixedpointspath)
+    SimpleElastix.SetMovingPointSetFileName(args.movingpointspath)
 
     # Create segmentation map
     parameterMapVector = sitk.VectorOfParameterMap()
@@ -68,13 +68,13 @@ try:
     # Start with Affine using fixed points to aid registration
     affineParameterMap = sitk.ReadParameterFile('02_ARA_affine.txt')
     # Add corresponding points here
-    affineParameterMap["Metric"].append("CorrespondingPointsEuclideanDistanceMetric")
+    affineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     # Add corresponding points here
-    bsplineParameterMap["Metric"].append("CorrespondingPointsEuclideanDistanceMetric")
+    bsplineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
     parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
@@ -93,3 +93,23 @@ try:
     transformMap = SimpleElastix.GetTransformParameterMap()
 
     resultSeg = sitk.Transformix(annoData, transformMap)
+
+    # hemSeg = sitk.Transformix(hemData, transformMap)
+
+    # Write average transform and segmented results
+    # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
+    sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
+    # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
+
+    minutes, seconds = divmod(time.time()-tstart, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    text = args.autoflpath+'\n SimpleElastix segmentation completed in %02d:%02d:%02d:%02d' %(days, hours, minutes, seconds)
+
+    print ('')
+    print (text)
+
+    slack_message(text, '#segmentation', 'Segmentation')
+
+except (RuntimeError, TypeError, NameError, ImportError, SyntaxError, FileNotFoundError):
+    slack_message('*ERROR*', '#segmentation', 'Segmentation')

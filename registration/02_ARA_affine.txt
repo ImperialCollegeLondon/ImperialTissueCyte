@@ -10,15 +10,16 @@
 (MovingImageDimension 3)
 
 //Components
-(Registration "MultiResolutionRegistration")
+(Registration "MultiMetricMultiResolutionRegistration")
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "BSplineInterpolator")
-(Metric "AdvancedMattesMutualInformation")
+// (Metric "AdvancedMattesMutualInformation")
 (Optimizer "AdaptiveStochasticGradientDescent")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "AffineTransform")
+(Metric "AdvancedMattesMutualInformation" "CorrespondingPointsEuclideanDistanceMetric")
 
 (ErodeMask "false" )
 
