@@ -68,13 +68,13 @@ try:
     # Start with Affine using fixed points to aid registration
     affineParameterMap = sitk.ReadParameterFile('02_ARA_affine.txt')
     # Add corresponding points here
-    affineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
+    # affineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     # Add corresponding points here
-    bsplineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
+    # bsplineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
     parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map

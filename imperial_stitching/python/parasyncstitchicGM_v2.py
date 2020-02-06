@@ -1,6 +1,7 @@
 """
 ################################################################################
-Asynchronous Stitching Script - Parallel version
+Parallel-and-asynchronous Stitching Script - Parallel version
+
 Author: Gerald M
 
 This script pulls the data generated through TissueCyte (or another microscope system) and
@@ -21,7 +22,7 @@ Instructions:
    Note: You can drag and drop folder paths (works on MacOS) or copy and paste the paths
    Note: The temporary directory is required to speed up ImageJ loading of the files
 
-Updates:
+Important updates:
 06.03.19 -  Updated the overlap and crop parameters to improve the image average result and
             tiling artefacts.
 11.03.19 -  Included default values and parameter search from Mosaic file.

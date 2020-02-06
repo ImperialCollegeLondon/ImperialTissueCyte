@@ -49,7 +49,7 @@
 // (Metric "AdvancedNormalizedCorrelation")
 
 // (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty") // different to par0025 original
-(Metric "AdvancedMattesMutualInformation" "CorrespondingPointsEuclideanDistanceMetric") // different to par0025 original
+(Metric "AdvancedNormalizedCorrelation" "CorrespondingPointsEuclideanDistanceMetric") // different to par0025 original
 
 
 // ***************** Transformation **************************
