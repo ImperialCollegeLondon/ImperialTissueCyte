@@ -133,8 +133,12 @@ def generate_corr(tcpath, scanid, startsec, endsec):
     # Average image
     avgimage = np.nanmean(img_arr, axis=0)
 
+    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/0-average-tile.tif')
+
     # Blur the result to remove random artefacts
-    avgimage = cv2.GaussianBlur(avgimage, (1001,1001), 0)
+    avgimage = cv2.GaussianBlur(avgimage, (1501,1501), 0)
+
+    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/1-gaussian-tile.tif')
 
     padsize = 144
     weight_func = lambda x : np.sqrt(padsize**2 - x**2)/padsize
@@ -144,6 +148,8 @@ def generate_corr(tcpath, scanid, startsec, endsec):
     avgimage = avgimage/np.max(avgimage)
     avgimage = 2-avgimage
 
+    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/2-correction-tile.tif')
+
     # Scale the pad area by the weight
     copy = avgimage
     for pos in np.flip(range(padsize+1)):
@@ -151,6 +157,8 @@ def generate_corr(tcpath, scanid, startsec, endsec):
         avgimage[-pos,:] = copy[-pos,:]*weight[pos]
         avgimage[:,pos] = copy[:,pos]*weight[pos]
         avgimage[:,-pos] = copy[:,-pos]*weight[pos]
+
+    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/3-feathered-tile.tif')
 
     return avgimage
 
