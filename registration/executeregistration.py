@@ -72,10 +72,10 @@ try:
     # Add very gross BSpline to make rough adjustments to the affine result
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     parameterMapVector.append(bsplineParameterMap)
-
-    bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
-    bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
-    parameterMapVector.append(bsplineParameterMap)
+    #
+    # bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
+    # bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
+    # parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
     SimpleElastix.SetParameterMap(parameterMapVector)
