@@ -44,7 +44,7 @@
 // quite ok in general. The Transform and Metric are important
 // and need to be chosen careful for each application. See manual.
 (Optimizer "StandardGradientDescent") // StandardGradientDescent does not work, AdaptiveStochasticGradientDescent
-(Transform "BSplineTransform")
+(Transform "SplineKernelTransform")
 // (Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original // THIS IS THE ONE
 // (Metric "AdvancedNormalizedCorrelation")
 
