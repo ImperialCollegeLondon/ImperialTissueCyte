@@ -75,7 +75,7 @@ try:
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     # Add corresponding points here
     # bsplineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
-    # parameterMapVector.append(bsplineParameterMap)
+    parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
     SimpleElastix.SetParameterMap(parameterMapVector)
