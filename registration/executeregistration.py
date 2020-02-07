@@ -75,7 +75,7 @@ try:
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
     # Add corresponding points here
     # bsplineParameterMap["Metric"] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
-    parameterMapVector.append(bsplineParameterMap)
+    # parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
     SimpleElastix.SetParameterMap(parameterMapVector)
@@ -97,7 +97,7 @@ try:
     # hemSeg = sitk.Transformix(hemData, transformMap)
 
     # Write average transform and segmented results
-    # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
+    sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
     sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
     # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
