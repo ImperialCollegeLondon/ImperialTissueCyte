@@ -97,7 +97,7 @@ try:
     # hemSeg = sitk.Transformix(hemData, transformMap)
 
     # Write average transform and segmented results
-    sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
+    # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
     sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
     # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
