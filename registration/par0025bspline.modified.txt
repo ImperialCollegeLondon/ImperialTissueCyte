@@ -63,7 +63,7 @@
 // geometric centers of the fixed and moving.
 //(AutomaticTransformInitialization "true")
 //(FinalGridSpacingInPhysicalUnits 0.25 0.25 0.5)
-(FinalGridSpacingInVoxels  50.00000 50.00000 50.00000) // 25 works better than 10, 25 works better than 50 (tested on median filt)
+(FinalGridSpacingInVoxels  25.00000 25.00000 25.00000) // 25 works better than 10, 25 works better than 50 (tested on median filt)
 //(FinalGridSpacingInPhysicalUnits 1.4 1.4 4.0)
 //(GridSpacingSchedule 1 1 1  1 1 1)
 //(GridSpacingSchedule 2 2 2  1 1 1  1 1 1  1 1 1)
