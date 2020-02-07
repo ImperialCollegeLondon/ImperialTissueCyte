@@ -19,7 +19,7 @@
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "AffineTransform")
-(Metric "AdvancedMattesMutualInformation" "CorrespondingPointsEuclideanDistanceMetric")
+(Metric "AdvancedMattesMutualInformation")
 
 (ErodeMask "false" )
 

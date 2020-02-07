@@ -67,15 +67,20 @@ try:
 
     # Start with Affine using fixed points to aid registration
     affineParameterMap = sitk.ReadParameterFile('02_ARA_affine.txt')
+    affineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
+    bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
     parameterMapVector.append(bsplineParameterMap)
-    #
-    # bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
-    # bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
-    # parameterMapVector.append(bsplineParameterMap)
+
+    bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
+    bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
+    bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
+    bsplineParameterMap['FinalGridSpacingInVoxels'] = ['50.0', '50.0', '50.0']
+    bsplineParameterMap['MaximumNumberOfIterations'] = ['200']
+    parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
     SimpleElastix.SetParameterMap(parameterMapVector)
