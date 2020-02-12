@@ -66,7 +66,7 @@
 // geometric centers of the fixed and moving.
 //(AutomaticTransformInitialization "true")
 
-(FinalGridSpacingInVoxels  4 4 4)
+(FinalGridSpacingInVoxels  25 25 25)
 
 // Whether transforms are combined by composition or by addition.
 // In generally, Compose is the best option in most cases.
@@ -165,7 +165,7 @@
 // You can save some time by setting this to false, if you are
 // only interested in the final (nonrigidly) deformed moving image
 // for example.
-(WriteResultImage "true")
+(WriteResultImage "false")
 
 // The pixel type and format of the resulting deformed moving image
 (ResultImagePixelType "float")
