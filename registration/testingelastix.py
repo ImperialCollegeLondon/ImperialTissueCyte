@@ -41,10 +41,6 @@ if __name__ == '__main__':
             print ('Average atlas loaded')
             annoData = sitk.GetImageFromArray(io.imread(annopath)[first:last+1,:,:])
             print ('Annotation atlas loaded')
-            hemData = np.zeros(movingData.GetSize())
-            hemData[570::,:,:] = 1
-            hemData = sitk.GetImageFromArray(np.uint8(np.swapaxes(hemData,0,2)))
-            print ('Hemisphere atlas loaded')
 
             tstart = time.time()
 
@@ -83,12 +79,9 @@ if __name__ == '__main__':
 
             resultSeg = sitk.Transformix(annoData, transformMap)
 
-            hemSeg = sitk.Transformix(hemData, transformMap)
-
             # Write average transform and segmented results
             # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
             sitk.WriteImage(resultSeg, autoflpath+'SEGRES'+paramap+'.tif')
-            # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
             minutes, seconds = divmod(time.time()-tstart, 60)
             hours, minutes = divmod(minutes, 60)
