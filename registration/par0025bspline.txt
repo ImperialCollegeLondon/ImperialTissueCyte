@@ -32,7 +32,7 @@
 //(Registration "MultiResolutionRegistration")
 (Registration "MultiMetricMultiResolutionRegistration")
 (Interpolator "BSplineInterpolator")
-(ResampleInterpolator "FinalBSplineInterpolator")
+(ResampleInterpolator "FinalNearestNeighborInterpolator")
 (Resampler "DefaultResampler")
 
 // These may be changed to Fixed/MovingSmoothingImagePyramid.
