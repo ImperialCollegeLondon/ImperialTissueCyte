@@ -31,6 +31,7 @@ Important updates:
 31.01.20 -  Changed option for 16-bit output with improved scaling
 05.02.20 -  Removed 16-bit
 05.02.20 -  Added feathering to tile edge and stitching with max intensity
+10.02.20 -  Added average tile from flatfield imaging and uses that for correction
 ################################################################################
 """
 
@@ -131,14 +132,16 @@ def generate_corr(tcpath, scanid, startsec, endsec):
     img_arr = img_arr.astype(np.float32)
 
     # Average image
-    avgimage = np.nanmean(img_arr, axis=0)
+    img_arr_nan = img_arr
+    img_arr_nan[img_arr_nan==0] = np.nan
+    avgimage = np.nanmean(img_arr_nan, axis=0)
 
-    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/0-average-tile.tif')
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/0-average-tile.tif')
 
     # Blur the result to remove random artefacts
     avgimage = cv2.GaussianBlur(avgimage, (1501,1501), 0)
 
-    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/1-gaussian-tile.tif')
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/1-gaussian-tile.tif')
 
     padsize = 144
     weight_func = lambda x : np.sqrt(padsize**2 - x**2)/padsize
@@ -148,7 +151,7 @@ def generate_corr(tcpath, scanid, startsec, endsec):
     avgimage = avgimage/np.max(avgimage)
     avgimage = 2-avgimage
 
-    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/2-correction-tile.tif')
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/2-correction-tile.tif')
 
     # Scale the pad area by the weight
     copy = avgimage
@@ -158,9 +161,45 @@ def generate_corr(tcpath, scanid, startsec, endsec):
         avgimage[:,pos] = copy[:,pos]*weight[pos]
         avgimage[:,-pos] = copy[:,-pos]*weight[pos]
 
-    Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/3-feathered-tile.tif')
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/3-feathered-tile.tif')
 
     return avgimage
+
+#=============================================================================================
+# Generate an intensity correction tile version 2 using flat field
+#=============================================================================================
+def generate_corr_v2(avg_tile_path):
+    avgimage = Image.open(avg_tile_path)
+
+    size = avgimage.size
+    cropstart = int(round(0.014*size[0])) #0.0096 but leaves a bit too much on edge
+    cropend = int(round(size[0]-cropstart+1))
+
+    avgimage = np.array(avgimage.crop((cropstart, cropstart, cropend, cropend)).rotate(90)).astype(np.float32)
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/0-average-tile.tif')
+
+    avgimage = cv2.GaussianBlur(avgimage, (201,201), 0)
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/1-gaussian-tile.tif')
+
+    avgimage = avgimage/np.max(avgimage)
+    avgimage = 2-avgimage
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/2-correction-tile.tif')
+
+    padsize = 140
+    weight_func = lambda x : np.sqrt(padsize**2 - x**2)/padsize
+    weight = np.flip(np.array([weight_func(x) for x in range(0, padsize+1)]))
+
+    copy = avgimage
+    for pos in np.flip(range(padsize+1)):
+        avgimage[pos,:] = copy[pos,:]*weight[pos]
+        avgimage[-pos,:] = copy[-pos,:]*weight[pos]
+        avgimage[:,pos] = copy[:,pos]*weight[pos]
+        avgimage[:,-pos] = copy[:,-pos]*weight[pos]
+
+    # Image.fromarray((255*avgimage/np.max(avgimage)).astype(np.uint8)).save('/Users/gm515/Desktop/3-feathered-tile.tif')
+
+    return avgimage
+
 
 if __name__ == '__main__':
     #=============================================================================================
@@ -340,7 +379,9 @@ if __name__ == '__main__':
             # Compute average tile and divide if required
             if avgcorr == 'y':
                 if corrtile is None:
-                    corrtile = generate_corr(tcpath, scanid, startsec, trueendsec)
+                    # corrtile = generate_corr(tcpath, scanid, startsec, trueendsec)
+                    avg_tile_path = '../AVG_IMG.tif'
+                    corrtile = generate_corr_v2(avg_tile_path)
                     print ('Computed correction tile from 1000 random samples.')
 
                 # Correct each image

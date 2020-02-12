@@ -59,28 +59,28 @@ try:
     SimpleElastix.SetFixedImage(fixedData)
     SimpleElastix.SetMovingImage(movingData)
 
-    SimpleElastix.SetFixedPointSetFileName(args.fixedpointspath)
-    SimpleElastix.SetMovingPointSetFileName(args.movingpointspath)
+    # SimpleElastix.SetFixedPointSetFileName(args.fixedpointspath)
+    # SimpleElastix.SetMovingPointSetFileName(args.movingpointspath)
 
     # Create segmentation map
     parameterMapVector = sitk.VectorOfParameterMap()
 
     # Start with Affine using fixed points to aid registration
     affineParameterMap = sitk.ReadParameterFile('02_ARA_affine.txt')
-    affineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
+    # affineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
     parameterMapVector.append(affineParameterMap)
 
     # Add very gross BSpline to make rough adjustments to the affine result
     bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
-    bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
+    # bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"] # uncomment to ignore the corresponding points
     parameterMapVector.append(bsplineParameterMap)
 
-    bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
-    bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
-    bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
-    bsplineParameterMap['FinalGridSpacingInVoxels'] = ['50.0', '50.0', '50.0']
-    bsplineParameterMap['MaximumNumberOfIterations'] = ['200']
-    parameterMapVector.append(bsplineParameterMap)
+    # bsplineParameterMap = sitk.ReadParameterFile('par0025bspline.modified.txt')
+    # bsplineParameterMap["Optimizer"] = ["AdaptiveStochasticGradientDescent"]
+    # bsplineParameterMap['Metric'] = ["AdvancedMattesMutualInformation", "CorrespondingPointsEuclideanDistanceMetric"]
+    # bsplineParameterMap['FinalGridSpacingInVoxels'] = ['50.0', '50.0', '50.0']
+    # bsplineParameterMap['MaximumNumberOfIterations'] = ['200']
+    # parameterMapVector.append(bsplineParameterMap)
 
     # Set the parameter map
     SimpleElastix.SetParameterMap(parameterMapVector)
@@ -104,7 +104,7 @@ try:
     # Write average transform and segmented results
     # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
     sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
-    sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
+    # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
