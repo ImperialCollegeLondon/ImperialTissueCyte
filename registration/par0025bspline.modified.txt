@@ -68,7 +68,7 @@
 (FinalGridSpacingInVoxels  25.0 25.0 25.0) // 25 works better than 10, 25 works better than 50 (tested on median filt)
 
 //(GridSpacingSchedule 1 1 1  1 1 1) // commented
-(GridSpacingSchedule 4 4 4  2 2 2  1 1 1)
+(GridSpacingSchedule 8 8 8  4 4 4  2 2 2  1 1 1)
 
 // Whether transforms are combined by composition or by addition.
 // In generally, Compose is the best option in most cases.
@@ -104,7 +104,7 @@
 // The number of resolutions. 1 Is only enough if the expected
 // deformations are small. 3 or 4 mostly works fine. For large
 // images and large deformations, 5 or 6 may even be useful.
-(NumberOfResolutions 3) // default 2, 4 works best
+(NumberOfResolutions 4) // default 2, 4 works best
 (WriteResultImageAfterEachResolution "false" "false" "false" "false")
 
 // The downsampling/blurring factors for the image pyramids.
