@@ -104,7 +104,7 @@
 // The number of resolutions. 1 Is only enough if the expected
 // deformations are small. 3 or 4 mostly works fine. For large
 // images and large deformations, 5 or 6 may even be useful.
-(NumberOfResolutions 4) // default 2, 4 works best
+(NumberOfResolutions 3) // default 2, 4 works best
 (WriteResultImageAfterEachResolution "false" "false" "false" "false")
 
 // The downsampling/blurring factors for the image pyramids.
