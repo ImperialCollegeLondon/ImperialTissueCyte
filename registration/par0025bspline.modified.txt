@@ -47,8 +47,8 @@
 // and need to be chosen careful for each application. See manual.
 (Optimizer "AdaptiveStochasticGradientDescent") // StandardGradientDescent does not work, AdaptiveStochasticGradientDescent
 (Transform "BSplineTransform")
-// (Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original // THIS IS THE ONE
-(Metric "AdvancedNormalizedCorrelation")
+(Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original // THIS IS THE ONE
+//(Metric "AdvancedNormalizedCorrelation")
 
 // (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty") // different to par0025 original
 // (Metric "AdvancedMattesMutualInformation" "CorrespondingPointsEuclideanDistanceMetric") // different to par0025 original
@@ -64,12 +64,10 @@
 // Automatically guess an initial translation by aligning the
 // geometric centers of the fixed and moving.
 //(AutomaticTransformInitialization "true")
-//(FinalGridSpacingInPhysicalUnits 0.25 0.25 0.5)
+
 (FinalGridSpacingInVoxels  25.00000 25.00000 25.00000) // 25 works better than 10, 25 works better than 50 (tested on median filt)
-//(FinalGridSpacingInPhysicalUnits 1.4 1.4 4.0)
-//(GridSpacingSchedule 1 1 1  1 1 1)
-//(GridSpacingSchedule 2 2 2  1 1 1  1 1 1  1 1 1)
-//(GridSpacingSchedule 1 1 1  1 1 1) // uncommented
+
+//(GridSpacingSchedule 1 1 1  1 1 1) // commented
 (GridSpacingSchedule 8 8 8  4 4 4  2 2 2  1 1 1)
 
 // Whether transforms are combined by composition or by addition.
@@ -108,20 +106,18 @@
 // images and large deformations, 5 or 6 may even be useful.
 (NumberOfResolutions 4) // default 2, 4 works best
 (WriteResultImageAfterEachResolution "false" "false" "false" "false")
+
 // The downsampling/blurring factors for the image pyramids.
 // By default, the images are downsampled by a factor of 2
 // compared to the next resolution.
 // So, in 2D, with 4 resolutions, the following schedule is used:
 //(ImagePyramidSchedule 8 8  4 4  2 2  1 1 )
 
-//(FixedImagePyramidSchedule  1 1 0  0 0 0)
-//(MovingImagePyramidSchedule 1 1 0  0 0 0)
-
 (FixedImagePyramidSchedule  0 0 0  0 0 0  0 0 0  0 0 0)
 (MovingImagePyramidSchedule 0 0 0  0 0 0  0 0 0  0 0 0)
 
 // You can specify any schedule, for example:
-//(ImagePyramidSchedule 4 4  4 3  2 1  1 1 )
+//(ImagePyramidSchedule 1 1 1  1 1 1  1 1 1  1 1 1)
 // Make sure that the number of elements equals the number
 // of resolutions times the image dimension.
 
@@ -130,7 +126,7 @@
 // Maximum number of iterations in each resolution level:
 // 200-500 works usually fine for rigid registration.
 // For more robustness, you may increase this to 1000-2000.
-(MaximumNumberOfIterations 2000) // 1000
+(MaximumNumberOfIterations 4000) // 1000
 
 (NumberOfJacobianMeasurements 1000) // added in to limit calculations
 
@@ -138,10 +134,6 @@
 // which usually works well. In case of unusual high-resolution images
 // (eg histology) it is necessary to increase this value a bit, to the size
 // of the "smallest visible structure" in the image:
-//(MaximumStepLength 0.06)
-//(MaximumStepLength 0.145833)
-//(MaximumStepLength 0.02)
-//(MaximumStepLength 0.009)
 //(MaximumStepLength 1)
 
 // **************** Image sampling **********************
