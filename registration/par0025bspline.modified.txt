@@ -126,7 +126,7 @@
 // Maximum number of iterations in each resolution level:
 // 200-500 works usually fine for rigid registration.
 // For more robustness, you may increase this to 1000-2000.
-(MaximumNumberOfIterations 8000) // 1000
+(MaximumNumberOfIterations 10000) // 1000
 
 (NumberOfJacobianMeasurements 1000) // added in to limit calculations
 
