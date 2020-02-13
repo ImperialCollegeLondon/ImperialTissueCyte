@@ -68,7 +68,7 @@
 (FinalGridSpacingInVoxels  25.0 25.0 25.0) // 25 works better than 10, 25 works better than 50 (tested on median filt)
 
 //(GridSpacingSchedule 1 1 1  1 1 1) // commented
-(GridSpacingSchedule 8 8 8  4 4 4  2 2 2  1 1 1)
+(GridSpacingSchedule 4 4 4  2 2 2  1 1 1)
 
 // Whether transforms are combined by composition or by addition.
 // In generally, Compose is the best option in most cases.

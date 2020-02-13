@@ -104,7 +104,7 @@ try:
     # Write average transform and segmented results
     # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
     sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
-    # sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
+    sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
 
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
