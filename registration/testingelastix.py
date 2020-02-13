@@ -35,9 +35,9 @@ if __name__ == '__main__':
     for paramap in bsplineparams:
         try:
             print ('Loading all atlases...')
-            fixedData = sitk.GetImageFromArray(255-io.imread(autoflpath))
+            fixedData = sitk.GetImageFromArray(io.imread(autoflpath))
             print ('Autofluorescence atlas loaded')
-            movingData = sitk.GetImageFromArray(65535-io.imread(avgpath)[first:last+1,:,:])
+            movingData = sitk.GetImageFromArray(io.imread(avgpath)[first:last+1,:,:])
             print ('Average atlas loaded')
             annoData = sitk.GetImageFromArray(io.imread(annopath)[first:last+1,:,:])
             print ('Annotation atlas loaded')
