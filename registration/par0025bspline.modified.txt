@@ -1,3 +1,4 @@
+// Modified from
 // http://elastix.bigr.nl/wiki/index.php/Par0025
 
 // The internal pixel type, used for internal computations
@@ -28,7 +29,6 @@
 // **************** Main Components **************************
 
 // The following components should usually be left as they are:
-//(Registration "MultiResolutionRegistration")
 (Registration "MultiMetricMultiResolutionRegistration")
 (Interpolator "BSplineInterpolator")
 (ResampleInterpolator "FinalNearestNeighborInterpolator") // default FinalBSplineInterpolator
@@ -36,6 +36,8 @@
 
 // These may be changed to Fixed/MovingSmoothingImagePyramid.
 // See the manual.
+//(FixedImagePyramid "FixedRecursiveImagePyramid")
+//(MovingImagePyramid "MovingRecursiveImagePyramid")
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 
@@ -45,7 +47,7 @@
 // and need to be chosen careful for each application. See manual.
 (Optimizer "AdaptiveStochasticGradientDescent") // StandardGradientDescent does not work, AdaptiveStochasticGradientDescent
 (Transform "BSplineTransform")
-(Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original // THIS IS THE ONE
+// (Metric "AdvancedMattesMutualInformation") // better than normalized correlation and different to par0025 original // THIS IS THE ONE
 // (Metric "AdvancedNormalizedCorrelation")
 
 // (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty") // different to par0025 original
