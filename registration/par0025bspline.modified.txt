@@ -65,7 +65,7 @@
 // geometric centers of the fixed and moving.
 //(AutomaticTransformInitialization "true")
 
-(FinalGridSpacingInVoxels  25.00000 25.00000 25.00000) // 25 works better than 10, 25 works better than 50 (tested on median filt)
+(FinalGridSpacingInVoxels  25.0 25.0 25.0) // 25 works better than 10, 25 works better than 50 (tested on median filt)
 
 //(GridSpacingSchedule 1 1 1  1 1 1) // commented
 (GridSpacingSchedule 8 8 8  4 4 4  2 2 2  1 1 1)
@@ -126,7 +126,7 @@
 // Maximum number of iterations in each resolution level:
 // 200-500 works usually fine for rigid registration.
 // For more robustness, you may increase this to 1000-2000.
-(MaximumNumberOfIterations 4000) // 1000
+(MaximumNumberOfIterations 8000) // 1000
 
 (NumberOfJacobianMeasurements 1000) // added in to limit calculations
 
