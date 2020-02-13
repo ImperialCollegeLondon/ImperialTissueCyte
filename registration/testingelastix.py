@@ -30,7 +30,7 @@ if __name__ == '__main__':
     first = 1
     last = 1320
 
-    bsplineparams = ['par0033bspline.txt', 'par0038bspline.txt', 'par0025bspline.txt']
+    bsplineparams = ['par0025bspline.modified.txt']#, 'par0033bspline.txt', 'par0038bspline.txt', 'par0025bspline.txt']
 
     for paramap in bsplineparams:
         try:
