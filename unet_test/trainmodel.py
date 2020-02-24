@@ -65,7 +65,7 @@ if __name__ == '__main__':
     early = EarlyStopping(monitor="val_dice_loss", mode="min", patience=50, verbose=1)
     redonplat = ReduceLROnPlateau(monitor="val_dice_loss", mode="min", patience=20, verbose=1)
     newalpha = AlphaCallback(alpha)
-    callbacks_list = [checkpoint, early, redonplat, newalpha]
+    callbacks_list = [checkpoint, early]#, redonplat, newalpha]
 
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
