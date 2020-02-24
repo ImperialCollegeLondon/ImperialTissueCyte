@@ -57,7 +57,7 @@ if __name__ == '__main__':
             img = np.zeros((window_size, window_size))
             img_crop = orig_img[y:y+window_size, x:x+window_size]
 
-            if np.sum(img_crop>0) != 0.25*(512*512): # If image is not 25% full, then skip as it's likely background
+            if np.sum(img_crop>0) > 0.25*(512*512): # If image is <25% full, then skip as it's likely background
                 img_crop = (img_crop-np.min(img_crop))/(np.max(img_crop)-np.min(img_crop))
 
                 img[0:img_crop.shape[0], 0:img_crop.shape[1]] = img_crop
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
                 pred = model.predict(img_array)
 
-                # Set a prediction of >50% as class 1 
+                # Set a prediction of >50% as class 1
                 pred = np.squeeze(pred[0])>0.5
 
             else:
