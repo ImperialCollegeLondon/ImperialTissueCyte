@@ -4,6 +4,9 @@ from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
 import losses
 
+# For the improved optimizer
+from keras_adabound import AdaBound
+
 def get_unet(lossfn):
     inputs = Input(shape = (None, None, 1))
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
@@ -48,6 +51,7 @@ def get_unet(lossfn):
 
     model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
+    # model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn]) # Default and used for all previous
+    model.compile(optimizer = AdaBound(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
 
     return model
