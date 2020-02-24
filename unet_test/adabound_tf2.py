@@ -39,7 +39,7 @@ class AdaBoundOptimizer(tf.compat.v1.train.Optimizer):
         if epsilon <= 0.:
             raise ValueError("Invalid epsilon value : {}".format(epsilon))
 
-        self._lr = learning_rate
+        self._learning_rate = learning_rate
         self._beta1 = beta1
         self._beta2 = beta2
         self._final_lr = final_lr
