@@ -77,7 +77,7 @@ if __name__ == '__main__':
             pred_img[y:y+window_size, x:x+window_size] = pred[0:img_crop.shape[0], 0:img_crop.shape[1]]
 
             counter+=1
-            print (str(counter)+' of '+(str(ceil(orig_img.shape[0]/window_size)*ceil(orig_img.shape[1]/window_size))))
+            print (str(counter)+' of '+(str(np.ceil(orig_img.shape[0]/window_size)*np.ceil(orig_img.shape[1]/window_size))))
 
     telapsed = time.time()-tstart
     hours, rem = divmod(telapsed, 3600)
