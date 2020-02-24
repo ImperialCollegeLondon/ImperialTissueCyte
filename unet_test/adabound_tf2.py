@@ -6,7 +6,7 @@ from __future__ import print_function
 import tensorflow as tf
 import re
 
-class AdaBoundOptimizer(tf.compat.v1.train.Optimizer):
+class AdaBoundOptimizer(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the AdaBound algorithm.
     See [Luo et al., 2019](https://openreview.net/forum?id=Bkg3g2R9FX)
     ([pdf](https://openreview.net/pdf?id=Bkg3g2R9FX)).
