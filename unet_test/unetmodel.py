@@ -5,7 +5,7 @@ import tensorflow.keras.backend as K
 import losses
 
 # For the improved optimizer
-from AdaBound import AdaBoundOptimizer
+# from AdaBound import AdaBoundOptimizer
 
 def get_unet(lossfn):
     inputs = Input(shape = (None, None, 1))
@@ -52,6 +52,6 @@ def get_unet(lossfn):
     model = Model(inputs, conv10)
 
     # model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn]) # Default and used for all previous
-    model.compile(optimizer = AdaBoundOptimizer(learning_rate=1e-4, final_lr=0.1), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
+    model.compile(optimizer = SGD(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn]) # Default and used for all previous
 
     return model
