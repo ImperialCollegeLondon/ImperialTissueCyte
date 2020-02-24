@@ -53,6 +53,6 @@ def get_unet(lossfn):
 
     # model.compile(optimizer = Adam(lr = 1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn]) # Default and used for all previous
     # model.compile(optimizer = AdaBoundOptimizer(learning_rate=1e-4, final_lr=0.1), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
-    model.compile(optimizer = SGD(lr=1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
+    model.compile(optimizer = SGD(lr=1e-2), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
 
     return model
