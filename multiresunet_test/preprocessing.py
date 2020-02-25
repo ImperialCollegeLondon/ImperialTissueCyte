@@ -147,20 +147,16 @@ def preprocess():
     print ('Checking nan...')
 
     if np.isnan(training_data_images).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(training_data_masks).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(test_data_images).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(test_data_masks).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     print ('Done!')
 
