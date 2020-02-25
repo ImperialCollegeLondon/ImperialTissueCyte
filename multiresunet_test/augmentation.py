@@ -35,9 +35,9 @@ class PoissonNoise(Operation):
     # Your class must implement the perform_operation method:
     def perform_operation(self, images):
         def do(image):
-            image = np.clip(noise.random_noise(np.array(image), mode='poisson'), 0, 1)
+            image = np.clip(noise.random_noise(np.array(image), mode='poisson') * 255., 0, 255)
 
-            return Image.fromarray(np.uint8(image * 255.))
+            return Image.fromarray(np.uint8(image))
 
         augmented_images = []
 
@@ -61,7 +61,7 @@ def augment(dir, n):
     training_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=8)
     training_datagen.shear(probability=0.5,  max_shear_left=2, max_shear_right=2)
     training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=0.8)
-    # training_datagen.add_operation(poisson_noise)
+    training_datagen.add_operation(poisson_noise)
 
     training_datagen.sample(n)
 
