@@ -36,8 +36,8 @@ if __name__ == '__main__':
     orig_img = (orig_img-np.min(orig_img))/(np.max(orig_img)-np.min(orig_img))
     print ('Done!')
 
-    model_path = 'models/2020_02_24_UNet_BCE/focal_unet_model.json'
-    weights_path = 'models/2020_02_24_UNet_BCE/focal_unet_weights.best.hdf5'
+    model_path = 'models/2020_02_25_MultiResUNet/focal_unet_model.json'
+    weights_path = 'models/2020_02_25_MultiResUNet/focal_unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     print ('Loading model...')
