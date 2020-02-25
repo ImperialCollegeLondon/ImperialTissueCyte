@@ -13,8 +13,24 @@ Augments the training data and saves to directory
 import os
 import Augmentor
 
+from Augmentor.Operations import Operation
+from skimage.util import noise
+from PIL import Image
+
+class PoissonNoise(Operation):
+    def __init__(self, probability):
+        # Call the superclass's constructor (meaning you must
+        # supply a probability value):
+        Operation.__init__(self, probability)
+
+    # Your class must implement the perform_operation method:
+    def perform_operation(self, image):
+        return noise.random_noise(img, mode='poisson')
+
 def augment(dir, n):
     training_datagen = Augmentor.Pipeline(source_directory=os.path.join(dir,'images'), output_directory='.', save_format='tif')
+
+    random_noise = PoissonNoise(probability=0.5)
 
     training_datagen.ground_truth(os.path.join(dir,'masks'))
 
@@ -26,6 +42,7 @@ def augment(dir, n):
     training_datagen.random_distortion(probability=0.5, grid_width=2, grid_height=2, magnitude=8)
     training_datagen.shear(probability=0.5,  max_shear_left=2, max_shear_right=2)
     training_datagen.random_contrast(probability=0.5, min_factor=0.3, max_factor=0.8)
+    training_datagen.add_operation(random_noise)
 
     training_datagen.sample(n)
 
