@@ -81,6 +81,6 @@ def multiresunet(loss_fn, input_size = (None, None, 1)):
     sigmoid = Conv2D(1, (1,1), padding = 'same', activation='sigmoid')(multires9)
 
     model = tf.keras.Model(inputs, sigmoid)
-    model.compile(optimizer = Adam(lr=1e-4), loss = [lossfn], metrics = [losses.dice_loss, lossfn])
+    model.compile(optimizer = Adam(lr=1e-4), loss = [loss_fn], metrics = [losses.dice_loss, loss_fn])
 
     return model
