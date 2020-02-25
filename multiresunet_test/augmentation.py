@@ -6,7 +6,8 @@
 Classfier Data Augmentation
 Author: Gerald M
 
-Augments the training data and saves to directory
+Augments the training data and saves to directory. Adds an operation to perform
+poisson noise addition to images in pipeline.
 ################################################################################
 """
 
@@ -34,10 +35,9 @@ class PoissonNoise(Operation):
     # Your class must implement the perform_operation method:
     def perform_operation(self, images):
         def do(image):
-            image = np.array(image)
-            image = noise.random_noise(image, mode='poisson')*255.
+            image = np.clip(noise.random_noise(np.array(image), mode='poisson'), 0, 1)
 
-            return Image.fromarray(np.uint8(image))
+            return Image.fromarray(np.uint8(image * 255.))
 
         augmented_images = []
 

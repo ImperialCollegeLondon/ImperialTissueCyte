@@ -161,38 +161,6 @@ def preprocess():
     if np.isnan(test_data_masks).any():
         print ('Warning: NaN detected!')
         end
-        
-    # training_images_idx = []
-    # for idx, img in enumerate(training_data_images):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         training_images_idx.append(idx)
-    #
-    # training_masks_idx = []
-    # for idx, img in enumerate(training_data_masks):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         training_masks_idx.append(idx)
-    #
-    # test_images_idx = []
-    # for idx, img in enumerate(test_data_images):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         test_images_idx.append(idx)
-    #
-    # test_masks_idx = []
-    # for idx, img in enumerate(test_data_masks):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         test_masks_idx.append(idx)
-    #
-    # if len(training_images_idx) > 0:
-    #     training_data_images = np.delete(training_data_images, np.array(training_images_idx), axis=0)
-    #
-    # if len(training_masks_idx) > 0:
-    #     training_data_masks = np.delete(training_data_masks, np.array(training_masks_idx), axis=0)
-    #
-    # if len(test_images_idx) > 0:
-    #     test_data_images = np.delete(test_data_images, np.array(test_images_idx), axis=0)
-    #
-    # if len(test_masks_idx) > 0:
-    #     test_data_masks = np.delete(test_data_masks, np.array(test_masks_idx), axis=0)
 
     print ('Done!')
 
