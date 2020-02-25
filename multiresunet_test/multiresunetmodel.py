@@ -23,7 +23,7 @@ def _residualpath(inputs, filter_size, path_number):
         cnn1 = Conv2D(filter_size, (3,3), padding = 'same', activation='relu')(inputs)
         cnn2 = Conv2D(filter_size, (1,1), padding = 'same', activation='relu')(inputs)
 
-        add = layers.Add()([cnn1, cnn2])
+        add = Add()([cnn1, cnn2])
 
         return add
 
