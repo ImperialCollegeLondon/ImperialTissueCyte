@@ -19,7 +19,7 @@ from numpy import random
 import tensorflow as tf
 from multiprocessing import cpu_count
 from random import randint
-import multireunetmodel
+import multiresunetmodel
 import preprocessing
 import losses
 
