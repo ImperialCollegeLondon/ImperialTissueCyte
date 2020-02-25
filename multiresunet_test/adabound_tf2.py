@@ -1,4 +1,6 @@
-"""AdaBound for Tensorflow."""
+"""
+AdaBound for Tensorflow. Modified by Gerald M for Tensorflow 2.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,11 +9,9 @@ import tensorflow as tf
 import re
 
 class AdaBoundOptimizer(tf.compat.v1.train.Optimizer):
-    """Optimizer that implements the AdaBound algorithm.
-    See [Luo et al., 2019](https://openreview.net/forum?id=Bkg3g2R9FX)
-    ([pdf](https://openreview.net/pdf?id=Bkg3g2R9FX)).
-
-    Converted to TF 2 - Gerald Moore
+    """
+    Optimizer that implements the AdaBound algorithm.
+    See [Luo et al., 2019](https://openreview.net/forum?id=Bkg3g2R9FX).
     """
 
     def __init__(self,
