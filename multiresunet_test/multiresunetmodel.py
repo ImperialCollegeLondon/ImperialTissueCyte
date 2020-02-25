@@ -40,7 +40,7 @@ def _residualpath(inputs, filter_size, path_number):
     return cnn
 
 # Multi-resolution UNet network
-def multiresunet(loss_fn, input_size = (None, None, 1)):
+def multiresunet(loss_fn, input_size=(None, None, 1)):
     inputs = Input(input_size)
 
     multires1 = _multiresblock(inputs,8,17,26,51)
@@ -53,9 +53,11 @@ def multiresunet(loss_fn, input_size = (None, None, 1)):
     pool3 = MaxPool2D()(multires3)
 
     multires4 = _multiresblock(pool3,71,142,213,426)
+    drop4 = Dropout(0.5)(multires4) # Added dropout to last two layers
     pool4 = MaxPool2D()(multires4)
 
     multires5 = _multiresblock(pool4,142,284,427,853)
+    drop5 = Dropout(0.5)(multires5) # Added dropout to last two layers
     upsample = UpSampling2D()(multires5)
 
     residual4 = _residualpath(multires4,256,4)

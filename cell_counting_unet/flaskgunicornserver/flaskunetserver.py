@@ -1,10 +1,13 @@
-# Run with gunicorn using the following:
-#       gunicorn --timeout 240 --bind 0.0.0.0:5000 wsgi:app
+"""
+Flask deployment on local network for ML model predictions.
+
+Run with gunicorn using the following:
+    gunicorn --timeout 240 --bind 0.0.0.0:5000 wsgi:app
+"""
 
 # import the necessary packages
 from __future__ import absolute_import, division, print_function, unicode_literals
 from tensorflow.keras.models import model_from_json
-# import tensorflow.compat.v1 as tf
 import tensorflow as tf
 from PIL import Image
 from multiprocessing import cpu_count
@@ -12,7 +15,7 @@ import numpy as np
 import tensorflow.keras.backend as K
 import psutil
 
-# initialize our Flask application and the Keras model
+# Initialize Flask application and the Keras model
 import flask
 app = flask.Flask(__name__)
 
@@ -38,9 +41,7 @@ import keras.backend.tensorflow_backend as K
 K.set_session(sess)
 
 def load_model():
-    # load the pre-trained Keras model (here we are using a model
-    # pre-trained on ImageNet and provided by Keras, but you can
-    # substitute in your own networks just as easily)
+    # Set global variables for the model to allow inheritted model/graph
     global model
     global graph
 
@@ -49,14 +50,13 @@ def load_model():
 
     model_path = '../models/2020_01_22_UNet_BCE_2/focal_unet_model.json'
     weights_path = '../models/2020_01_22_UNet_BCE_2/focal_unet_weights.best.hdf5'
-    #
-    # Load the classifier model, initialise and compile
+
+    # Load the classifier model, initialise (and compile if needed)
     with open(model_path, 'r') as f:
         model = model_from_json(f.read())
     model.load_weights(weights_path)
 
     model._make_predict_function()
-    # graph = tf.get_default_graph()
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -74,7 +74,6 @@ def predict():
             image = image.reshape(shape)
 
             # Predict
-            # with graph.as_default():
             preds = model.predict(image)
             preds = np.squeeze(preds[0])
 
@@ -84,7 +83,6 @@ def predict():
             # Show the request was successful
             data["success"] = True
 
-    print (shape)
     print ('[Memory info] Usage: '+str(psutil.virtual_memory().percent)+'%')
 
     # Return the result
@@ -93,6 +91,8 @@ def predict():
 print("* Loading Keras model and Flask starting server...")
 
 load_model()
+
+print("* Complete! Ready to use...")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

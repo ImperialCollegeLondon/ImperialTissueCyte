@@ -58,6 +58,19 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ################################################################################
 
 def slack_message(text, channel, username):
+    """
+    Slack integration to give slack message to chosen channel. Fill in the slack
+    hook url below to send to own slack channel.
+
+    Params
+    ------
+    text : str
+        String of text to post.
+    channel : str
+        String for the channel to post to.
+    username : str
+        String for the user posting the message.
+    """
     # from urllib3 import request
     import json
 
@@ -75,9 +88,38 @@ def slack_message(text, channel, username):
         print("EXCEPTION: " + str(em))
 
 def distance(a, b):
+    """
+    Calculate distance between coordinates a and b.
+
+    Params
+    ------
+    a : tuple
+    b : tuple
+
+    Returns
+    -------
+    out : float
+        Squared distance between coordinates a and b.
+    """
     return (a[0] - b[0])**2  + (a[1] - b[1])**2
 
 def oversamplecorr(centroids, radius):
+    """
+    Correction for oversampling given list of centroids.
+
+    Params
+    ------
+    centroids : dictionary
+        Dictionary of centroids where key is slice position and items are lists
+        of coordinate positions of detected cells.
+    radius : int
+        Radius with which to claim cells are overlapping.
+
+    Returns
+    -------
+    out : dictionary
+        Output of dictionary of oversampled corrected cell positions.
+    """
     keepcentroids = {}
     overlapcentroids = {}
     i = 0
@@ -184,6 +226,32 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         sys.stdout.flush()
 
 def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
+    """
+    Function which performs cell counting by pulling queued items, unpackaging
+    the item into separate constructs, including the image to be counted. This
+    function does not return anything, but creates a temporary CSV file which
+    is written to as objects are detected.
+
+    Params
+    ------
+    imagequeue : queue
+        Queue which contains the objects to pull and process.
+    radius : int
+        Radius with which to claim cells are overlapping.
+    size : int
+        Minumum size of cell to expect in pixels. Set this to a value to
+        exclude any objects which are smaller than this size and <10 times this
+        size.
+    circ_thresh : boolean
+        Typically False. This uses the older circularity threshold to refine the
+        shape of objects which are detected.
+    use_medfilt : boolean
+        Typically False. This uses a custom median filter to smooth the image.
+
+    Returns
+    -------
+    None
+    """
     while True:
         item = imagequeue.get()
         if item is None:
@@ -257,8 +325,10 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 centroids = [coordfunc(int(c[0]), int(c[1])) for c in centroids]
 
             # Write out results to file
-            csv_file = count_path+'/counts_unet/'+str(name)+'_unet_count_INQUEUE.csv'
+            csv_file = os.path.join(count_path, 'counts_unet', str(name)+'_unet_count_INQUEUE.csv')
 
+            # Write out detected centroids to CSV
+            # File is locked until writing is complete to prevent writing centroids out of order
             while True:
                 try:
                     with open(csv_file, 'a+') as f:

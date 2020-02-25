@@ -55,7 +55,20 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 ################################################################################
 
 def slack_message(text, channel, username):
-    from urllib3 import request
+    """
+    Slack integration to give slack message to chosen channel. Fill in the slack
+    hook url below to send to own slack channel.
+
+    Params
+    ------
+    text : str
+        String of text to post.
+    channel : str
+        String for the channel to post to.
+    username : str
+        String for the user posting the message.
+    """
+    # from urllib3 import request
     import json
 
     post = {"text": "{0}".format(text),
@@ -65,17 +78,45 @@ def slack_message(text, channel, username):
 
     try:
         json_data = json.dumps(post)
-        req = request.post('https://hooks.slack.com/services/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',
+        req = requests.post('https://hooks.slack.com/services/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',
             data=json_data.encode('ascii'),
             headers={'Content-Type': 'application/json'})
-        request.urlopen(req)
     except Exception as em:
         print("EXCEPTION: " + str(em))
 
 def distance(a, b):
+    """
+    Calculate distance between coordinates a and b.
+
+    Params
+    ------
+    a : tuple
+    b : tuple
+
+    Returns
+    -------
+    out : float
+        Squared distance between coordinates a and b.
+    """
     return (a[0] - b[0])**2  + (a[1] - b[1])**2
 
 def oversamplecorr(centroids, radius):
+    """
+    Correction for oversampling given list of centroids.
+
+    Params
+    ------
+    centroids : dictionary
+        Dictionary of centroids where key is slice position and items are lists
+        of coordinate positions of detected cells.
+    radius : int
+        Radius with which to claim cells are overlapping.
+
+    Returns
+    -------
+    out : dictionary
+        Output of dictionary of oversampled corrected cell positions.
+    """
     keepcentroids = {}
     overlapcentroids = {}
     i = 0
@@ -179,7 +220,6 @@ def progressBar(sliceno, value, endvalue, statustext, bar_length=50):
         spaces = ' ' * (bar_length - len(arrow))
 
         sys.stdout.write("\nSlice {0} [{1}] {2}% {3}".format(sliceno, arrow + spaces, int(round(percent * 100)), statustext))
-        sys.stdout.flush()
 
 class Network():
     def __init__(self):
@@ -242,7 +282,7 @@ def cellcount(imagequeue, radius, size, circ_thresh, use_medfilt):
                 # Image.fromarray(np.uint8((image>0.25)*255)).save('/Users/gm515/Desktop/pred/'+str(slice_number)+'.tif')
 
                 # Remove objects smaller than chosen size
-                image = label(image>0.25, connectivity=image.ndim)
+                image = label(image>0.5, connectivity=image.ndim)
 
                 # Get centroids list as (row, col) or (y, x)
                 centroids = [region.centroid for region in regionprops(image) if ((region.area>size) and (region.area<10*size) and (((4 * math.pi * region.area) / (region.perimeter * region.perimeter))>0.7))]
