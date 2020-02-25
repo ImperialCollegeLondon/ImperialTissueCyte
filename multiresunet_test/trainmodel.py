@@ -37,8 +37,8 @@ if __name__ == '__main__':
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
     savedirpath = os.path.join('models', strdate+'_MultiResUNet')
-    if not os.path.exists(savepath):
-        os.makedirs(savepath)
+    if not os.path.exists(savedirpath):
+        os.makedirs(savedirpath)
 
     modelname = "multires_unet_"
 
