@@ -38,7 +38,7 @@ def _residualpath(inputs, filter_size, path_number):
     return cnn
 
 # Multi-resolution UNet network
-def multiresunet(input_size = (None, None, 1), loss_fn):
+def multiresunet(loss_fn, input_size = (None, None, 1)):
     inputs = Input(input_size)
 
     multires1 = _multiresblock(inputs,8,17,26,51)
