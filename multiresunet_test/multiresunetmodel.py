@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import Input, Model
-from tensorflow.keras.layers import Concatenate, Conv2D, Dropout, UpSampling2D, MaxPooling2D
+from tensorflow.keras.layers import Concatenate, Conv2D, Dropout, UpSampling2D, MaxPooling2D, Add
 from tensorflow.keras.optimizers import Adam, SGD
 
 # Multi-resolution Inception style filters
