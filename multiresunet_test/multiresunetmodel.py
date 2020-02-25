@@ -54,25 +54,25 @@ def multiresunet(loss_fn, input_size = (None, None, 1)):
     pool4 = MaxPool2D()(multires4)
 
     multires5 = _multiresblock(pool4,142,284,427,853)
-    upsample = Upsampling2D()(multires5)
+    upsample = UpSampling2D()(multires5)
 
     residual4 = _residualpath(multires4,256,4)
     concat = Concatenate()([upsample,residual4])
 
     multires6 = _multiresblock(concat,71,142,213,426)
-    upsample = Upsampling2D()(multires6)
+    upsample = UpSampling2D()(multires6)
 
     residual3 = _residualpath(multires3,128,3)
     concat = Concatenate()([upsample,residual3])
 
     multires7 = _multiresblock(concat,31,72,106,209)
-    upsample = Upsampling2D()(multires7)
+    upsample = UpSampling2D()(multires7)
 
     residual2 = _residualpath(multires2,64,2)
     concat = Concatenate()([upsample,residual2])
 
     multires8 = _multiresblock(concat,17,35,53,105)
-    upsample = Upsampling2D()(multires8)
+    upsample = UpSampling2D()(multires8)
 
     residual1 = _residualpath(multires1,32,1)
     concat = Concatenate()([upsample,residual1])
