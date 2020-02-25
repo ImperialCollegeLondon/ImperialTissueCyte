@@ -12,11 +12,11 @@ def _multiresblock(inputs, filter_size1, filter_size2, filter_size3, filter_size
     the features from different convolution filters as an appoximation for a
     3x3, 5x5 and 7x7 filter size convolution.
     """
-    cnn1 = Conv2D(filter_size1, (3,3), padding = 'same', activation='relu')(inputs)
-    cnn2 = Conv2D(filter_size2, (3,3), padding = 'same', activation='relu')(cnn1)
-    cnn3 = Conv2D(filter_size3, (3,3), padding = 'same', activation='relu')(cnn2)
+    cnn1 = Conv2D(filter_size1, (3,3), padding='same', activation='relu')(inputs)
+    cnn2 = Conv2D(filter_size2, (3,3), padding='same', activation='relu')(cnn1)
+    cnn3 = Conv2D(filter_size3, (3,3), padding='same', activation='relu')(cnn2)
 
-    cnn = Conv2D(filter_size4, (1,1), padding = 'same', activation='relu')(inputs)
+    cnn = Conv2D(filter_size4, (1,1), padding='same', activation='relu')(inputs)
 
     concat = Concatenate()([cnn1, cnn2, cnn3])
     add = Add()([concat, cnn])
@@ -31,8 +31,8 @@ def _residualpath(inputs, filter_size, path_number):
     concatenating with the decoder side.
     """
     def block(x, fl):
-        cnn1 = Conv2D(filter_size, (3,3), padding = 'same', activation='relu')(inputs)
-        cnn2 = Conv2D(filter_size, (1,1), padding = 'same', activation='relu')(inputs)
+        cnn1 = Conv2D(filter_size, (3,3), padding='same', activation='relu')(inputs)
+        cnn2 = Conv2D(filter_size, (1,1), padding='same', activation='relu')(inputs)
 
         add = Add()([cnn1, cnn2])
 
@@ -91,9 +91,9 @@ def multiresunet(loss_fn, input_size=(None, None, 1)):
     concat = Concatenate()([upsample,residual1])
 
     multires9 = _multiresblock(concat,8,17,26,51)
-    sigmoid = Conv2D(1, (1,1), padding = 'same', activation='sigmoid')(multires9)
+    sigmoid = Conv2D(1, (1,1), padding='same', activation='sigmoid')(multires9)
 
     model = tf.keras.Model(inputs, sigmoid)
-    model.compile(optimizer = Adam(lr=1e-4), loss = [loss_fn], metrics = [losses.dice_loss, loss_fn])
+    model.compile(optimizer=Adam(lr=1e-4), loss=[loss_fn], metrics=[losses.dice_loss, loss_fn])
 
     return model
