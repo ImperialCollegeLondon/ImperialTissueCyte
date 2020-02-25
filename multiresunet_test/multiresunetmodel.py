@@ -7,6 +7,11 @@ import losses
 
 # Multi-resolution Inception style filters
 def _multiresblock(inputs, filter_size1, filter_size2, filter_size3, filter_size4):
+    """
+    Multi-resolution block in the style of Inception module. This concatenates
+    the features from different convolution filters as an appoximation for a
+    3x3, 5x5 and 7x7 filter size convolution.
+    """
     cnn1 = Conv2D(filter_size1, (3,3), padding = 'same', activation='relu')(inputs)
     cnn2 = Conv2D(filter_size2, (3,3), padding = 'same', activation='relu')(cnn1)
     cnn3 = Conv2D(filter_size3, (3,3), padding = 'same', activation='relu')(cnn2)
@@ -21,6 +26,10 @@ def _multiresblock(inputs, filter_size1, filter_size2, filter_size3, filter_size
 # Concatenation path from encoder to decoder. This performs convolutions on the
 # encoder segment to match higher level feature set seen in decoder segment
 def _residualpath(inputs, filter_size, path_number):
+    """
+    Residual block which performs convolution on the encoder side before
+    concatenating with the decoder side.
+    """
     def block(x, fl):
         cnn1 = Conv2D(filter_size, (3,3), padding = 'same', activation='relu')(inputs)
         cnn2 = Conv2D(filter_size, (1,1), padding = 'same', activation='relu')(inputs)
@@ -39,7 +48,7 @@ def _residualpath(inputs, filter_size, path_number):
 
     return cnn
 
-# Multi-resolution UNet network
+# Main multi-resolution UNet network
 def multiresunet(loss_fn, input_size=(None, None, 1)):
     inputs = Input(input_size)
 
