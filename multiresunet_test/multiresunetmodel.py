@@ -3,6 +3,8 @@ from tensorflow.keras import Input, Model
 from tensorflow.keras.layers import Concatenate, Conv2D, Dropout, UpSampling2D, MaxPool2D, Add
 from tensorflow.keras.optimizers import Adam, SGD
 
+import losses
+
 # Multi-resolution Inception style filters
 def _multiresblock(inputs, filter_size1, filter_size2, filter_size3, filter_size4):
     cnn1 = Conv2D(filter_size1, (3,3), padding = 'same', activation='relu')(inputs)
