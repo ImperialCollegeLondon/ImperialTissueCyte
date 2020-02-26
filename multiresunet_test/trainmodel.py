@@ -80,7 +80,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=100,
+        epochs=150,
         shuffle=True,
         callbacks=callbacks_list)
 
@@ -95,11 +95,11 @@ if __name__ == '__main__':
     cleanup.clean()
 
     # Plot out to see progress
-    import matplotlib.pyplot as plt
-    plt.plot(history.history['dice_loss'])
-    plt.plot(history.history['val_dice_loss'])
-    plt.title('Dice loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper right')
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.plot(history.history['dice_loss'])
+    # plt.plot(history.history['val_dice_loss'])
+    # plt.title('Dice loss')
+    # plt.ylabel('Loss')
+    # plt.xlabel('Epoch')
+    # plt.legend(['Train', 'Test'], loc='upper right')
+    # plt.show()
