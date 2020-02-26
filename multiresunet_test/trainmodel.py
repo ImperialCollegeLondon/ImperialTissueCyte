@@ -33,10 +33,17 @@ class AlphaCallback(Callback):
 alpha = K.variable(0.5, dtype='float32')
 
 if __name__ == '__main__':
+    if len(sys.argv) > 0:
+        opt_arg1 = str(sys.argv[1])
+        lr_arg2 = float(sys.argv[2])
+
+        if opt_arg1 == 'Adam': optimizer = Adam(lr=lr_arg2)
+        if opt_arg1 == 'SGD': optimizer = SGD(lr=lr_arg2)
+
     # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    savedirpath = os.path.join('models', strdate+'_MultiResUNet')
+    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+'_lr'+str(lr_arg2)+'_MultiResUNet')
     if not os.path.exists(savedirpath):
         os.makedirs(savedirpath)
 
@@ -50,7 +57,7 @@ if __name__ == '__main__':
     batch = 4
 
     # Loss functions for training
-    model = multiresunetmodel.multiresunet(input_size=(None, None, 1), loss_fn='binary_crossentropy')
+    model = multiresunetmodel.multiresunet(input_size=(None, None, 1), opt_fn=optimizer, loss_fn='binary_crossentropy')
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
