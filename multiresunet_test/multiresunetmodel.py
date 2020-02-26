@@ -94,6 +94,6 @@ def multiresunet(loss_fn, input_size=(None, None, 1)):
     sigmoid = Conv2D(1, (1,1), padding='same', activation='sigmoid')(multires9)
 
     model = Model(inputs, sigmoid)
-    model.compile(optimizer=SGD(lr=1e-2), loss=[loss_fn], metrics=[losses.dice_loss, loss_fn])
+    model.compile(optimizer=SGD(lr=1e-1), loss=[loss_fn], metrics=[losses.dice_loss, loss_fn])
 
     return model
