@@ -1,8 +1,8 @@
-# part of this script was taken from https://github.com/jocicmarko/ultrasound-nerve-segmentation
 import argparse
 import cleanup
 from glob import glob
 import os
+import sys
 import datetime
 import pickle
 import numpy as np
