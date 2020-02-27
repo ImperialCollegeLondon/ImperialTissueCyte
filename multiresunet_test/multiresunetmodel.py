@@ -1,11 +1,9 @@
 """
-################################################################################
 The MultiresUnet Model
 Author: Gerald M
 
 Adapted from paper [MultiResUNet : Rethinking the U-Net Architecture for
 Multimodal Biomedical Image Segmentation](10.1016/j.neunet.2019.08.025)
-################################################################################
 """
 
 import tensorflow as tf

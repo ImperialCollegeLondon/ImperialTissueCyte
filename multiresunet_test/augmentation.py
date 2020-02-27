@@ -1,5 +1,4 @@
 """
-################################################################################
 Data Augmentation
 Author: Gerald M
 
@@ -9,7 +8,6 @@ performed on both the image and mask data in tandem, to ensure the same
 operations are applied to correpsonding image-mask pairs. A custom operation is
 added to perform poisson noise generation on the images using the skimage
 package.
-################################################################################
 """
 
 import os

@@ -1,11 +1,9 @@
 """
-################################################################################
-Perform full image classification
+Full Image Classification
 Author: Gerald M
 
-Time it takes to perform unet segmentation on entire image, plus the accuracy of
-classification.
-################################################################################
+Splits the image into blocks of 512x512 and classifies each block. For interest,
+gives time to calculate 1000 images.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

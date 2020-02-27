@@ -1,5 +1,4 @@
 """
-################################################################################
 Model Training
 Author: Gerald M
 
@@ -10,7 +9,6 @@ Can be run from command line with following,
 
 to dictate the loss function and learning rate. Model architecture, weights and
 training history are saved into a dated directory under models/.
-################################################################################
 """
 
 import argparse

@@ -1,5 +1,4 @@
 """
-################################################################################
 Data Preprocessing
 Author: Gerald M
 
@@ -13,7 +12,6 @@ All data following augmentation is normalised with,
 
 and NaN values detected. As NaN can propegate during training, exceptions are
 called if these values exist in the training and validation data.
-################################################################################
 """
 
 import Augmentor
