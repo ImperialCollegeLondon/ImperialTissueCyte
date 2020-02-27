@@ -26,7 +26,11 @@ def _multiresblock(inputs, filter_size):
     cnn = Conv2D(filter_size4, (1,1), padding='same', activation='relu')(inputs)
 
     concat = Concatenate()([cnn1, cnn2, cnn3])
+    concat = BatchNormalization()(concat)
+
     add = Add()([concat, cnn])
+    add = Activation('relu')(add)
+    add = BatchNormalization()(add)
 
     return add
 
@@ -69,12 +73,12 @@ def multiresunet(opt_fn, loss_fn, input_size=(None, None, 1)):
     pool3 = MaxPool2D()(multires3)
 
     multires4 = _multiresblock(pool3, 256)
-    drop4 = Dropout(0.5)(multires4) # Added dropout to last two layers
-    pool4 = MaxPool2D()(drop4)
+    # drop4 = Dropout(0.5)(multires4) # Added dropout to last two layers
+    pool4 = MaxPool2D()(multires4)
 
     multires5 = _multiresblock(pool4, 512)
-    drop5 = Dropout(0.5)(multires5) # Added dropout to last two layers
-    upsample = UpSampling2D()(drop5)
+    # drop5 = Dropout(0.5)(multires5) # Added dropout to last two layers
+    upsample = UpSampling2D()(multires5)
 
     residual4 = _residualpath(multires4, 256, 4) # drop4 maybe?
     concat = Concatenate()([upsample,residual4])
