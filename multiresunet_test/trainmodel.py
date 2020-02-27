@@ -1,3 +1,18 @@
+"""
+################################################################################
+Model Training
+Author: Gerald M
+
+Trains the model by using clean-up, pre-processing and augmentation modules.
+Can be run from command line with following,
+
+    ipython trainmodel.py -- Adam 1e-4
+
+to dictate the loss function and learning rate. Model architecture, weights and
+training history are saved into a dated directory under models/.
+################################################################################
+"""
+
 import argparse
 import cleanup
 from glob import glob

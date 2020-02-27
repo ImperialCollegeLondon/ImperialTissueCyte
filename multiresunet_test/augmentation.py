@@ -1,13 +1,14 @@
-
-# -*- coding: utf-8 -*-
-
 """
 ################################################################################
-Classfier Data Augmentation
+Data Augmentation
 Author: Gerald M
 
-Augments the training data and saves to directory. Adds an operation to perform
-poisson noise addition to images in pipeline.
+Augments the training data using Augmentor package. All augmented data is saved
+to the temporary data directory created when training the model. Augmentation is
+performed on both the image and mask data in tandem, to ensure the same
+operations are applied to correpsonding image-mask pairs. A custom operation is
+added to perform poisson noise generation on the images using the skimage
+package.
 ################################################################################
 """
 

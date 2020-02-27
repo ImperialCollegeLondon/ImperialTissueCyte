@@ -1,12 +1,9 @@
-
-# -*- coding: utf-8 -*-
-
 """
 ################################################################################
-Classfier Data Clean-up
+Model Training Data Clean-Up
 Author: Gerald M
 
-Cleans up the directories and keeps raw data back into /raw_data.
+Deletes the training data directory.
 ################################################################################
 """
 

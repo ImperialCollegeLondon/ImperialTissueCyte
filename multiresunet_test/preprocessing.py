@@ -1,19 +1,18 @@
-
-# -*- coding: utf-8 -*-
-
 """
 ################################################################################
-Classfier Data Preprocessing
+Data Preprocessing
 Author: Gerald M
 
-This script performs preprocesses the raw data stored in /raw_data by first
-taking 70% of the raw data for training and 30% for testing. Data augmentation
-is performed using Augmentor on the training data only.
+Pre-processes the raw data stored in raw_data_copy/ by splitting the into 70%
+training and 30% validation/testing. Data augmentation is performed using
+augmentation.py module.
 
-ALL data is then standardised (x - x.mean()) / x.std() (featurewise rather than
-sample wise) using the group mean() and std().
+All data following augmentation is normalised with,
 
-ALL standardised data is saved to the corresponding training and test directories.
+    (img-np.min(img))/(np.max(img)-np.min(img))
+
+and NaN values detected. As NaN can propegate during training, exceptions are
+called if these values exist in the training and validation data.
 ################################################################################
 """
 
