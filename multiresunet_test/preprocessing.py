@@ -33,7 +33,7 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = 'input/raw_data'
+    raw_data_dir = ['input/raw_data/GM_data', 'input/raw_data/MG_data']#, 'input/raw_data/GM_data_merged']
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
@@ -50,9 +50,13 @@ def preprocess():
         os.makedirs(os.path.join(test_data_dir, 'images'))
         os.makedirs(os.path.join(test_data_dir, 'masks'))
 
+    # Make a working directory copy of raw_data so we don't lose anything
     if not os.path.exists(raw_data_copy_dir):
-        os.makedirs(os.path.join(raw_data_copy_dir))
-        copy_tree(raw_data_dir, raw_data_copy_dir)
+        os.makedirs(os.path.join(raw_data_copy_dir, 'images'))
+        os.makedirs(os.path.join(raw_data_copy_dir, 'masks'))
+        for subdir in raw_data_dir:
+            copy_tree(os.path.join(subdir, 'images'), os.path.join(raw_data_copy_dir, 'images'))
+            copy_tree(os.path.join(subdir, 'masks'), os.path.join(raw_data_copy_dir, 'masks'))
 
     print ('Performing augmentation on raw data copy...')
 
