@@ -14,9 +14,9 @@ def _multiresblock(inputs, filter_size):
     """
 
     alpha = 1.67
-    filter_size1 = int(alpha*filters*0.167)
-    filter_size2 = int(alpha*filters*0.333)
-    filter_size3 = int(alpha*filters*0.5)
+    filter_size1 = int(alpha*filter_size*0.167)
+    filter_size2 = int(alpha*filter_size*0.333)
+    filter_size3 = int(alpha*filter_size*0.5)
     filter_size4 = int(filter_size1+filter_size2+filter_size3)
 
     cnn1 = Conv2D(filter_size1, (3,3), padding='same', activation='relu')(inputs)
@@ -76,7 +76,7 @@ def multiresunet(opt_fn, loss_fn, input_size=(None, None, 1)):
     drop5 = Dropout(0.5)(multires5) # Added dropout to last two layers
     upsample = UpSampling2D()(drop5)
 
-    residual4 = _residualpath(multires4, 256, 4)
+    residual4 = _residualpath(multires4, 256, 4) # drop4 maybe?
     concat = Concatenate()([upsample,residual4])
 
     multires6 = _multiresblock(concat, 256)
