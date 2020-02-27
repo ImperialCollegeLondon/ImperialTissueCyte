@@ -6,12 +6,19 @@ from tensorflow.keras.optimizers import Adam, SGD
 import losses
 
 # Multi-resolution Inception style filters
-def _multiresblock(inputs, filter_size1, filter_size2, filter_size3, filter_size4):
+def _multiresblock(inputs, filter_size):
     """
     Multi-resolution block in the style of Inception module. This concatenates
-    the features from different convolution filters as an appoximation for a
+    the features from different convolution filters as an approximation for a
     3x3, 5x5 and 7x7 filter size convolution.
     """
+
+    alpha = 1.67
+    filter_size1 = int(alpha*filters*0.167)
+    filter_size2 = int(alpha*filters*0.333)
+    filter_size3 = int(alpha*filters*0.5)
+    filter_size4 = int(filter_size1+filter_size2+filter_size3)
+
     cnn1 = Conv2D(filter_size1, (3,3), padding='same', activation='relu')(inputs)
     cnn2 = Conv2D(filter_size2, (3,3), padding='same', activation='relu')(cnn1)
     cnn3 = Conv2D(filter_size3, (3,3), padding='same', activation='relu')(cnn2)
@@ -52,45 +59,45 @@ def _residualpath(inputs, filter_size, path_number):
 def multiresunet(opt_fn, loss_fn, input_size=(None, None, 1)):
     inputs = Input(input_size)
 
-    multires1 = _multiresblock(inputs,8,17,26,51)
+    multires1 = _multiresblock(inputs, 32)
     pool1 = MaxPool2D()(multires1)
 
-    multires2 = _multiresblock(pool1,17,35,53,105)
+    multires2 = _multiresblock(pool1, 64)
     pool2 = MaxPool2D()(multires2)
 
-    multires3 = _multiresblock(pool2,31,72,106,209)
+    multires3 = _multiresblock(pool2, 128)
     pool3 = MaxPool2D()(multires3)
 
-    multires4 = _multiresblock(pool3,71,142,213,426)
+    multires4 = _multiresblock(pool3, 256)
     drop4 = Dropout(0.5)(multires4) # Added dropout to last two layers
-    pool4 = MaxPool2D()(multires4)
+    pool4 = MaxPool2D()(drop4)
 
-    multires5 = _multiresblock(pool4,142,284,427,853)
+    multires5 = _multiresblock(pool4, 512)
     drop5 = Dropout(0.5)(multires5) # Added dropout to last two layers
-    upsample = UpSampling2D()(multires5)
+    upsample = UpSampling2D()(drop5)
 
-    residual4 = _residualpath(multires4,256,4)
+    residual4 = _residualpath(multires4, 256, 4)
     concat = Concatenate()([upsample,residual4])
 
-    multires6 = _multiresblock(concat,71,142,213,426)
+    multires6 = _multiresblock(concat, 256)
     upsample = UpSampling2D()(multires6)
 
-    residual3 = _residualpath(multires3,128,3)
+    residual3 = _residualpath(multires3, 128, 3)
     concat = Concatenate()([upsample,residual3])
 
-    multires7 = _multiresblock(concat,31,72,106,209)
+    multires7 = _multiresblock(concat, 128)
     upsample = UpSampling2D()(multires7)
 
-    residual2 = _residualpath(multires2,64,2)
+    residual2 = _residualpath(multires2, 64, 2)
     concat = Concatenate()([upsample,residual2])
 
-    multires8 = _multiresblock(concat,17,35,53,105)
+    multires8 = _multiresblock(concat, 64)
     upsample = UpSampling2D()(multires8)
 
-    residual1 = _residualpath(multires1,32,1)
+    residual1 = _residualpath(multires1, 32, 1)
     concat = Concatenate()([upsample,residual1])
 
-    multires9 = _multiresblock(concat,8,17,26,51)
+    multires9 = _multiresblock(concat, 32)
     sigmoid = Conv2D(1, (1,1), padding='same', activation='sigmoid')(multires9)
 
     model = Model(inputs, sigmoid)
