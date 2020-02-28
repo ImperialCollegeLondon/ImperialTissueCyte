@@ -10,12 +10,15 @@ already be thresholded before testing for similarity.
 import numpy as np
 from skimage.measure import regionprops, label
 
+# Jaccard similarity score
+# Returns the same as the sklearn.metrics.jaccard_score, but not the same as
+# sklearn.metrics.jaccard_similarity_score.
 def jaccard(true, pred):
     # Threshold the images to generate boolean masks
     true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
     pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
-    return np.float(np.sum(true * pred))/np.sum(true + pred)
+    return np.float(np.sum(true * pred))/np.sum((true + pred)>0)
 
 def truepos(true, pred):
     # Threshold the images to generate boolean masks
