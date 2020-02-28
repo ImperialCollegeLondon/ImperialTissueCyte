@@ -77,7 +77,7 @@ if __name__ == '__main__':
     jac = metrics.jaccard(true, pred)
     acc = metrics.accuracy(true, pred)
     pre = metrics.precision(true, pred)
-    rec = metrics.recalle(true, pred)
+    rec = metrics.recall(true, pred)
     coh = metrics.colocalisedhits(true, pred)
 
     modelname = os.path.basename(modeldir)
