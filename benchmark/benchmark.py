@@ -44,20 +44,26 @@ if __name__ == '__main__':
     # Split true and image into 512x512 blocks
     imgarray = []
     ws = 512
-    counter = 0
     for y in range(0,image.shape[0], ws):
         for x in range(0,image.shape[1], ws):
             imagecrop = image[y:y+ws, x:x+ws]
 
 
+            imagecroppad = np.zeros((ws, ws))
             if (np.max(imagecrop)-np.min(imagecrop))>0: # Ignore any empty data and zero divisions
-                imagecroppad = np.zeros((ws, ws))
                 imagecroppad[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
-                imagecroppad = imagecroppad[..., np.newaxis]
-                imgarray.append(imagecroppad)
+            imagecroppad = imagecroppad[..., np.newaxis]
+            imgarray.append(imagecroppad)
 
     imgarray = np.array(imgarray)
 
 
     print ('Predicting...')
-    pred = model.predict(imgarray, batch_size=6)
+    predarray = model.predict(imgarray, batch_size=6)
+
+    pred = np.zeros((np.ceil(image.shape[0]/ws)*ws, np.ceil(image.shape[1]/ws)*ws))
+    count = 0
+    for y in range(0,image.shape[0], ws):
+        for x in range(0,image.shape[1], ws):
+            pred[y:y+ws, x:x+ws] = np.squeeze(pred[counter])
+            count += 1
