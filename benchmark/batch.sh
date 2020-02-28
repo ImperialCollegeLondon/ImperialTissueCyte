@@ -16,19 +16,19 @@
 # ipython benchmark.py -- ../unet_test/models/2020_02_24_UNet_BCE
 # ipython benchmark.py -- ../unet_test/models/2020_01_20_UNet
 
-for dir in /../cell_counting_unet/models/*/
+for dir in ../cell_counting_unet/models/*/
 do
     dir=${dir%*/}      # remove the trailing "/"
     echo ${dir##*/}    # print everything after the final "/"
 done
 
-for dir in /../unet_test/models/*/
+for dir in ../unet_test/models/*/
 do
     dir=${dir%*/}      # remove the trailing "/"
     echo ${dir##*/}    # print everything after the final "/"
 done
 
-for dir in /../multiresunet_test/models/*/
+for dir in ../multiresunet_test/models/*/
 do
     dir=${dir%*/}      # remove the trailing "/"
     echo ${dir##*/}    # print everything after the final "/"
