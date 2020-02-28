@@ -49,12 +49,15 @@ if __name__ == '__main__':
         for x in range(0,image.shape[1], ws):
             imagecrop = image[y:y+ws, x:x+ws]
 
-            if (np.max(imagecrop)-np.min(imagecrop))>0:
-                imagecroppad = np.zeros((ws, ws))[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
+
+            if (np.max(imagecrop)-np.min(imagecrop))>0: # Ignore any empty data and zero divisions
+                imagecroppad = np.zeros((ws, ws))
+                imagecroppad[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
+                imagecroppad = imagecroppad[..., np.newaxis]
                 imgarray.append(imagecroppad)
 
     imgarray = np.array(imgarray)
-    imgarray = imgarray[..., np.newaxis]
+
 
     print ('Predicting...')
     pred = model.predict(imgarray, batch_size=6)
