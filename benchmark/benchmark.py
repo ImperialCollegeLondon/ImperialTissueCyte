@@ -11,6 +11,7 @@ import os, sys, time, glob
 import warnings
 import numpy as np
 from PIL import Image
+import metrics
 
 # Modules for deep learning
 import tensorflow as tf
@@ -57,7 +58,6 @@ if __name__ == '__main__':
 
     imgarray = np.array(imgarray)
 
-
     print ('Predicting...')
     predarray = model.predict(imgarray, batch_size=6)
 
@@ -69,3 +69,17 @@ if __name__ == '__main__':
             i += 1
 
     pred = pred[:image.shape[0],:image.shape[1]]
+    pred = pred>0.5
+    true = true>0.5
+
+    print ('Benchmarking...')
+    jac = metrics.jaccard(true, pred)
+    acc = metrics.accuracy(true, pred)
+    pre = metrics.precision(true, pred)
+    rec = metrics.recalle(true, pred)
+    coh = metrics.colocalisedhits(true, pred)
+
+    modelname = os.path.basename(modeldir)
+
+    print ('Saving...')
+    pd.DataFrame({'Model':modelname, 'Jaccard':jac, 'Accuracy':acc, 'Precision':pre, 'Recall':rec, 'Colocalised':coh}).to_csv('results/benchmarkresults.csv', mode='a', header=True)
