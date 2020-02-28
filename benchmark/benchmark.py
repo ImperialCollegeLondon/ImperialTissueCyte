@@ -33,8 +33,8 @@ if __name__ == '__main__':
         modeldir = str(sys.argv[1])
 
     print ('Loading image (for prediction) and true result for benchmark testing...')
-    image = np.array(Image.open('data/pvcresox14_GM.tif'))
-    true = np.array(Image.open('data/mask_pvcresox14_GM.tif'))
+    image = np.array(Image.open('/Users/gm515/Documents/GitHub/multiresunet_test/input/raw_data/GM_data/images/empty_GM_01.tif'))
+    true = np.array(Image.open('/Users/gm515/Documents/GitHub/multiresunet_test/input/raw_data/GM_data/masks/empty_GM_01.tif'))
 
     print ('Loading model for prediction...')
     modelpath = glob.glob(os.path.join(modeldir, '*.json'))[0]
@@ -76,7 +76,10 @@ if __name__ == '__main__':
     acc = metrics.accuracy(true, pred)
     pre = metrics.precision(true, pred)
     rec = metrics.recall(true, pred)
-    coh = metrics.colocalisedhits(true, pred)
+    if np.isnan(jac*pre*rec):
+        coh = np.nan
+    else:
+        coh = metrics.colocalisedhits(true, pred)
 
     modelname = os.path.basename(modeldir)
 
