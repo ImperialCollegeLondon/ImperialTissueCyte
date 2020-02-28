@@ -70,7 +70,7 @@ if __name__ == '__main__':
     batch = 6
 
     # Loss functions for training
-    model = unetmodel.unet(inputsize=(None, None, 1), opt_fn=optimizer, loss_fn='binary_crossentropy')
+    model = unetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn='binary_crossentropy')
     # model = unetmodel.unet(losses.binary_focal_loss)
     # model = unetmodel.unet(losses.focal_tversky)
     # model = unetmodel.unet(losses.bce_dice_loss)
