@@ -5,3 +5,4 @@ cell_counting_unet/models
 neurosegunet/models
 unet_test/models
 multiresunet_test/models
+benchmark/data
