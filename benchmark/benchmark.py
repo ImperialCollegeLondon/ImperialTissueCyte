@@ -70,8 +70,8 @@ if __name__ == '__main__':
             i += 1
 
     pred = pred[:image.shape[0],:image.shape[1]]
-    pred = pred>0.5
-    true = true>0.5
+    pred = (pred>0.5).astype(np.int)
+    true = (true>0.5).astype(np.int)
 
     print ('Benchmarking...')
     jac = metrics.jaccard(true, pred)
