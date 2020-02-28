@@ -22,28 +22,28 @@ def truepos(true, pred):
     true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
     pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
-    return np.sum(mask * pred)
+    return np.sum(true * pred)
 
 def falsepos(true, pred):
     # Threshold the images to generate boolean masks
     true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
     pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
-    return np.sum((1-mask) * pred)
+    return np.sum((1-true) * pred)
 
 def trueneg(true, pred):
     # Threshold the images to generate boolean masks
     true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
     pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
-    return np.sum((1-mask) * (1-pred))
+    return np.sum((1-true) * (1-pred))
 
 def falseneg(true, pred):
     # Threshold the images to generate boolean masks
     true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
     pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
-    return np.sum(mask * (1-pred))
+    return np.sum(true * (1-pred))
 
 def accuracy(true, pred):
     tp = truepos(true, pred)
