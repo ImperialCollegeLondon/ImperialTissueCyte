@@ -1,3 +1,11 @@
+"""
+Loss Functions
+Author: Gerald M
+
+Loss functions to use for training. Some are adapted from Lar's Blog,
+https://lars76.github.io/neural-networks/object-detection/losses-for-segmentation/
+"""
+
 from tensorflow.keras.losses import binary_crossentropy
 import tensorflow.keras.backend as K
 import tensorflow as tf

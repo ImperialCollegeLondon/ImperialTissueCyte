@@ -1,20 +1,17 @@
-
-# -*- coding: utf-8 -*-
-
 """
-################################################################################
-Classfier Data Preprocessing
+Data Preprocessing
 Author: Gerald M
 
-This script performs preprocesses the raw data stored in /raw_data by first
-taking 70% of the raw data for training and 30% for testing. Data augmentation
-is performed using Augmentor on the training data only.
+Pre-processes the raw data stored in raw_data_copy/ by splitting the into 70%
+training and 30% validation/testing. Data augmentation is performed using
+augmentation.py module.
 
-ALL data is then standardised (x - x.mean()) / x.std() (featurewise rather than
-sample wise) using the group mean() and std().
+All data following augmentation is normalised with,
 
-ALL standardised data is saved to the corresponding training and test directories.
-################################################################################
+    (img-np.min(img))/(np.max(img)-np.min(img))
+
+and NaN values detected. As NaN can propegate during training, exceptions are
+called if these values exist in the training and validation data.
 """
 
 import Augmentor
@@ -33,7 +30,7 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = 'input/raw_data'
+    raw_data_dir = ['input/raw_data/GM_data', 'input/raw_data/MG_data']#, 'input/raw_data/GM_data_merged']
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
@@ -50,9 +47,13 @@ def preprocess():
         os.makedirs(os.path.join(test_data_dir, 'images'))
         os.makedirs(os.path.join(test_data_dir, 'masks'))
 
+    # Make a working directory copy of raw_data so we don't lose anything
     if not os.path.exists(raw_data_copy_dir):
-        os.makedirs(os.path.join(raw_data_copy_dir))
-        copy_tree(raw_data_dir, raw_data_copy_dir)
+        os.makedirs(os.path.join(raw_data_copy_dir, 'images'))
+        os.makedirs(os.path.join(raw_data_copy_dir, 'masks'))
+        for subdir in raw_data_dir:
+            copy_tree(os.path.join(subdir, 'images'), os.path.join(raw_data_copy_dir, 'images'))
+            copy_tree(os.path.join(subdir, 'masks'), os.path.join(raw_data_copy_dir, 'masks'))
 
     print ('Performing augmentation on raw data copy...')
 
@@ -147,52 +148,16 @@ def preprocess():
     print ('Checking nan...')
 
     if np.isnan(training_data_images).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(training_data_masks).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(test_data_images).any():
-        print ('Warning: NaN detected!')
-        end
+        raise ValueError('NaN detected in data.')
 
     if np.isnan(test_data_masks).any():
-        print ('Warning: NaN detected!')
-        end
-        
-    # training_images_idx = []
-    # for idx, img in enumerate(training_data_images):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         training_images_idx.append(idx)
-    #
-    # training_masks_idx = []
-    # for idx, img in enumerate(training_data_masks):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         training_masks_idx.append(idx)
-    #
-    # test_images_idx = []
-    # for idx, img in enumerate(test_data_images):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         test_images_idx.append(idx)
-    #
-    # test_masks_idx = []
-    # for idx, img in enumerate(test_data_masks):
-    #     if np.isnan(np.min(img) * np.max(img)) or (np.min(img)-np.max(img) == 0):
-    #         test_masks_idx.append(idx)
-    #
-    # if len(training_images_idx) > 0:
-    #     training_data_images = np.delete(training_data_images, np.array(training_images_idx), axis=0)
-    #
-    # if len(training_masks_idx) > 0:
-    #     training_data_masks = np.delete(training_data_masks, np.array(training_masks_idx), axis=0)
-    #
-    # if len(test_images_idx) > 0:
-    #     test_data_images = np.delete(test_data_images, np.array(test_images_idx), axis=0)
-    #
-    # if len(test_masks_idx) > 0:
-    #     test_data_masks = np.delete(test_data_masks, np.array(test_masks_idx), axis=0)
+        raise ValueError('NaN detected in data.')
 
     print ('Done!')
 

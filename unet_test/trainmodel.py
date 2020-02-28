@@ -1,8 +1,21 @@
-# part of this script was taken from https://github.com/jocicmarko/ultrasound-nerve-segmentation
+"""
+Model Training
+Author: Gerald M
+
+Trains the model by using clean-up, pre-processing and augmentation modules.
+Can be run from command line with following,
+
+    ipython trainmodel.py -- Adam 1e-4
+
+to dictate the loss function and learning rate. Model architecture, weights and
+training history are saved into a dated directory under models/.
+"""
+
 import argparse
 import cleanup
 from glob import glob
 import os
+import sys
 import datetime
 import pickle
 import numpy as np
@@ -23,6 +36,7 @@ import unetmodel
 import preprocessing
 import losses
 
+# Alpha call back for the changing weight loss functions
 class AlphaCallback(Callback):
     def __init__(self, alpha):
         self.alpha = alpha
@@ -32,64 +46,73 @@ class AlphaCallback(Callback):
 alpha = K.variable(0.5, dtype='float32')
 
 if __name__ == '__main__':
-    # Checkpoint to only save the best model, metric = val_acc
+    if len(sys.argv) > 0:
+        opt_arg1 = str(sys.argv[1])
+        lr_arg2 = float(sys.argv[2])
+
+        if opt_arg1 == 'Adam': optimizer = Adam(lr=lr_arg2)
+        if opt_arg1 == 'SGD': optimizer = SGD(lr=lr_arg2)
+
+    # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    if not os.path.exists('models/'+strdate+'_UNet'):
-        os.makedirs('models/'+strdate+'_UNet')
+    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+'_lr'+str(lr_arg2)+'_UNet')
+    if not os.path.exists(savedirpath):
+        os.makedirs(savedirpath)
 
-    model_name = "focal_unet_"
+    modelname = "unet_"
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
-    file_path = 'models/'+strdate+'_UNet/'+model_name+'weights.best.hdf5'
 
-    batch = 4
+    filepath = os.path.join(savedirpath, modelname+'weights.best.hdf5')
 
-    # ORIG BATCH NORM LOSS
-    model = unetmodel.get_unet('binary_crossentropy')
-    # model = unetmodel.get_unet(losses.binary_focal_loss)
-    # model = unetmodel.get_unet(losses.focal_tversky)
-    # model = unetmodel.get_unet(losses.bce_dice_loss)
-    # model = unetmodel.get_unet(losses.focal_loss)
-    # model = unetmodel.get_unet(losses.weighted_cross_entropy(0.75))
-    # model = unetmodel.get_unet(losses.bce_focal_tversky_loss(alpha))
-    # model = unetmodel.get_unet(losses.surface_loss)
-    # model = unetmodel.get_unet(losses.dice_focal_tversky_loss(alpha))
-    # model = unetmodel.get_unet(losses.dice_surface_loss)
-    # model = unetmodel.get_unet(losses.bce_surface_loss)
-    # model = unetmodel.get_unet(losses.balanced_cross_entropy(0.3))
-    # model = unetmodel.get_unet(losses.iou)
+    batch = 6
 
-    checkpoint = ModelCheckpoint(file_path, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
-    early = EarlyStopping(monitor="val_dice_loss", mode="min", patience=50, verbose=1)
-    redonplat = ReduceLROnPlateau(monitor="val_dice_loss", mode="min", patience=20, verbose=1)
+    # Loss functions for training
+    model = unetmodel.unet(input_size=(None, None, 1), opt_fn=optimizer, loss_fn='binary_crossentropy')
+    # model = unetmodel.unet(losses.binary_focal_loss)
+    # model = unetmodel.unet(losses.focal_tversky)
+    # model = unetmodel.unet(losses.bce_dice_loss)
+    # model = unetmodel.unet(losses.focal_loss)
+    # model = unetmodel.unet(losses.weighted_cross_entropy(0.75))
+    # model = unetmodel.unet(losses.bce_focal_tversky_loss(alpha))
+    # model = unetmodel.unet(losses.surface_loss)
+    # model = unetmodel.unet(losses.dice_focal_tversky_loss(alpha))
+    # model = unetmodel.unet(losses.dice_surface_loss)
+    # model = unetmodel.unet(losses.bce_surface_loss)
+    # model = unetmodel.unet(losses.balanced_cross_entropy(0.3))
+    # model = unetmodel.unet(losses.iou)
+
+    checkpoint = ModelCheckpoint(filepath, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
+    early = EarlyStopping(monitor='val_dice_loss', mode='min', patience=50, verbose=1)
+    redonplat = ReduceLROnPlateau(monitor='val_dice_loss', mode='min', patience=20, verbose=1)
     newalpha = AlphaCallback(alpha)
-    callbacks_list = [checkpoint, early]#, redonplat, newalpha]
+    callbacks_list = [checkpoint, early, redonplat, newalpha]
 
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=100,
+        epochs=250,
         shuffle=True,
         callbacks=callbacks_list)
 
     # Serialize model to JSON
-    model_json = model.to_json()
-    with open('models/'+strdate+'_UNet/'+model_name+'model.json', 'w') as json_file:
-        json_file.write(model_json)
+    modeljson = model.to_json()
+    with open(os.path.join(savedirpath, modelname+'model.json'), 'w') as jsonfile:
+        jsonfile.write(modeljson)
 
     # Write out the training history to file
-    pd.DataFrame(history.history).to_csv('models/'+strdate+'_UNet/trainHistoryDict.csv')
+    pd.DataFrame(history.history).to_csv(os.path.join(savedirpath, 'trainhistory.csv'))
 
     cleanup.clean()
 
     # Plot out to see progress
-    import matplotlib.pyplot as plt
-    plt.plot(history.history['dice_loss'])
-    plt.plot(history.history['val_dice_loss'])
-    plt.title('Dice loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper right')
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.plot(history.history['dice_loss'])
+    # plt.plot(history.history['val_dice_loss'])
+    # plt.title('Dice loss')
+    # plt.ylabel('Loss')
+    # plt.xlabel('Epoch')
+    # plt.legend(['Train', 'Test'], loc='upper right')
+    # plt.show()

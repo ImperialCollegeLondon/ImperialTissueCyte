@@ -68,8 +68,8 @@ def _residualpath(inputs, filter_size, path_number):
     return cnn
 
 # Main multi-resolution UNet network
-def multiresunet(opt_fn, loss_fn, input_size=(None, None, 1)):
-    inputs = Input(input_size)
+def multiresunet(optfn, lossfn, inputsize=(None, None, 1)):
+    inputs = Input(inputsize)
 
     multires1 = _multiresblock(inputs, 32)
     pool1 = MaxPool2D()(multires1)
@@ -113,6 +113,6 @@ def multiresunet(opt_fn, loss_fn, input_size=(None, None, 1)):
     sigmoid = Conv2D(1, (1,1), padding='same', activation='sigmoid')(multires9)
 
     model = Model(inputs, sigmoid)
-    model.compile(optimizer=opt_fn, loss=[loss_fn], metrics=[losses.dice_loss, loss_fn])
+    model.compile(optimizer=optfn, loss=[lossfn], metrics=[losses.dice_loss, lossfn])
 
     return model
