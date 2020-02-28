@@ -66,6 +66,6 @@ if __name__ == '__main__':
     for y in range(0,image.shape[0], ws):
         for x in range(0,image.shape[1], ws):
             pred[y:y+ws, x:x+ws] = np.squeeze(predarray[i])
-            count += 1
+            i += 1
 
     pred = pred[:image.shape[0],:image.shape[1]]
