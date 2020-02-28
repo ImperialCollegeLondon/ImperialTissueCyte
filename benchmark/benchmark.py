@@ -61,7 +61,7 @@ if __name__ == '__main__':
     print ('Predicting...')
     predarray = model.predict(imgarray, batch_size=6)
 
-    pred = np.zeros((np.ceil(image.shape[0]/ws)*ws, np.ceil(image.shape[1]/ws)*ws))
+    pred = np.zeros((int(np.ceil(image.shape[0]/ws)*ws), int(np.ceil(image.shape[1]/ws)*ws)))
     count = 0
     for y in range(0,image.shape[0], ws):
         for x in range(0,image.shape[1], ws):
