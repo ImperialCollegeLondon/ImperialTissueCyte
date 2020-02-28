@@ -15,7 +15,7 @@ import losses
 # For the improved optimizer
 from adabound_tf2 import AdaBoundOptimizer
 
-def unet(optfn, lossfn, inputsize=(None, None, 1):
+def unet(optfn, lossfn, inputsize=(None, None, 1)):
     inputs = Input(inputsize)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
