@@ -62,8 +62,8 @@ if __name__ == '__main__':
     predarray = model.predict(imgarray, batch_size=6)
 
     pred = np.zeros((int(np.ceil(image.shape[0]/ws)*ws), int(np.ceil(image.shape[1]/ws)*ws)))
-    count = 0
+    i = 0
     for y in range(0,image.shape[0], ws):
         for x in range(0,image.shape[1], ws):
-            pred[y:y+ws, x:x+ws] = np.squeeze(pred[counter])
+            pred[y:y+ws, x:x+ws] = np.squeeze(pred[i])
             count += 1
