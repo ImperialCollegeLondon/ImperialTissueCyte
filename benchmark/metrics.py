@@ -12,36 +12,36 @@ from skimage.measure import regionprops, label
 
 def jaccard(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     return np.float(np.sum(true * pred))/np.sum(true + pred)
 
 def truepos(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     return np.sum(mask * pred)
 
 def falsepos(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     return np.sum((1-mask) * pred)
 
 def trueneg(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     return np.sum((1-mask) * (1-pred))
 
 def falseneg(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     return np.sum(mask * (1-pred))
 
@@ -67,8 +67,8 @@ def recall(true, pred):
 
 def colocalisedhits(true, pred):
     # Threshold the images to generate boolean masks
-    true = true>(np.max(true)-np.min(true))/2.
-    pred = pred>(np.max(pred)-np.min(pred))/2.
+    true = (true>(np.max(true)-np.min(true))/2.).astype(np.int)
+    pred = (pred>(np.max(pred)-np.min(pred))/2.).astype(np.int)
 
     true_label = label(true, connectivity=true.ndim)
 
