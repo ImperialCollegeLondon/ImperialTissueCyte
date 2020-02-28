@@ -49,8 +49,6 @@ if __name__ == '__main__':
     for y in range(0,image.shape[0], ws):
         for x in range(0,image.shape[1], ws):
             imagecrop = image[y:y+ws, x:x+ws]
-
-
             imagecroppad = np.zeros((ws, ws))
             if (np.max(imagecrop)-np.min(imagecrop))>0: # Ignore any empty data and zero divisions
                 imagecroppad[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
@@ -83,4 +81,8 @@ if __name__ == '__main__':
     modelname = os.path.basename(modeldir)
 
     print ('Saving...')
-    pd.DataFrame({'Model':[modelname], 'Jaccard':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]}).to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
+    resultdf = pd.DataFrame({'Model':[modelname], 'Jaccard':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]})
+    if not os.path.isfile('results/benchmarkresults.csv'):
+        resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
+    else:
+        resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=False, index=False)
