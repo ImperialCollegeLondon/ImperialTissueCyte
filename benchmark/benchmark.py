@@ -83,4 +83,4 @@ if __name__ == '__main__':
     modelname = os.path.basename(modeldir)
 
     print ('Saving...')
-    pd.DataFrame({'Model':modelname, 'Jaccard':jac, 'Accuracy':acc, 'Precision':pre, 'Recall':rec, 'Colocalised':coh}).to_csv('results/benchmarkresults.csv', mode='a', header=True)
+    pd.DataFrame({'Model':[modelname], 'Jaccard':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]}).to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
