@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     filepath = os.path.join(savedirpath, modelname+'weights.best.hdf5')
 
-    batch = 6
+    batch = 4
 
     # Loss functions for training
     model = unetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn='binary_crossentropy')
