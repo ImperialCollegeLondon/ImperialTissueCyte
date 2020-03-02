@@ -84,10 +84,13 @@ if __name__ == '__main__':
     modelname = os.path.basename(modeldir)
 
     print ('Saving...')
+
     resultdf = pd.DataFrame({'Model':[modelname], 'Jaccard':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]})
     if not os.path.isfile('results/benchmarkresults.csv'):
         resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
     else:
-        resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=False, index=False)
+        olddf = pd.read_csv('results/benchmarkresults.csv', header=0)
+        resultdf = pd.concat([olddf, resultdf], ignore_index=True)
+        resultdf.to_csv('results/benchmarkresults.csv', mode='w', header=True, index=False)
 
     Image.fromarray((pred*255).astype(np.uint8)).save('results/'+modelname+'_predout.tif')
