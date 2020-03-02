@@ -21,7 +21,7 @@ from tensorflow.keras import backend as K
 # This line must be executed before loading Keras model.
 K.set_learning_phase(0)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
