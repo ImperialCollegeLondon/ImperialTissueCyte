@@ -89,3 +89,5 @@ if __name__ == '__main__':
         resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
     else:
         resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=False, index=False)
+
+    Image.fromarray((pred*255).astype(np.uint8)).save('results/'+modelname+'_predout.tif')
