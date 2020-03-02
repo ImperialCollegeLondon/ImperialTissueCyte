@@ -34,8 +34,8 @@ if __name__ == '__main__':
     orig_img = (orig_img-np.min(orig_img))/(np.max(orig_img)-np.min(orig_img))
     print ('Done!')
 
-    model_path = 'models/2020_02_28_ADAM_lr0.0001_UNet/unet_model.json'
-    weights_path = 'models/2020_02_28_ADAM_lr0.0001_UNet/unet_weights.best.hdf5'
+    model_path = 'models/2020_02_28_Adam_lr0.0001_UNet/unet_model.json'
+    weights_path = 'models/2020_02_28_Adam_lr0.0001_UNet/unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     print ('Loading model...')
