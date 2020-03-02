@@ -34,8 +34,11 @@ class PoissonNoise(Operation):
     # Your class must implement the perform_operation method:
     def perform_operation(self, images):
         def do(image):
-            if np.array_equal(np.array(image)/np.max(np.array(image)), (np.array(image)/np.max(np.array(image))).astype(bool)): # Check if image is actually mask
-                return image
+            image = np.array(image)
+            if np.max(image) == 0: # Check mask image is empty
+                return Image.fromarray(image)
+            elif np.array_equal(image/np.max(image), (image/np.max(image)).astype(bool)): # Check if image is actually mask
+                return Image.fromarray(image)
             else:
                 image = noise.random_noise(np.array(image), mode='poisson')
                 image.clip(0, 1, image)
