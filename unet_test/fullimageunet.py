@@ -27,15 +27,15 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
 
 if __name__ == '__main__':
-    img_path = '/Volumes/thefarm2/live/TissueCyte/ScanData/190221_Gerald_RabiesBL/rabiesbl-Mosaic/Ch2_Stitched_Sections/Stitched_Z473.tif'
+    img_path = '/rds/general/user/gm515/projects/thefarm2/live/TissueCyte/ScanData/190221_Gerald_RabiesBL/rabiesbl-Mosaic/Ch2_Stitched_Sections/Stitched_Z473.tif'
 
     print ('Loading image...')
     orig_img = np.array(Image.open(img_path)).astype(np.float32)
     orig_img = (orig_img-np.min(orig_img))/(np.max(orig_img)-np.min(orig_img))
     print ('Done!')
 
-    model_path = 'models/2020_02_25_ADAM_lr0.0001_MultiResUNet/multires_unet_model.json'
-    weights_path = 'models/2020_02_25_ADAM_lr0.0001_MultiResUNet/multires_unet_weights.best.hdf5'
+    model_path = 'models/2020_02_28_ADAM_lr0.0001_UNet/unet_model.json'
+    weights_path = 'models/2020_02_28_ADAM_lr0.0001_UNet/unet_weights.best.hdf5'
 
     # Load the classifier model, initialise and compile
     print ('Loading model...')
