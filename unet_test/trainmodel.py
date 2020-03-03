@@ -36,6 +36,10 @@ import unetmodel
 import preprocessing
 import losses
 
+# Set the training precision to speed u training time..?
+policy = K.mixed_precision.experimental.Policy('mixed_float16')
+K.mixed_precision.experimental.set_policy(policy)
+
 # Alpha call back for the changing weight loss functions
 class AlphaCallback(Callback):
     def __init__(self, alpha):
@@ -63,7 +67,6 @@ if __name__ == '__main__':
     modelname = "unet_"
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
-
 
     filepath = os.path.join(savedirpath, modelname+'weights.best.hdf5')
 
