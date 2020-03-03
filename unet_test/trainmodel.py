@@ -52,9 +52,13 @@ if __name__ == '__main__':
     if len(sys.argv) > 0:
         opt_arg1 = str(sys.argv[1])
         lr_arg2 = float(sys.argv[2])
+        loss_arg3 = str(sys.argv[3])
 
         if opt_arg1 == 'Adam': optimizer = Adam(lr=lr_arg2)
         if opt_arg1 == 'SGD': optimizer = SGD(lr=lr_arg2)
+
+        if loss_arg3 == 'BCE': loss = 'binary_crossentropy'
+        if loss_arg3 == 'FTL': loss = losses.focal_tversky
 
     # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
@@ -72,7 +76,7 @@ if __name__ == '__main__':
     batch = 4
 
     # Loss functions for training
-    model = unetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn='binary_crossentropy')
+    model = unetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
     # model = unetmodel.unet(losses.binary_focal_loss)
     # model = unetmodel.unet(losses.focal_tversky)
     # model = unetmodel.unet(losses.bce_dice_loss)
@@ -95,7 +99,7 @@ if __name__ == '__main__':
     history = model.fit(train_x, train_y,
         validation_data=(val_x, val_y),
         batch_size=batch,
-        epochs=100,
+        epochs=150,
         shuffle=True,
         callbacks=callbacks_list)
 
