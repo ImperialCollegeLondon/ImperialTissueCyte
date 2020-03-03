@@ -91,7 +91,7 @@ if __name__ == '__main__':
     # model = unetmodel.get_unet(losses.iou)
 
     checkpoint = ModelCheckpoint(filepath, monitor='val_dice_loss', verbose=1, save_best_only=True, mode='min')
-    early = EarlyStopping(monitor='val_dice_loss', mode='min', patience=50, verbose=1)
+    early = EarlyStopping(monitor='val_dice_loss', mode='min', patience=30, verbose=1)
     redonplat = ReduceLROnPlateau(monitor='val_dice_loss', mode='min', patience=20, verbose=1)
     newalpha = AlphaCallback(alpha)
     callbacks_list = [checkpoint, early, redonplat, newalpha]
