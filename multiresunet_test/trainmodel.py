@@ -37,8 +37,7 @@ import preprocessing
 import losses
 
 # Set the training precision to speed u training time..?
-policy = K.mixed_precision.experimental.Policy('mixed_float16')
-K.mixed_precision.experimental.set_policy(policy)
+os.environ['TF_ENABLE_AUTO_MIXED_PRECISION'] = '1'
 
 # Alpha call back for the changing weight loss functions
 class AlphaCallback(Callback):
