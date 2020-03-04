@@ -30,7 +30,7 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = ['input/raw_data/GM_data', 'input/raw_data/MG_data', 'input/raw_data/GM_data_merged']
+    raw_data_dir = ['input/raw_data/GM_data', 'input/raw_data/MG_data']#, 'input/raw_data/GM_data_merged']
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
@@ -58,7 +58,7 @@ def preprocess():
     print ('Performing augmentation on raw data copy...')
 
     raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
-    n=2*len(raw_images_data)
+    n=4*len(raw_images_data)
     augmentation.augment('input/raw_data_copy',n)
 
     aug_images = glob.glob('input/raw_data_copy/images/images_original*')
