@@ -108,7 +108,7 @@ def preprocess():
             training_data_images.append(np.array(image))
             training_data_masks.append(np.array(mask))
 
-    for imagepath in natsorted(glob.glob(test_data_dir+'/images/*')):
+    for imagepath, maskpath in zip(natsorted(glob.glob(test_data_dir+'/images/*')), natsorted(glob.glob(test_data_dir+'/masks/*'))):
         image = Image.open(imagepath).resize((512, 512))
         mask = Image.open(maskpath).resize((512, 512))
         if np.max(np.array(mask)>0): # ignore empty...?
