@@ -64,10 +64,13 @@ if __name__ == '__main__':
         if loss_arg3 == 'BCE': loss = 'binary_crossentropy'
         if loss_arg3 == 'FTL': loss = losses.focal_tversky
 
+        if act_arg4 == 'relu': act = 'relu'
+        if act_arg4 == 'elu': act = 'elu'
+
     # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+'_lr'+str(lr_arg2)+'_'+loss_arg3+'_NestedUNet')
+    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+str(lr_arg2)+'_'+loss_arg3+'_'+act_arg4+'_NestedUNet')
     if not os.path.exists(savedirpath):
         os.makedirs(savedirpath)
 
@@ -80,7 +83,7 @@ if __name__ == '__main__':
     batch = 4
 
     # Loss functions for training
-    model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
+    model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss, actfn=act)
     # model = nestedunetmodel.nestedunet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
