@@ -12,9 +12,6 @@ from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
 import losses
 
-# For the improved optimizer
-from adabound_tf2 import AdaBoundOptimizer
-
 def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
     x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(input_tensor)
