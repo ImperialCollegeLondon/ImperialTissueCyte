@@ -21,7 +21,7 @@ def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
     return x
 
-def Nest_Net(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False):
+def nestedunet(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False):
     img_input = Input(inputsize)
 
     conv1_1 = standard_unit(img_input, stage='11', nb_filter=32)
