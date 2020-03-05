@@ -39,9 +39,9 @@ import losses
 # Set the training precision to speed u training time..?
 os.environ['TF_ENABLE_AUTO_MIXED_PRECISION'] = '1'
 
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
+sess = tf.compat.v1.Session(config=config)
 
 # Alpha call back for the changing weight loss functions
 class AlphaCallback(Callback):
