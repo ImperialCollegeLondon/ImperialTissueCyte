@@ -80,8 +80,8 @@ if __name__ == '__main__':
     batch = 4
 
     # Loss functions for training
-    # model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
-    model = nestedunetmodel.nestedunet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
+    model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
+    # model = nestedunetmodel.nestedunet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
