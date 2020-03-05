@@ -85,9 +85,9 @@ def nestedunet(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False)
 
     if deep_supervision:
         model = Model(inputs=img_input, outputs=[nestnet_output_1,
-                                               nestnet_output_2,
-                                               nestnet_output_3,
-                                               nestnet_output_4])
+                                                nestnet_output_2,
+                                                nestnet_output_3,
+                                                nestnet_output_4])
     else:
         model = Model(inputs=img_input, outputs=[nestnet_output_4])
 
