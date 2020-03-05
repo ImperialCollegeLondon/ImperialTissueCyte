@@ -84,12 +84,12 @@ def nestedunet(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False)
     nestnet_output_4 = Conv2D(1, (1, 1), activation='sigmoid', name='output_4', kernel_initializer = 'he_normal', padding='same')(conv1_5)
 
     if deep_supervision:
-        model = Model(input=img_input, output=[nestnet_output_1,
+        model = Model(inputs=img_input, outputs=[nestnet_output_1,
                                                nestnet_output_2,
                                                nestnet_output_3,
                                                nestnet_output_4])
     else:
-        model = Model(input=img_input, output=[nestnet_output_4])
+        model = Model(inputs=img_input, outputs=[nestnet_output_4])
 
     model.compile(optimizer=optfn, loss=[lossfn], metrics=[losses.dice_loss, lossfn])
 
