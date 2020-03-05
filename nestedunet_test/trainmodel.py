@@ -67,11 +67,11 @@ if __name__ == '__main__':
     # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+'_lr'+str(lr_arg2)+'_'+loss_arg3+'_MultiResUNet')
+    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+'_lr'+str(lr_arg2)+'_'+loss_arg3+'_NestedUNet')
     if not os.path.exists(savedirpath):
         os.makedirs(savedirpath)
 
-    modelname = "multires_unet_"
+    modelname = "nested_unet_"
 
     train_x, train_y, val_x, val_y = preprocessing.preprocess()
 
@@ -80,7 +80,8 @@ if __name__ == '__main__':
     batch = 4
 
     # Loss functions for training
-    model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
+    # model = nestedunetmodel.unet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
+    model = nestedunetmodel.nestedunet(inputsize=(None, None, 1), optfn=optimizer, lossfn=loss)
     # model = unetmodel.get_unet(losses.binary_focal_loss)
     # model = unetmodel.get_unet(losses.focal_tversky)
     # model = unetmodel.get_unet(losses.bce_dice_loss)
