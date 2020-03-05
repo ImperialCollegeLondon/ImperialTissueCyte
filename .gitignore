@@ -6,3 +6,4 @@ neurosegunet/models
 unet_test/models
 multiresunet_test/models
 benchmark/data
+nestedunet/models
