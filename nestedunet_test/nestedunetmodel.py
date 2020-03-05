@@ -12,7 +12,7 @@ from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
 import losses
 
-def standard_unit(input_tensor, stage, nb_filter, kernel_size=3, actfn):
+def standard_unit(input_tensor, stage, nb_filter, actfn, kernel_size=3):
 
     x = Conv2D(nb_filter, (kernel_size, kernel_size), activation=actfn, name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same')(input_tensor)
     x = Dropout(0.5, name='dp'+stage+'_1')(x)

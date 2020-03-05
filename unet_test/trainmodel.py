@@ -53,6 +53,7 @@ if __name__ == '__main__':
         opt_arg1 = str(sys.argv[1])
         lr_arg2 = float(sys.argv[2])
         loss_arg3 = str(sys.argv[3])
+        act_arg4 = str(sys.argv[4])
 
         if opt_arg1 == 'Adam': optimizer = Adam(lr=lr_arg2)
         if opt_arg1 == 'SGD': optimizer = SGD(lr=lr_arg2)
