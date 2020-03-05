@@ -23,7 +23,7 @@ def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
 def unet(optfn, lossfn, inputsize=(None, None, 1)):
     img_input = Input(inputsize)
-    
+
     conv1_1 = standard_unit(img_input, stage='11', nb_filter=32)
     pool1 = MaxPooling2D((2, 2), strides=(2, 2), name='pool1')(conv1_1)
 
@@ -54,7 +54,7 @@ def unet(optfn, lossfn, inputsize=(None, None, 1)):
     conv1_5 = concatenate([up1_5, conv1_1], name='merge15', axis=3)
     conv1_5 = standard_unit(conv1_5, stage='15', nb_filter=32)
 
-    unet_output = Conv2D(num_class, (1, 1), activation='sigmoid', name='output', kernel_initializer = 'he_normal', padding='same')(conv1_5)
+    unet_output = Conv2D(1, (1, 1), activation='sigmoid', name='output', kernel_initializer = 'he_normal', padding='same')(conv1_5)
 
     model = Model(input=img_input, output=unet_output)
 
