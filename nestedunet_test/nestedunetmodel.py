@@ -56,7 +56,7 @@ def unet(optfn, lossfn, inputsize=(None, None, 1)):
 
     unet_output = Conv2D(1, (1, 1), activation='sigmoid', name='output', kernel_initializer = 'he_normal', padding='same')(conv1_5)
 
-    model = Model(input=img_input, output=unet_output)
+    model = Model(inputs=img_input, outputs=unet_output)
 
     model.compile(optimizer=optfn, loss=lossfn, metrics=[losses.dice_loss, lossfn])
 
