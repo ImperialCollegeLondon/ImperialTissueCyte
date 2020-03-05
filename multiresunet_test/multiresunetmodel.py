@@ -27,17 +27,17 @@ def _multiresblock(inputs, filter_size):
     filter_size3 = int(alpha*filter_size*0.5)
     filter_size4 = int(filter_size1+filter_size2+filter_size3)
 
-    cnn1 = Conv2D(filter_size1, (3,3), padding='same', activation='relu', kernel_initializer = 'he_normal')(inputs)
-    cnn2 = Conv2D(filter_size2, (3,3), padding='same', activation='relu', kernel_initializer = 'he_normal')(cnn1)
-    cnn3 = Conv2D(filter_size3, (3,3), padding='same', activation='relu', kernel_initializer = 'he_normal')(cnn2)
+    cnn1 = Conv2D(filter_size1, (3,3), padding='same', activation='elu', kernel_initializer = 'he_normal')(inputs)
+    cnn2 = Conv2D(filter_size2, (3,3), padding='same', activation='elu', kernel_initializer = 'he_normal')(cnn1)
+    cnn3 = Conv2D(filter_size3, (3,3), padding='same', activation='elu', kernel_initializer = 'he_normal')(cnn2)
 
-    cnn = Conv2D(filter_size4, (1,1), padding='same', activation='relu', kernel_initializer = 'he_normal')(inputs)
+    cnn = Conv2D(filter_size4, (1,1), padding='same', activation='elu', kernel_initializer = 'he_normal')(inputs)
 
     concat = Concatenate()([cnn1, cnn2, cnn3])
     concat = BatchNormalization()(concat)
 
     add = Add()([concat, cnn])
-    add = Activation('relu')(add)
+    add = Activation('elu')(add)
     add = BatchNormalization()(add)
 
     return add
@@ -50,8 +50,8 @@ def _residualpath(inputs, filter_size, path_number):
     concatenating with the decoder side.
     """
     def block(x, fl):
-        cnn1 = Conv2D(filter_size, (3,3), padding='same', activation='relu', kernel_initializer = 'he_normal')(inputs)
-        cnn2 = Conv2D(filter_size, (1,1), padding='same', activation='relu', kernel_initializer = 'he_normal')(inputs)
+        cnn1 = Conv2D(filter_size, (3,3), padding='same', activation='elu', kernel_initializer = 'he_normal')(inputs)
+        cnn2 = Conv2D(filter_size, (1,1), padding='same', activation='elu', kernel_initializer = 'he_normal')(inputs)
 
         add = Add()([cnn1, cnn2])
 
