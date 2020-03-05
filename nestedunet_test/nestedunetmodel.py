@@ -14,9 +14,9 @@ import losses
 
 def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
-    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='elu', name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same')(input_tensor)
+    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same')(input_tensor)
     x = Dropout(0.5, name='dp'+stage+'_1')(x)
-    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='elu', name='conv'+stage+'_2', kernel_initializer = 'he_normal', padding='same')(x)
+    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_2', kernel_initializer = 'he_normal', padding='same')(x)
     x = Dropout(0.5, name='dp'+stage+'_2')(x)
 
     return x
