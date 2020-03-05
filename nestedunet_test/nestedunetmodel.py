@@ -91,6 +91,6 @@ def nestedunet(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False)
     else:
         model = Model(inputs=img_input, outputs=[nestnet_output_4])
 
-    model.compile(optimizer=optfn, loss=[lossfn, lossfn, lossfn, lossfn], metrics=[losses.dice_loss, lossfn])
+    model.compile(optimizer=optfn, loss=lossfn, metrics=[losses.dice_loss, lossfn])
 
     return model
