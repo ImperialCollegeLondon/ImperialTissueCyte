@@ -14,9 +14,9 @@ import losses
 
 def standard_unit(input_tensor, stage, nb_filter, kernel_size=3):
 
-    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(input_tensor)
+    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_1', kernel_initializer = 'he_normal', padding='same')(input_tensor)
     x = Dropout(dropout_rate, name='dp'+stage+'_1')(x)
-    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_2', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(x)
+    x = Conv2D(nb_filter, (kernel_size, kernel_size), activation='relu', name='conv'+stage+'_2', kernel_initializer = 'he_normal', padding='same')(x)
     x = Dropout(dropout_rate, name='dp'+stage+'_2')(x)
 
     return x
@@ -78,10 +78,10 @@ def nestedunet(optfn, lossfn, inputsize=(None, None, 1), deep_supervision=False)
     conv1_5 = concatenate([up1_5, conv1_1, conv1_2, conv1_3, conv1_4], name='merge15', axis=bn_axis)
     conv1_5 = standard_unit(conv1_5, stage='15', nb_filter=32)
 
-    nestnet_output_1 = Conv2D(1, (1, 1), activation='sigmoid', name='output_1', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(conv1_2)
-    nestnet_output_2 = Conv2D(1, (1, 1), activation='sigmoid', name='output_2', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(conv1_3)
-    nestnet_output_3 = Conv2D(1, (1, 1), activation='sigmoid', name='output_3', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(conv1_4)
-    nestnet_output_4 = Conv2D(1, (1, 1), activation='sigmoid', name='output_4', kernel_initializer = 'he_normal', padding='same', kernel_regularizer=l2(1e-4))(conv1_5)
+    nestnet_output_1 = Conv2D(1, (1, 1), activation='sigmoid', name='output_1', kernel_initializer = 'he_normal', padding='same')(conv1_2)
+    nestnet_output_2 = Conv2D(1, (1, 1), activation='sigmoid', name='output_2', kernel_initializer = 'he_normal', padding='same')(conv1_3)
+    nestnet_output_3 = Conv2D(1, (1, 1), activation='sigmoid', name='output_3', kernel_initializer = 'he_normal', padding='same')(conv1_4)
+    nestnet_output_4 = Conv2D(1, (1, 1), activation='sigmoid', name='output_4', kernel_initializer = 'he_normal', padding='same')(conv1_5)
 
     if deep_supervision:
         model = Model(input=img_input, output=[nestnet_output_1,
