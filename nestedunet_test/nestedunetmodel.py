@@ -54,7 +54,7 @@ def unet(optfn, lossfn, actfn, inputsize=(None, None, 1)):
     conv1_5 = concatenate([up1_5, conv1_1], name='merge15', axis=3)
     conv1_5 = standard_unit(conv1_5, stage='15', nb_filter=32, actfn=actfn)
 
-    unet_output = Conv2D(1, (1, 1), act='sigmoid', name='output', kernel_initializer = 'he_normal', padding='same')(conv1_5)
+    unet_output = Conv2D(1, (1, 1), activation='sigmoid', name='output', kernel_initializer = 'he_normal', padding='same')(conv1_5)
 
     model = Model(inputs=img_input, outputs=unet_output)
 
