@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Get today's date for model saving
     strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
-    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+str(lr_arg2)+'_'+loss_arg3+'_'+act_arg4+'_NestedUNet')
+    savedirpath = os.path.join('models', strdate+'_'+opt_arg1+str(lr_arg2)+'_'+loss_arg3+'_'+act_arg4+'_NestedUNet_wSup')
     if not os.path.exists(savedirpath):
         os.makedirs(savedirpath)
 
