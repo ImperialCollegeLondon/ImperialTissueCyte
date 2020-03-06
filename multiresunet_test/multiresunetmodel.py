@@ -14,7 +14,7 @@ from tensorflow.keras.optimizers import Adam, SGD
 import losses
 
 # Multi-resolution Inception style filters
-def _multiresblock(inputs, filter_size, act):
+def _multiresblock(inputs, filter_size, actfn):
     """
     Multi-resolution block in the style of Inception module. This concatenates
     the features from different convolution filters as an approximation for a
