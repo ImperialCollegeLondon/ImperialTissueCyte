@@ -55,6 +55,10 @@ def preprocess():
             copy_tree(os.path.join(subdir, 'images'), os.path.join(raw_data_copy_dir, 'images'))
             copy_tree(os.path.join(subdir, 'masks'), os.path.join(raw_data_copy_dir, 'masks'))
 
+    print ('Performing class supplementation on raw data copy...')
+
+    PreferentialAugmentation(source_directory=os.path.join(raw_data_copy_dir, 'images'), groundtruth_directory=os.path.join(raw_data_copy_dir, 'masks'), max=5, min=0)
+
     print ('Performing augmentation on raw data copy...')
 
     raw_images_data = os.listdir(raw_data_copy_dir+'/images/')
