@@ -30,7 +30,7 @@ from natsort import natsorted
 import numpy as np
 
 def preprocess():
-    raw_data_dir = ['input/raw_data/GM_data_supplemented', 'input/raw_data/MG_data']#, 'input/raw_data/GM_data_merged']
+    raw_data_dir = ['input/raw_data/GM_short', 'input/raw_data/MG_data']#, 'input/raw_data/GM_data_merged']
     training_data_dir = 'input/training_data'
     test_data_dir = 'input/test_data'
 
