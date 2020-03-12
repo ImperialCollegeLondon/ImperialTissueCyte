@@ -3,7 +3,7 @@ Benchmark
 Author: Gerald M
 
 Benchmark testing using a complete 2P coronal stitched section from an unseen
-sample.
+sample - PVCre-Sox14
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -30,7 +30,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        modeldir = str(sys.argv[1])
+        modeldir = str(sys.argv[1]).strip('/')
 
     print ('Loading image (for prediction) and true result for benchmark testing...')
     image = np.array(Image.open('data/pvcresox14_GM.tif'))
