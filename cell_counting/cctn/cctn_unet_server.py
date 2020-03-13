@@ -1,20 +1,18 @@
-
-# -*- coding: utf-8 -*-
-
 """
-################################################################################
 Cell Counting in Target Nuclei Script
 Author: Gerald M
 
-Version U-net (Python 3) + Web Server
+Version (Python 3) using U-Net + Flask web server
 This version uses a UNet to perform semantic segmentation of the images.
 
-Also updated, oversampling correction. Of cells which are now oversampled, the
-middle cell slice value is kept rather than the last detected position as before.
+Oversampling correction chooses to keep the position of the cell in the middle
+slice position, rather than the last detected slice position.
 
 Instructions:
-1) Run from command line with input parameters
-################################################################################
+1) First start the Flask server for predicting images (flaskunetserver.py)
+1) Run from command line with
+    ipython cctn_unet_server.py -- <*Ch2_Stitched_Sections> -maskpath <*SEGRES.tif> -hempath <*HEMRES.tif> -radius 10 -ncpu 8 -structures <DORsm,DORpm>
+
 """
 
 ################################################################################
