@@ -3,7 +3,7 @@ Benchmark
 Author: Gerald M
 
 Benchmark testing using a complete 2P coronal stitched section from an unseen
-sample - PVCre-Sox14
+sample - PVCre-Sox14 and Rabies tracing
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -23,7 +23,10 @@ from tensorflow.keras import backend as K
 # This line must be executed before loading Keras model.
 K.set_learning_phase(0)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+if tf.test.is_gpu_available():
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
