@@ -33,8 +33,9 @@ if __name__ == '__main__':
         modeldir = str(sys.argv[1]).rstrip('/')
 
     print ('Loading image (for prediction) and true result for benchmark testing...')
-    image = np.array(Image.open('data/pvcresox14_GM.tif'))
-    true = np.array(Image.open('data/mask_pvcresox14_GM.tif'))
+
+    image = np.array(Image.open('data/rabies_GM.tif'))
+    true = np.array(Image.open('data/mask_rabies_GM.tif'))
 
     print ('Loading model for prediction...')
     modelpath = glob.glob(os.path.join(modeldir, '*.json'))[0]
