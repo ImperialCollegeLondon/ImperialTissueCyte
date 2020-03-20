@@ -46,7 +46,7 @@ if __name__ == '__main__':
     imagepaths = ['data/pvcresox14_GM.tif', 'data/rabies_GM.tif']
     truepaths = ['data/mask_pvcresox14_GM.tif', 'data/mask_rabies_GM.tif']
 
-    for imagepath, truepath in zip(imagespaths, truepaths):
+    for imagepath, truepath in zip(imagepaths, truepaths):
         image = np.array(Image.open(imagepath))
         true = np.array(Image.open(truepath))
 
