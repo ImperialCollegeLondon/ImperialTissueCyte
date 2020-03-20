@@ -1,9 +1,15 @@
 """
-Benchmark
+Benchmark Testing
 Author: Gerald M
 
 Benchmark testing using a complete 2P coronal stitched section from an unseen
-sample - PVCre-Sox14 and Rabies tracing
+sample - PVCre-Sox14 and Rabies tracing.
+
+Benchmark tests are:
+- IoU (Jaccard)
+- Accuracy
+- Precision
+- Recall
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -37,64 +43,68 @@ if __name__ == '__main__':
 
     print ('Loading image (for prediction) and true result for benchmark testing...')
 
-    image = np.array(Image.open('data/rabies_GM.tif'))
-    true = np.array(Image.open('data/mask_rabies_GM.tif'))
+    imagepaths = ['data/pvcresox14_GM.tif', 'data/rabies_GM.tif']
+    truepaths = ['data/mask_pvcresox14_GM.tif', 'data/mask_rabies_GM.tif']
 
-    print ('Loading model for prediction...')
-    modelpath = glob.glob(os.path.join(modeldir, '*.json'))[0]
-    weightspath = glob.glob(os.path.join(modeldir, '*.hdf5'))[0]
-    with open(modelpath, 'r') as f:
-        model = model_from_json(f.read())
-    model.load_weights(weightspath)
+    for imagepath, truepath in zip(imagespaths, truepaths):
+        image = np.array(Image.open(imagepath))
+        true = np.array(Image.open(truepath))
 
-    # Split true and image into 512x512 blocks
-    imgarray = []
-    ws = 512
-    for y in range(0,image.shape[0], ws):
-        for x in range(0,image.shape[1], ws):
-            imagecrop = image[y:y+ws, x:x+ws]
-            imagecroppad = np.zeros((ws, ws))
-            if (np.max(imagecrop)-np.min(imagecrop))>0: # Ignore any empty data and zero divisions
-                imagecroppad[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
-            imagecroppad = imagecroppad[..., np.newaxis]
-            imgarray.append(imagecroppad)
+        print ('Loading model for prediction...')
+        modelpath = glob.glob(os.path.join(modeldir, '*.json'))[0]
+        weightspath = glob.glob(os.path.join(modeldir, '*.hdf5'))[0]
+        with open(modelpath, 'r') as f:
+            model = model_from_json(f.read())
+        model.load_weights(weightspath)
 
-    imgarray = np.array(imgarray)
+        # Split true and image into 512x512 blocks
+        imgarray = []
+        ws = 512
+        for y in range(0,image.shape[0], ws):
+            for x in range(0,image.shape[1], ws):
+                imagecrop = image[y:y+ws, x:x+ws]
+                imagecroppad = np.zeros((ws, ws))
+                if (np.max(imagecrop)-np.min(imagecrop))>0: # Ignore any empty data and zero divisions
+                    imagecroppad[:imagecrop.shape[0],:imagecrop.shape[1]] = (imagecrop-np.min(imagecrop))/(np.max(imagecrop)-np.min(imagecrop))
+                imagecroppad = imagecroppad[..., np.newaxis]
+                imgarray.append(imagecroppad)
 
-    print ('Predicting...')
-    predarray = model.predict(imgarray, batch_size=6)
+        imgarray = np.array(imgarray)
 
-    pred = np.zeros((int(np.ceil(image.shape[0]/ws)*ws), int(np.ceil(image.shape[1]/ws)*ws)))
-    i = 0
-    for y in range(0,image.shape[0], ws):
-        for x in range(0,image.shape[1], ws):
-            pred[y:y+ws, x:x+ws] = np.squeeze(predarray[i])
-            i += 1
+        print ('Predicting...')
+        predarray = model.predict(imgarray, batch_size=6)
 
-    pred = pred[:image.shape[0],:image.shape[1]]
-    pred = (pred>0.5).astype(np.int)
-    true = (true>0.5).astype(np.int)
+        pred = np.zeros((int(np.ceil(image.shape[0]/ws)*ws), int(np.ceil(image.shape[1]/ws)*ws)))
+        i = 0
+        for y in range(0,image.shape[0], ws):
+            for x in range(0,image.shape[1], ws):
+                pred[y:y+ws, x:x+ws] = np.squeeze(predarray[i])
+                i += 1
 
-    print ('Benchmarking...')
-    jac = metrics.jaccard(true, pred)
-    acc = metrics.accuracy(true, pred)
-    pre = metrics.precision(true, pred)
-    rec = metrics.recall(true, pred)
-    if np.isnan(jac*pre*rec):
-        coh = np.nan
-    else:
-        coh = metrics.colocalisedhits(true, pred)
+        pred = pred[:image.shape[0],:image.shape[1]]
+        pred = (pred>0.5).astype(np.int)
+        true = (true>0.5).astype(np.int)
 
-    modelname = os.path.basename(modeldir)
+        print ('Benchmarking...')
+        jac = metrics.jaccard(true, pred)
+        acc = metrics.accuracy(true, pred)
+        pre = metrics.precision(true, pred)
+        rec = metrics.recall(true, pred)
+        if np.isnan(jac*pre*rec):
+            coh = np.nan
+        else:
+            coh = metrics.colocalisedhits(true, pred)
 
-    print ('Saving...')
+        modelname = os.path.basename(modeldir)
 
-    resultdf = pd.DataFrame({'Model':[modelname], 'Jaccard':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]})
-    if not os.path.isfile('results/benchmarkresults.csv'):
-        resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
-    else:
-        olddf = pd.read_csv('results/benchmarkresults.csv', header=0)
-        resultdf = pd.concat([olddf, resultdf], ignore_index=True)
-        resultdf.to_csv('results/benchmarkresults.csv', mode='w', header=True, index=False)
+        print ('Saving...')
 
-    Image.fromarray((pred*255).astype(np.uint8)).save('results/'+modelname+'_predout.tif')
+        resultdf = pd.DataFrame({'Model':[modelname], 'Image':[os.path.basename(imagepath)], 'IoU':[jac], 'Accuracy':[acc], 'Precision':[pre], 'Recall':[rec], 'Colocalised':[coh]})
+        if not os.path.isfile('results/benchmarkresults.csv'):
+            resultdf.to_csv('results/benchmarkresults.csv', mode='a', header=True, index=False)
+        else:
+            olddf = pd.read_csv('results/benchmarkresults.csv', header=0)
+            resultdf = pd.concat([olddf, resultdf], ignore_index=True).sort_values(by=['Model', 'Image'])
+            resultdf.to_csv('results/benchmarkresults.csv', mode='w', header=True, index=False)
+
+        Image.fromarray((pred*255).astype(np.uint8)).save('results/'+modelname+'_predicted_'+os.path.basename(imagepath)+'.tif')

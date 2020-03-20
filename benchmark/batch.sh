@@ -8,14 +8,20 @@ do
     ipython benchmark.py -- ${dir}    # print everything after the final "/"
 done
 
-for dir in ../unet_test/models/*/
-do
-    dir=${dir%*/}      # remove the trailing "/"
-    ipython benchmark.py -- ${dir##*/}    # print everything after the final "/"
-done
+# for dir in ../unet_test/models/*/
+# do
+#     dir=${dir%*/}      # remove the trailing "/"
+#     ipython benchmark.py -- ${dir}    # print everything after the final "/"
+# done
 
-for dir in ../multiresunet_test/models/*/
+# for dir in ../multiresunet_test/models/*/
+# do
+#     dir=${dir%*/}      # remove the trailing "/"
+#     ipython benchmark.py -- ${dir}    # print everything after the final "/"
+# done
+
+for dir in ../../machinelearning/models/*/
 do
     dir=${dir%*/}      # remove the trailing "/"
-    ipython benchmark.py -- ${dir##*/}    # print everything after the final "/"
+    ipython benchmark.py -- ${dir}    # print everything after the final "/"
 done
