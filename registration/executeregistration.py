@@ -1,5 +1,6 @@
 import SimpleITK as sitk
 import time
+import datetime
 import argparse
 import numpy as np
 from skimage import io
@@ -49,6 +50,8 @@ try:
     hemData[570::,:,:] = 1
     hemData = sitk.GetImageFromArray(np.uint8(np.swapaxes(hemData,0,2)))
     print ('Hemisphere atlas loaded')
+
+    strdate = datetime.datetime.today().strftime('%Y_%m_%d')
 
     tstart = time.time()
 
@@ -103,8 +106,8 @@ try:
 
     # Write average transform and segmented results
     # sitk.WriteImage(averageSeg, args.autoflpath+'AVGRES.tif')
-    sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES.tif')
-    sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES.tif')
+    sitk.WriteImage(resultSeg, args.autoflpath+'SEGRES'+strdate+'.tif')
+    sitk.WriteImage(hemSeg, args.autoflpath+'HEMRES'+strdate+'.tif')
 
     minutes, seconds = divmod(time.time()-tstart, 60)
     hours, minutes = divmod(minutes, 60)
