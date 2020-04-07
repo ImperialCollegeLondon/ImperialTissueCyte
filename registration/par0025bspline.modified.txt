@@ -60,6 +60,7 @@
 //(Metric "AdvancedMattesMutualInformation" "AdvancedNormalizedCorrelation") // THIS IS THE ONE
 // (Metric "AdvancedNormalizedCorrelation" "TransformBendingEnergyPenalty")
 // (Metric "AdvancedMattesMutualInformation" "CorrespondingPointsEuclideanDistanceMetric")
+// (Metric "AdvancedMattesMutualInformation" "TransformBendingEnergyPenalty")
 
 
 // ***************** Transformation **************************
