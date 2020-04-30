@@ -72,8 +72,9 @@ if __name__ == '__main__':
         imgarray = np.array(imgarray)
 
         print ('Predicting...')
+        tstart = time.time()
         predarray = model.predict(imgarray, batch_size=6)
-
+        print (time.time()-tstart)
         pred = np.zeros((int(np.ceil(image.shape[0]/ws)*ws), int(np.ceil(image.shape[1]/ws)*ws)))
         i = 0
         for y in range(0,image.shape[0], ws):
