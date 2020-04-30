@@ -28,11 +28,13 @@ from tensorflow.python.platform import gfile
 from tensorflow.keras import backend as K
 # This line must be executed before loading Keras model.
 K.set_learning_phase(0)
+#
+# if tf.test.is_gpu_available():
+#     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+# else:
+#     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-if tf.test.is_gpu_available():
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''
-else:
-    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 Image.MAX_IMAGE_PIXELS = 1000000000
