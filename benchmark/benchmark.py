@@ -30,7 +30,7 @@ from tensorflow.keras import backend as K
 K.set_learning_phase(0)
 
 if tf.test.is_gpu_available():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 else:
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
