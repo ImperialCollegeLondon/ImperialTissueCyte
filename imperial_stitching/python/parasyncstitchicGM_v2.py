@@ -287,7 +287,7 @@ if __name__ == '__main__':
     # Create stitch output folders
     os.umask(0o000)
 
-    stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'+str(today.strftime('%d_%m_%Y')))
+    stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'+str(date.today().strftime('%d_%m_%Y')))
 
     try:
         os.makedirs(stitchpath, 0o777)
