@@ -290,7 +290,7 @@ if __name__ == '__main__':
     stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'+str(today.strftime('%d_%m_%Y')))
 
     try:
-        os.makedirs(stitchpath), 0o777)
+        os.makedirs(stitchpath, 0o777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
