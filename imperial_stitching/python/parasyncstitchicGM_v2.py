@@ -40,6 +40,7 @@ import numpy as np
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
+from datetime import date
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -286,8 +287,10 @@ if __name__ == '__main__':
     # Create stitch output folders
     os.umask(0o000)
 
+    stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'+str(today.strftime('%d_%m_%Y')))
+
     try:
-        os.makedirs(os.path.join(tcpath, str(scanid)+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections'), 0o777)
+        os.makedirs(stitchpath), 0o777)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -438,8 +441,6 @@ if __name__ == '__main__':
                 Image.fromarray(tile_img).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
 
             print ('Stitching Z'+ztoken+'...')
-
-            stitchpath = os.path.join(tcpath, scanid+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections')
 
             outname = "'"+os.path.join(stitchpath, 'Stitched_Z'+ztoken+'.tif')+"'"
 
