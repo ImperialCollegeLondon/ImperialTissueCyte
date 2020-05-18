@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
     if convert == 'y':
         try:
-            os.makedirs(os.path.join(tcpath, str(scanid)+'-Mosaic', 'Ch'+str(channel)+'_Stitched_Sections_Downsized'), 0o777)
+            os.makedirs(stitchpath+'_Downsized'), 0o777)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
