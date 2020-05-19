@@ -64,10 +64,20 @@ def slack_message(text, channel, username):
 # Function to load images in parallel
 #=============================================================================================
 def load_tile(file, cropstart, cropend):
-    try:
-        tileimage = np.array(Image.open(file).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
-    except (ValueError, IOError, OSError):
-        tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
+    if '_00' in file:
+        try:
+            tileimage_ch1 = np.array(Image.open(file.replace('_00', '_01')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch2 = np.array(Image.open(file.replace('_00', '_02')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch3 = np.array(Image.open(file.replace('_00', '_03')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage = np.maximum(tileimage_ch1, tileimage_ch2)
+            tileimage = np.maximum(tileimage, tileimage_ch3)
+        except (ValueError, IOError, OSError):
+            tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
+    else:
+        try:
+            tileimage = np.array(Image.open(file).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+        except (ValueError, IOError, OSError):
+            tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     return tileimage
 
 #=============================================================================================
