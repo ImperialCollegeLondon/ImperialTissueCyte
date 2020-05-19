@@ -379,7 +379,7 @@ if __name__ == '__main__':
             # Get crop value
             if crop == 0:
                 onefile = filenames[-1]
-                if channel == 0:
+                if channel == '0':
                     onefile = onefile.replace('_00', '_01')
                 size = Image.open(onefile).size[0]
                 cropstart = int(round(0.014*size)) #0.0075, originally 0.045
