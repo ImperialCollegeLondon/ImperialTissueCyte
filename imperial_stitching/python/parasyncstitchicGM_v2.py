@@ -74,10 +74,20 @@ def slack_message(text, channel, username):
 # Function to load images in parallel
 #=============================================================================================
 def load_tile(file, cropstart, cropend):
-    try:
-        tileimage = np.array(Image.open(file).crop((cropstart, cropstart, cropend, cropend)).rotate(90))
-    except (ValueError, IOError, OSError):
-        tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
+    if '_00' in file:
+        try:
+            tileimage_ch1 = np.array(Image.open(file.replace('_00', '_01')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch2 = np.array(Image.open(file.replace('_00', '_02')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch3 = np.array(Image.open(file.replace('_00', '_03')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage = np.maximum(tileimage_ch1, tileimage_ch2)
+            tileimage = np.maximum(tileimage, tileimage_ch3)
+        except (ValueError, IOError, OSError):
+            tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
+    else:
+        try:
+            tileimage = np.array(Image.open(file).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+        except (ValueError, IOError, OSError):
+            tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     return tileimage
 
 #=============================================================================================
@@ -232,9 +242,9 @@ if __name__ == '__main__':
     endsec = input('End section (default end): ')
     xoverlap = input('X overlap % (default 7.2): ')
     yoverlap = input('Y overlap % (default 7.2): ')
-    channel = input('Channel to stitch: ')
+    channel = input('Channel to stitch (0 - combine all channels): ')
     while not channel:
-        channel = input('Channel to stitch: ')
+        channel = input('Channel to stitch (0 - combine all channels): ')
     avgcorr = input('Perform average correction? (y/n): ')
     while avgcorr not in ('y', 'n'):
         avgcorr = input('Perform average correction? (y/n): ')
@@ -363,7 +373,7 @@ if __name__ == '__main__':
 
             time.sleep(3)
             # Get file name structure and remove last 8 characters to leave behind filename template
-            filenamestruct = glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_0'+str(channel)+'.tif'))[0].rpartition('-')[0]+'-'
+            filenamestruct = glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_01.tif'))[0].rpartition('-')[0]+'-'
             filenames = [filenamestruct+str(tile)+'_0'+str(channel)+'.tif' for tile in range(firsttile, lasttile+1, 1)]
 
             # Get crop value
