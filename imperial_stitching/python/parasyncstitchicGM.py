@@ -128,7 +128,7 @@ if __name__ == '__main__':
     yoverlap = input('Y overlap % (default 1): ')
     channel = input('Channel to stitch: ')
     while not channel:
-        channel = input('Channel to stitch: ')
+        channel = input('Channel to stitch (0 - combine with max): ')
     avgcorr = input('Perform average correction? (y/n): ')
     while avgcorr not in ('y', 'n'):
         avgcorr = input('Perform average correction? (y/n): ')
