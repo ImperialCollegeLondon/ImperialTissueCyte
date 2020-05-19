@@ -251,7 +251,7 @@ if __name__ == '__main__':
 
             time.sleep(3)
             # Get file name structure and remove last 8 characters to leave behind filename template
-            filenamestruct = glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_0'+str(channel)+'.tif'))[0].rpartition('-')[0]+'-'
+            filenamestruct = glob.glob(os.path.join(tcpath, folder, '*-'+str(lasttile)+'_01.tif'))[0].rpartition('-')[0]+'-'
             filenames = [filenamestruct+str(tile)+'_0'+str(channel)+'.tif' for tile in range(firsttile, lasttile+1, 1)]
 
             # Get crop value
