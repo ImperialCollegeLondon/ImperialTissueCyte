@@ -37,6 +37,7 @@ Important updates:
 
 import cv2, os, sys, warnings, time, glob, errno, subprocess, shutil, readline, re, tempfile, random
 import numpy as np
+import tifffile
 from PIL import Image
 from multiprocessing import Pool, cpu_count, Array, Manager
 from functools import partial
@@ -76,16 +77,16 @@ def slack_message(text, channel, username):
 def load_tile(file, cropstart, cropend):
     if '_00' in file:
         try:
-            tileimage_ch1 = np.array(Image.open(file.replace('_00', '_01')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
-            tileimage_ch2 = np.array(Image.open(file.replace('_00', '_02')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
-            tileimage_ch3 = np.array(Image.open(file.replace('_00', '_03')).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch1 = np.array(Image.fromarray(tifffile.imread(file.replace('_00', '_01'))).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch2 = np.array(Image.fromarray(tifffile.imread(file.replace('_00', '_01'))).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage_ch3 = np.array(Image.fromarray(tifffile.imread(file.replace('_00', '_01'))).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
             tileimage = np.maximum(tileimage_ch1, tileimage_ch2)
             tileimage = np.maximum(tileimage, tileimage_ch3)
         except (ValueError, IOError, OSError):
             tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     else:
         try:
-            tileimage = np.array(Image.open(file).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
+            tileimage = np.array(Image.fromarray(tifffile.imread(file)).crop((cropstart, cropstart+65, cropend, cropend+65)).rotate(90))
         except (ValueError, IOError, OSError):
             tileimage = np.zeros((cropend-cropstart, cropend-cropstart))
     return tileimage
