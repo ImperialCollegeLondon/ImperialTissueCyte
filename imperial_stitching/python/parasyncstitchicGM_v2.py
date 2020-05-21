@@ -452,7 +452,8 @@ if __name__ == '__main__':
 
                 tile_img = np.multiply(np.divide(tile_img, 1000.), 255.).astype(np.uint8)
 
-                Image.fromarray(tile_img).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
+                # Image.fromarray(tile_img).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
+                Image.fromarray(tile_img).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
 
             print ('Stitching Z'+ztoken+'...')
 
