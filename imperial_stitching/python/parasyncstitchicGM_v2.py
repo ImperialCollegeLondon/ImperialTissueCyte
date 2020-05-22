@@ -404,6 +404,8 @@ if __name__ == '__main__':
                 # Correct each image
                 img_arr = np.multiply(img_arr, corrtile)
 
+            sectionmax = np.max(img_arr)
+
             # Save each tile with corresponding name
             for tile_img in img_arr:
                 if x>=1 and x<=xtiles:
@@ -451,7 +453,7 @@ if __name__ == '__main__':
                     ztoken = str(zcount)
 
                 # Was divide by 1000.
-                tile_img = np.multiply(np.divide(tile_img, np.max(tile_img)), 255.).astype(np.uint8)
+                tile_img = np.multiply(np.divide(tile_img, sectionmax), 255.).astype(np.uint8)
 
                 # Image.fromarray(tile_img).transpose(Image.FLIP_LEFT_RIGHT).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
                 Image.fromarray(tile_img).save(os.path.join(tilepath, 'Tile_Z'+ztoken+'_Y'+ytoken+'_X'+xtoken+'.tif'))
